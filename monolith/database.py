@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -54,6 +55,7 @@ class Story(db.Model):
         super(Story, self).__init__(*args, **kw)
         self.date = dt.datetime.now()
 
+
 class Like(db.Model):
     __tablename__ = 'like'
     
@@ -66,4 +68,4 @@ class Like(db.Model):
     liked_id = db.Column(db.Integer, db.ForeignKey('user.id')) # TODO: duplicated ?
     liker = relationship('User', foreign_keys='Like.liker_id')
 
-    marked = db.Column(db.Boolean, default = False) # True iff it has been counted in Story.likes 
+    marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes

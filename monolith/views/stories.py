@@ -7,6 +7,7 @@ from monolith.forms import UserForm
 
 stories = Blueprint('stories', __name__)
 
+
 @stories.route('/stories')
 def _stories(message=''):
     allstories = db.session.query(Story)
@@ -17,7 +18,7 @@ def _stories(message=''):
 @login_required
 def _like(authorid, storyid):
     q = Like.query.filter_by(liker_id=current_user.id, story_id=storyid)
-    if q.first() != None:
+    if q.first() is not None:
         new_like = Like()
         new_like.liker_id = current_user.id
         new_like.story_id = storyid

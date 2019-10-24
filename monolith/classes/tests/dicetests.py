@@ -1,6 +1,7 @@
-from classes import DiceSet
+from monolith.classes.DiceSet import Die
 import unittest
- 
+
+
 class TestDie(unittest.TestCase):
  
     def test_add_integers_positive(self):
@@ -9,8 +10,6 @@ class TestDie(unittest.TestCase):
         print(die.faces)
         self.assertEqual(result, 3)
 
-    
- 
  
 if __name__ == '__main__':
     unittest.main()

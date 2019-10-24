@@ -5,10 +5,11 @@ from monolith.forms import UserForm
 
 users = Blueprint('users', __name__)
 
+
 @users.route('/users')
 def _users():
-    users = db.session.query(User)
-    return render_template("users.html", users=users)
+    usrs = db.session.query(User)
+    return render_template("users.html", users=usrs)
 
 
 @users.route('/create_user', methods=['GET', 'POST'])
@@ -19,7 +20,7 @@ def create_user():
         if form.validate_on_submit():
             new_user = User()
             form.populate_obj(new_user)
-            new_user.set_password(form.password.data) #pw should be hashed with some salt
+            new_user.set_password(form.password.data)  # pw should be hashed with some salt
             db.session.add(new_user)
             db.session.commit()
             return redirect('/users')
