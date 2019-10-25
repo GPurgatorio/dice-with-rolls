@@ -32,14 +32,14 @@ def _like(authorid, storyid):
     return _stories(message)
 
 
-@stories.route('/stories/write', methods=['GET'])
+@stories.route('/stories/write', methods=['POST'])
 @login_required
-def _write_story():
+def _write_story(message = ''):
     form = StoryForm()
     # prendi parole dalla sessione
     figures = session['figures']
     return render_template("write_story.html", submit_url="http://127.0.0.1:5000/stories/submit", form=form,
-                           words=figures)
+                           words=figures, message=message)
 
 
 @stories.route('/stories/submit', methods=['POST'])
@@ -53,8 +53,8 @@ def _submit_story():
         new_story.figures = '#'.join(session['figures'])
         form.populate_obj(new_story)
         story_words = form['text'].data.split(' ')
-        if len(story_words) > 200:  # global variable
-            result = 'Your story is too long'
+        if len(story_words) == 0:
+            result = 'Your story is empty'
         else:
             counter = 0
             for w in story_words:
@@ -68,5 +68,4 @@ def _submit_story():
             else:
                 result = 'Your story doesn\'t contain all the words '
 
-    return render_template("write_story.html", submit_url='http://127.0.0.1:5000/stories/submit', form=form,
-                           result=result)
+    return _write_story(message=result)
