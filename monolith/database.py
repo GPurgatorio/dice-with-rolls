@@ -65,7 +65,7 @@ class Like(db.Model):
     story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
     author = relationship('Story', foreign_keys='Like.story_id')
 
-    liked_id = db.Column(db.Integer, db.ForeignKey('user.id')) # TODO: duplicated ?
+    liked_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # TODO: duplicated ?
     liker = relationship('User', foreign_keys='Like.liker_id')
 
     marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
