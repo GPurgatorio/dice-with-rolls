@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship
 import datetime as dt
 from flask_sqlalchemy import SQLAlchemy
 
-
 db = SQLAlchemy()
 
 
@@ -44,9 +43,9 @@ class User(db.Model):
 class Story(db.Model):
     __tablename__ = 'story'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    text = db.Column(db.Text(1000)) # around 200 (English) words 
+    text = db.Column(db.Text(1000))  # around 200 (English) words
     date = db.Column(db.DateTime)
-    likes = db.Column(db.Integer) # will store the number of likes, periodically updated in background
+    # likes = db.Column(db.Integer)  # will store the number of likes, periodically updated in background
     # define foreign key 
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = relationship('User', foreign_keys='Story.author_id')
@@ -56,16 +55,38 @@ class Story(db.Model):
         self.date = dt.datetime.now()
 
 
-class Like(db.Model):
-    __tablename__ = 'like'
-    
-    liker_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    liker = relationship('User', foreign_keys='Like.liker_id')
+class ReactionInfo(db.Model):
+    __tablename__ = 'reaction_info'
+
+    reacter_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    reacter = relationship('User', foreign_keys='ReactionInfo.reacter_id')
 
     story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
-    author = relationship('Story', foreign_keys='Like.story_id')
+    author = relationship('Story', foreign_keys='ReactionInfo.story_id')
 
-    liked_id = db.Column(db.Integer, db.ForeignKey('user.id')) # TODO: duplicated ?
-    liker = relationship('User', foreign_keys='Like.liker_id')
+    reacted_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # TODO: duplicated ?
+    reacted = relationship('User', foreign_keys='ReactionInfo.reacted_id')
+
+    reaction_id = db.Column(db.Integer, db.ForeignKey('reaction.id'))
+    reaction = relationship('Reaction', foreign_keys='ReactionInfo.reaction_id')
 
     marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
+
+
+class Counter(db.Model):
+    __tablename__ = 'counter'
+    # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # big fun name
+    reaction_id = db.Column(db.Integer, db.ForeignKey('reaction.id'), primary_key=True)
+    reaction = relationship('Reaction', foreign_keys='Counter.reaction_id')
+
+    story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
+    story = relationship('Story', foreign_keys='Counter.story_id')
+    # will store the number of reactions with reaction_id and for story_id, periodically updated in background
+    counter = db.Column(db.Integer)
+
+
+class Reaction(db.Model):
+    __tablename__ = 'reaction'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.Text(200))
