@@ -29,3 +29,8 @@ def _like(authorid, storyid):
     else:
         message = 'You\'ve already liked this story!'
     return _stories(message)
+
+@stories.route('/stories/write')
+@login_required
+def _write():
+    return  0
