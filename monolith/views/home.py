@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template
-from stravalib import Client
 
 from monolith.database import db, Story, Like
 from monolith.auth import current_user
