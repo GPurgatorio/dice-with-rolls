@@ -5,6 +5,7 @@ from monolith.views import blueprints
 from monolith.auth import login_manager
 import datetime
 
+
 def create_app():
     app = Flask(__name__)
     app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
@@ -41,6 +42,7 @@ def create_app():
             example.text = 'Trial story of example admin user :)'
             example.likes = 42
             example.author_id = 1
+            example.figures = 'example#admin'
             print(example)
             db.session.add(example)
             db.session.commit()
