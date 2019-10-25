@@ -1,6 +1,0 @@
-setup.py
-storytellers_monolith.egg-info/PKG-INFO
-storytellers_monolith.egg-info/SOURCES.txt
-storytellers_monolith.egg-info/dependency_links.txt
-storytellers_monolith.egg-info/not-zip-safe
-storytellers_monolith.egg-info/top_level.txt
