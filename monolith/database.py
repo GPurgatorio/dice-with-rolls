@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship
 import datetime as dt
 from flask_sqlalchemy import SQLAlchemy
 
-
 db = SQLAlchemy()
 
 
@@ -44,28 +43,30 @@ class User(db.Model):
 class Story(db.Model):
     __tablename__ = 'story'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    text = db.Column(db.Text(1000)) # around 200 (English) words 
+    text = db.Column(db.Text(1000))  # around 200 (English) words
     date = db.Column(db.DateTime)
-    likes = db.Column(db.Integer) # will store the number of likes, periodically updated in background
-    # define foreign key 
+    likes = db.Column(db.Integer)  # will store the number of likes, periodically updated in background
+    figures = db.Column(db.Unicode(128))
+    # define foreign key
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = relationship('User', foreign_keys='Story.author_id')
 
     def __init__(self, *args, **kw):
         super(Story, self).__init__(*args, **kw)
         self.date = dt.datetime.now()
+        self.likes = 0
 
 
 class Like(db.Model):
     __tablename__ = 'like'
-    
+
     liker_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     liker = relationship('User', foreign_keys='Like.liker_id')
 
     story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
     author = relationship('Story', foreign_keys='Like.story_id')
 
-    liked_id = db.Column(db.Integer, db.ForeignKey('user.id')) # TODO: duplicated ?
+    liked_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # TODO: duplicated ?
     liker = relationship('User', foreign_keys='Like.liker_id')
 
     marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
