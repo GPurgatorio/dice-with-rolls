@@ -46,8 +46,6 @@ class Story(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.Text(1000)) # around 200 (English) words 
     date = db.Column(db.DateTime)
-    likes = db.Column(db.Integer) # will store the number of likes, periodically updated in background
-    dislikes = db.Column(db.Integer) # will store the number of likes, periodically updated in background
     # define foreign key
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = relationship('User', foreign_keys='Story.author_id')
@@ -56,32 +54,42 @@ class Story(db.Model):
         super(Story, self).__init__(*args, **kw)
         self.date = dt.datetime.now()
 
+class Reaction_catalogue(db.Model):
+    __tablename__ = 'reaction_catalogue'
 
-class Like(db.Model):
-    __tablename__ = 'like'
-    
-    liker_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    liker = relationship('User', foreign_keys='Like.liker_id')
+    reaction_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    reaction_caption = db.Column(db.Text(20))
+
+
+class Reaction(db.Model):
+    __tablename__ = 'reaction'
+
+    reactor_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    reactor = relationship('User', foreign_keys='Reaction.reactor_id')
 
     story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
-    author = relationship('Story', foreign_keys='Like.story_id')
+    author = relationship('Story', foreign_keys='Reaction.story_id')
 
-    liked_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    liker = relationship('User', foreign_keys='Like.liker_id')
+    reaction_type_id = db.Column(db.Integer, db.ForeignKey('reaction_catalogue.reaction_id'))
+    reaction_type = relationship('Reaction_catalogue', foreign_keys='Reaction.reaction_type_id')
 
     marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
 
 
-class Disike(db.Model):
-    __tablename__ = 'dislike'
+class Counter(db.Model):
+    __tablename__ = 'counter'
 
-    disliker_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    disliker = relationship('User', foreign_keys='Like.disliker_id')
+    reaction_type_id = db.Column(db.Integer, db.ForeignKey('reaction_catalogue.reaction_id'), primary_key=True)
+    reaction_type = relationship('Reaction_catalogue', foreign_keys='Counter.reaction_type_id')
 
-    story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
-    author = relationship('Story', foreign_keys='Like.story_id')
+    story_id = db.Column(db.Integer , db.ForeignKey('story.id', primary_key=True))
+    story = relationship('Story', foreign_keys='Counter.story_id')
 
-    liked_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    disliker = relationship('User', foreign_keys='Like.disliker_id')
+    counter = db.Column(db.Integer, default=0)
 
-    marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
+
+
+
+
+
+

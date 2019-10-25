@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 
-from monolith.database import db, Story, Like
+from monolith.database import db, Story, Reaction
 from monolith.auth import current_user
 
 

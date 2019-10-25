@@ -8,7 +8,7 @@
     {% for story in stories%}
       <div>
         <li>
-          {{story.text}} -- Likes:{{story.likes}}
+          {{story.text}} -- Likes:{{story.likes}} -- Dislikes:{{ story.dislikes }}
         </li>
       </div>
     {% endfor %}
