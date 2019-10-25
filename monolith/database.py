@@ -47,7 +47,8 @@ class Story(db.Model):
     text = db.Column(db.Text(1000)) # around 200 (English) words 
     date = db.Column(db.DateTime)
     likes = db.Column(db.Integer) # will store the number of likes, periodically updated in background
-    # define foreign key 
+    dislikes = db.Column(db.Integer) # will store the number of likes, periodically updated in background
+    # define foreign key
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = relationship('User', foreign_keys='Story.author_id')
 
@@ -65,7 +66,22 @@ class Like(db.Model):
     story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
     author = relationship('Story', foreign_keys='Like.story_id')
 
-    liked_id = db.Column(db.Integer, db.ForeignKey('user.id')) # TODO: duplicated ?
+    liked_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     liker = relationship('User', foreign_keys='Like.liker_id')
+
+    marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
+
+
+class Disike(db.Model):
+    __tablename__ = 'dislike'
+
+    disliker_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    disliker = relationship('User', foreign_keys='Like.disliker_id')
+
+    story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
+    author = relationship('Story', foreign_keys='Like.story_id')
+
+    liked_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    disliker = relationship('User', foreign_keys='Like.disliker_id')
 
     marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
