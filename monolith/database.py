@@ -70,5 +70,4 @@ class Like(db.Model):
 
     liked = relationship('User', foreign_keys='Like.liker_id')
 
-
     marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
