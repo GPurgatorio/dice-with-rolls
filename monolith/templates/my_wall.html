@@ -1,0 +1,15 @@
+<html>
+    <body>
+        <h1> My Wall </h1>
+        {% if current_user.is_authenticated %}
+            First Name: {{user_info.firstname}} <br>
+            Last Name: {{user_info.lastname}} <br>
+            Date of birth: {{user_info.dateofbirth}} <br> <br> 
+
+            Email: {{user_info.email}}
+
+        {% else %}
+            <a href="http://127.0.0.1:5000/login")>Log in</a> to see your wall
+        {% endif %}
+    </body>
+</html>
