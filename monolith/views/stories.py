@@ -11,10 +11,10 @@ stories = Blueprint('stories', __name__)
 
 
 @stories.route('/stories')
-def _stories(message=''):
+def _stories(message='', status=200):
     allstories = db.session.query(Story)
-    return render_template("stories.html", message=message, stories=allstories,
-                           like_it_url="http://127.0.0.1:5000/stories/like/")
+    return make_response(render_template("stories.html", message=message, stories=allstories,
+                           like_it_url="http://127.0.0.1:5000/stories/like/"), status)
 
 
 @stories.route('/stories/like/<authorid>/<storyid>')
