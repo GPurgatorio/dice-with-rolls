@@ -35,11 +35,12 @@ def _like(authorid, storyid):
 # Open a story functionality (1.8)
 @stories.route('/stories/<storyid>', methods=['GET'])
 def _open_story(storyid):
-    story_result = Story.query.filter_by(id=storyid).first()
-    if story_result is not None:
-        # Dovrò chiamare il servizio di Jacopo
-        rolled_dice = ['parola1', 'parola2', 'parola3', 'parola4', 'parola5', 'parola6']
-        return render_template('story.html', exists=True, story=story_result, dice=rolled_dice)
+    # Get the story object from database
+    story = Story.query.filter_by(id=storyid).first()
+    if story is not None:
+        rolled_dice = story.figures.split('#')
+        # TODO : aggiornare per le reactions
+        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice)
     else:
         return render_template('story.html', exists=False)
 
