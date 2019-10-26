@@ -1,4 +1,6 @@
-from flask import Blueprint, redirect, render_template, request, abort, session
+import string
+
+from flask import Blueprint, redirect, render_template, request, abort, session, make_response
 from monolith.database import db, Story, Like
 from monolith.auth import admin_required, current_user
 from flask_login import (current_user, login_user, logout_user,
@@ -34,12 +36,11 @@ def _like(authorid, storyid):
 
 @stories.route('/stories/write', methods=['POST'])
 @login_required
-def _write_story(message = ''):
+def _write_story(message='', status=200):
     form = StoryForm()
-    # prendi parole dalla sessione
     figures = session['figures']
-    return render_template("write_story.html", submit_url="http://127.0.0.1:5000/stories/submit", form=form,
-                           words=figures, message=message)
+    return make_response(render_template("write_story.html", submit_url="http://127.0.0.1:5000/stories/submit", form=form,
+                           words=figures, message=message), status)
 
 
 @stories.route('/stories/submit', methods=['POST'])
@@ -47,25 +48,30 @@ def _write_story(message = ''):
 def _submit_story():
     form = StoryForm()
     result = ''
+    status = 200
     if form.validate_on_submit():
         new_story = Story()
         new_story.author_id = current_user.id
         new_story.figures = '#'.join(session['figures'])
         form.populate_obj(new_story)
-        story_words = form['text'].data.split(' ')
-        if len(story_words) == 0:
-            result = 'Your story is empty'
-        else:
-            counter = 0
-            for w in story_words:
-                if w in session['figures']:
-                    counter += 1
-            if counter == len(session['figures']):
-                result = 'Your story is a valid one! It has been published'
-                db.session.add(new_story)
-                db.session.commit()
-                return _stories(message=result)
-            else:
-                result = 'Your story doesn\'t contain all the words '
 
-    return _write_story(message=result)
+        dice_words = session['figures'].copy()
+        trans = str.maketrans(string.punctuation, ' '*len(string.punctuation))
+        new_s = form['text'].data.translate(trans)
+        story_words = new_s.split(' ')
+        for w in story_words:
+            if w in dice_words:
+                dice_words.remove(w)
+        if len(dice_words) > 0:
+            result = 'Your story doesn\'t contain all the words. Missing:'
+            status = 400
+            for w in dice_words:
+                result += w+' '
+        else:
+            result = 'Your story is a valid one! It has been published'
+            status = 201
+            db.session.add(new_story)
+            db.session.commit()
+            return _stories(message=result)
+
+    return _write_story(message=result, status=status)
