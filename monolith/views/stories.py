@@ -31,7 +31,19 @@ def _like(authorid, storyid):
         message = 'You\'ve already liked this story!'
     return _stories(message)
 
+  
+# Open a story functionality (1.8)
+@stories.route('/stories/<storyid>', methods=['GET'])
+def _open_story(storyid):
+    story_result = Story.query.filter_by(id=storyid).first()
+    if story_result is not None:
+        # Dovrò chiamare il servizio di Jacopo
+        rolled_dice = ['parola1', 'parola2', 'parola3', 'parola4', 'parola5', 'parola6']
+        return render_template('story.html', exists=True, story=story_result, dice=rolled_dice)
+    else:
+        return render_template('story.html', exists=False)
 
+      
 @stories.route('/stories/write', methods=['POST'])
 @login_required
 def _write_story(message = ''):
@@ -69,3 +81,4 @@ def _submit_story():
                 result = 'Your story doesn\'t contain all the words '
 
     return _write_story(message=result)
+  
