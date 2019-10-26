@@ -7,6 +7,7 @@ from monolith.forms import LoginForm
 
 auth = Blueprint('auth', __name__)
 
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()

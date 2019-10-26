@@ -6,3 +6,4 @@ redis
 flask-wtf
 flask-sqlalchemy
 pip-tools
+wtforms
