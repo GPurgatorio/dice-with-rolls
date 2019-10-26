@@ -17,12 +17,12 @@ def _stories(message=''):
 @login_required
 def _like(authorid, storyid):
     q = Like.query.filter_by(liker_id=current_user.id, story_id=storyid)
-    if q.first() is None:
+    if q.first() is not None:
         new_like = Like()
         new_like.liker_id = current_user.id
         new_like.story_id = storyid
         new_like.liked_id = authorid
-        db.session.add(q.first)
+        db.session.add(new_like)
         db.session.commit()
         message = ''
     else:
