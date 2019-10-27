@@ -1,8 +1,11 @@
 import json
 import random as rnd
 import unittest
+from abc import ABC
 
-from monolith.classes.DiceSet import Die, DiceSet
+import flask_testing
+from monolith.classes.DiceSet import Die
+from monolith.app import app as my_app
 
 
 class TestDice(unittest.TestCase):
@@ -26,3 +29,20 @@ class TestDice(unittest.TestCase):
         die = Die("monolith/resources/die0.txt")
         res = die.throw_die()
         self.assertEqual(res, 'bird')
+
+
+class TestTemplateDice(flask_testing.TestCase):
+
+    def create_app(self):
+        my_app.config['TESTING'] = True
+        my_app.login_manager.init_app(my_app)
+        return my_app
+
+    def test_words_length(self):
+
+        self.client.get('/stories/dice/roll')
+        self.assert_template_used('roll_dice.html')
+        self.assertEqual(len(self.get_context_variable('words')), 6)
+        self.assert_context('write_url', "http://127.0.0.1:5000/stories/write")
+
+

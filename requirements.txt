@@ -9,3 +9,4 @@ pip-tools
 wtforms
 pytest
 pytest-cov
+blinker
