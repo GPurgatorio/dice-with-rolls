@@ -30,8 +30,4 @@ def create_user():
 
 @users.route('/my_wall')
 def _my_wall():
-    if current_user is not None and hasattr(current_user, 'id'):
-        user_info = db.session.query(User).filter(User.id == current_user.id).one()
-    else:
-        user_info = None
-    return render_template('my_wall.html', user_info=user_info)
+    return render_template('my_wall.html')
