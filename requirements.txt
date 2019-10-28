@@ -7,3 +7,4 @@ flask-wtf
 flask-sqlalchemy
 pip-tools
 wtforms
+Flask-Testing
