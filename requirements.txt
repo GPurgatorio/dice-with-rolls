@@ -1,6 +1,7 @@
 flask
 flask-login
 Flask-SQLAlchemy
+flask-testing
 celery
 redis
 flask-wtf

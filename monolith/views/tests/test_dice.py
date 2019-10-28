@@ -1,7 +1,6 @@
 import json
 import random as rnd
 import unittest
-from abc import ABC
 
 import flask_testing
 from monolith.classes.DiceSet import Die
@@ -34,7 +33,7 @@ class TestDice(unittest.TestCase):
 class TestTemplateDice(flask_testing.TestCase):
 
     def create_app(self):
-        my_app.config['TESTING'] = True
+        my_app.config['LOGIN_DISABLED'] = True
         my_app.login_manager.init_app(my_app)
         return my_app
 
