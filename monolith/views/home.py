@@ -18,3 +18,4 @@ def index():
     else:
         stories = None
     return render_template("index.html", stories=stories)
+    #return {"ok": "ok"}
