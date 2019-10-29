@@ -1,15 +1,17 @@
 # encoding: utf8
+from sqlalchemy import CheckConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
-import enum
 from sqlalchemy.orm import relationship
 import datetime as dt
 from flask_sqlalchemy import SQLAlchemy
+
 
 db = SQLAlchemy()
 
 
 class User(db.Model):
     __tablename__ = 'user'
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.Unicode(128), nullable=False)
     firstname = db.Column(db.Unicode(128))
@@ -40,34 +42,63 @@ class User(db.Model):
         return self.id
 
 
+class Follower(db.Model):
+    __tablename__ = 'follower'
+
+    follower_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    follower = relationship('User', foreign_keys='Follower.follower_id')
+
+    followed_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    followed = relationship('User', foreign_keys='Follower.followed_id')
+
+    __table_args__ = (CheckConstraint(followed_id != follower_id, name='check_follow_myself'), {})
+
+
 class Story(db.Model):
     __tablename__ = 'story'
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.Text(1000))  # around 200 (English) words
     date = db.Column(db.DateTime)
-    likes = db.Column(db.Integer)  # will store the number of likes, periodically updated in background
-    figures = db.Column(db.Unicode(128))
     # define foreign key
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = relationship('User', foreign_keys='Story.author_id')
+    is_draft = db.Column(db.Boolean, default=True)
 
     def __init__(self, *args, **kw):
         super(Story, self).__init__(*args, **kw)
         self.date = dt.datetime.now()
-        self.likes = 0
 
 
-class Like(db.Model):
-    __tablename__ = 'like'
+class ReactionCatalogue(db.Model):
+    __tablename__ = 'reaction_catalogue'
 
-    liker_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    liker = relationship('User', foreign_keys='Like.liker_id')
+    reaction_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    reaction_caption = db.Column(db.Text(20))
+
+
+class Reaction(db.Model):
+    __tablename__ = 'reaction'
+
+    reactor_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    reactor = relationship('User', foreign_keys='Reaction.reactor_id')
 
     story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
-    author = relationship('Story', foreign_keys='Like.story_id')
+    story = relationship('Story', foreign_keys='Reaction.story_id')
 
-    liked_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # TODO: duplicated ?
-
-    liked = relationship('User', foreign_keys='Like.liker_id')
+    reaction_type_id = db.Column(db.Integer, db.ForeignKey('reaction_catalogue.reaction_id'))
+    reaction_type = relationship('ReactionCatalogue', foreign_keys='Reaction.reaction_type_id')
 
     marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
+
+
+class Counter(db.Model):
+    __tablename__ = 'counter'
+
+    reaction_type_id = db.Column(db.Integer, db.ForeignKey('reaction_catalogue.reaction_id'), primary_key=True)
+    reaction_type = relationship('ReactionCatalogue', foreign_keys='Counter.reaction_type_id')
+
+    story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
+    story = relationship('Story', foreign_keys='Counter.story_id')
+
+    counter = db.Column(db.Integer, default=0)
