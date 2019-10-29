@@ -1,5 +1,6 @@
 flask
 flask-login
+flask-testing
 Flask-SQLAlchemy
 celery
 redis
@@ -7,3 +8,6 @@ flask-wtf
 flask-sqlalchemy
 pip-tools
 wtforms
+pytest
+pytest-cov
+blinker
