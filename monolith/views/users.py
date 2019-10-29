@@ -28,6 +28,9 @@ def create_user():
     return render_template('create_user.html', form=form)
 
 
-@users.route('/my_wall')
-def _my_wall():
-    return render_template('my_wall.html')
+@users.route('/users/<userid>')
+def _wall(userid):
+		user_info = None
+		if current_user is not None and hasattr(current_user, 'id'):
+			user_info=current_user
+		return render_template('my_wall.html', user_info=user_info)

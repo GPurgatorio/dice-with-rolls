@@ -2,7 +2,7 @@
 
 {% if current_user.is_authenticated %}
   Hi {{ current_user.firstname }}! <br>
-  <a href="/my_wall">See your wall</a> <br>
+  <a href="/users/{{current_user.id}}">My wall</a>
   <a href="/logout">Logout</a>
 
   
