@@ -2,6 +2,7 @@ werkzeug
 sqlalchemy
 flask
 flask-login
+flask-testing
 Flask-SQLAlchemy
 flask-testing
 celery

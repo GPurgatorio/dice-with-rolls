@@ -11,14 +11,11 @@
         <p>
           <b>Author:</b> {{story.author}} - <b>Date:</b> {{story.date}} - <b>{{story.likes}} Likes</b>
         </p>
-        <p>
-          
-        </p>
     </div>
     <div style="margin: 0 auto; width: 80%; text-align: center; vertical-align: middle;">
         <h3>Rolled dices:</h3>
         <p>
-        {% for die in dice %}
+        {% for die in rolled_dice %}
           <span>{{ die }}</span>
         {% endfor %}
         </p>
