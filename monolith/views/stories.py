@@ -1,5 +1,5 @@
 from flask import Blueprint, redirect, render_template, request, abort, session
-from monolith.database import db, Story, Like
+from monolith.database import db, Story
 from monolith.auth import admin_required, current_user
 from flask_login import (current_user, login_user, logout_user,
                          login_required)
@@ -43,8 +43,7 @@ def _open_story(storyid):
     else:
         return render_template('story.html', exists=False)
 
-      
-@stories.route('/stories/write', methods=['POST'])
+@stories.route('/stories/write', methods=['GET', 'POST'])
 @login_required
 def _write_story(message = ''):
     form = StoryForm()

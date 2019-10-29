@@ -8,8 +8,8 @@ from monolith.classes.DiceSet import DiceSet, Die
 dice = Blueprint('dice', __name__)
 
 
+@dice.route('/stories/roll', methods=['POST'])
 @login_required
-@dice.route('/stories/dice/roll', methods=['GET'])
 def _roll_dice():
 
     dice_list = []
