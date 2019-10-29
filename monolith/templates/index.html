@@ -1,7 +1,7 @@
 <h1>Storytellers</h1>
 
 {% if current_user.is_authenticated %}
-  Hi {{ current_user.firstname }}! <a href="/logout">Logout</a>
+  Hi {{ current_user.firstname }}! <a href={{ logout_url }}>Logout</a>
 
   
     <h2>Your Stories</h2>
@@ -15,5 +15,5 @@
 
 
 {% else %}
-  Hi Anonymous, <a href="/login">Log in</a>
+  Hi Anonymous, <a href={{ login_url }}>Log in</a>
 {% endif %}

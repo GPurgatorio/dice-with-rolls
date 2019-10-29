@@ -6,6 +6,7 @@ import flask_testing
 from monolith.app import app as my_app
 from monolith.database import Story
 
+
 class TestTemplateStories(flask_testing.TestCase):
 
     def create_app(self):
@@ -22,4 +23,3 @@ class TestTemplateStories(flask_testing.TestCase):
         print('Author: ' + str(test_story.author))
         print('Date: ' + str(test_story.date))
         self.assertEqual(self.get_context_variable('story'), test_story)
-        #self.assert_context('rolled_dice', "example admin")

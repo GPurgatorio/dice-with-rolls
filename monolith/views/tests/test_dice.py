@@ -39,7 +39,7 @@ class TestTemplateDice(flask_testing.TestCase):
 
     def test_words_length(self):
 
-        self.client.get('/stories/dice/roll')
+        self.client.post('/stories/roll')
         self.assert_template_used('roll_dice.html')
         self.assertEqual(len(self.get_context_variable('words')), 6)
         self.assert_context('write_url', "http://127.0.0.1:5000/stories/write")

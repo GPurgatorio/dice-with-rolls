@@ -60,6 +60,7 @@ class Story(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.Text(1000))  # around 200 (English) words
     date = db.Column(db.DateTime)
+    figures = db.Column(db.Unicode(128))
     # define foreign key
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = relationship('User', foreign_keys='Story.author_id')

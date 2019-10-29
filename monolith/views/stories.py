@@ -11,32 +11,16 @@ stories = Blueprint('stories', __name__)
 @stories.route('/stories')
 def _stories(message=''):
     allstories = db.session.query(Story)
+
     return render_template("stories.html", message=message, stories=allstories,
                            like_it_url="http://127.0.0.1:5000/stories/like/")
 
-
-@stories.route('/stories/like/<authorid>/<storyid>')
-@login_required
-def _like(authorid, storyid):
-    q = Like.query.filter_by(liker_id=current_user.id, story_id=storyid)
-    if q.first() is None:
-        new_like = Like()
-        new_like.liker_id = current_user.id
-        new_like.story_id = storyid
-        new_like.liked_id = authorid
-        db.session.add(new_like)
-        db.session.commit()
-        message = ''
-    else:
-        message = 'You\'ve already liked this story!'
-    return _stories(message)
-
   
 # Open a story functionality (1.8)
-@stories.route('/stories/<storyid>', methods=['GET'])
-def _open_story(storyid):
+@stories.route('/stories/<int:id_story>', methods=['GET'])
+def _open_story(id_story):
     # Get the story object from database
-    story = Story.query.filter_by(id=storyid).first()
+    story = Story.query.filter_by(id=id_story).first()
     if story is not None:
         rolled_dice = story.figures.split('#')
         # TODO : aggiornare per le reactions
@@ -44,13 +28,14 @@ def _open_story(storyid):
     else:
         return render_template('story.html', exists=False)
 
-@stories.route('/stories/write', methods=['GET', 'POST'])
+
+@stories.route('/stories/new/write', methods=['GET', 'POST'])
 @login_required
-def _write_story(message = ''):
+def _write_story(message=''):
     form = StoryForm()
     # prendi parole dalla sessione
     figures = session['figures']
-    return render_template("write_story.html", submit_url="http://127.0.0.1:5000/stories/submit", form=form,
+    return render_template("write_story.html", submit_url="http://127.0.0.1:5000/stories/new/submit", form=form,
                            words=figures, message=message)
 
 
@@ -81,4 +66,3 @@ def _submit_story():
                 result = 'Your story doesn\'t contain all the words '
 
     return _write_story(message=result)
-  
