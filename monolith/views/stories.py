@@ -31,13 +31,20 @@ def _latest(message=''):
     stories = db.engine.execute("SELECT * FROM story s1 WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id) ORDER BY s1.author_id")
     return render_template('stories.html', message=message, stories=stories)
 
+
 @stories.route('/stories/range', methods=['GET'])
 def _range(message=''):
     begin = request.args.get('begin')
     end = request.args.get('end')
     try:
-        begin_date = datetime.datetime.strptime(begin, '%d-%m-%Y').date()
-        end_date = datetime.datetime.strptime(end, '%d-%m-%Y').date()
+        if begin:
+            begin_date = datetime.datetime.strptime(begin, '%d-%m-%Y')
+        else:
+            begin_date = datetime.datetime.min
+        if end:
+            end_date = datetime.datetime.strptime(end, '%d-%m-%Y')
+        else:
+            end_date = datetime.datetime.utcnow()
     except ValueError:
         return render_template('stories.html', message='Wrong URL parameters.')
     if begin_date > end_date:
