@@ -1,6 +1,6 @@
 from flask import Blueprint, redirect, render_template, request
 from monolith.database import db, User
-from monolith.auth import admin_required
+from monolith.auth import admin_required, current_user
 from monolith.forms import UserForm
 
 users = Blueprint('users', __name__)
@@ -26,3 +26,11 @@ def create_user():
             return redirect('/users')
 
     return render_template('create_user.html', form=form)
+
+
+@users.route('/users/<userid>')
+def _wall(userid):
+		user_info = None
+		if current_user is not None and hasattr(current_user, 'id'):
+			user_info=current_user
+		return render_template('wall.html', user_info=user_info)
