@@ -31,7 +31,7 @@ class TestReaction(flask_testing.TestCase):
 
         form = LoginForm(data=payload)
 
-        self.client.post('/login', data=form.data, follow_redirects=True)
+        self.client.post('/users/login', data=form.data, follow_redirects=True)
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
 
