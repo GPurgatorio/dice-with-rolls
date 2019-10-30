@@ -1,9 +1,14 @@
+import datetime
+
 from flask import Blueprint, redirect, render_template, request, abort, session
+from sqlalchemy import func, desc, asc
+
 from monolith.database import db, Story
 from monolith.auth import admin_required, current_user
 from flask_login import (current_user, login_user, logout_user,
                          login_required)
 from monolith.forms import UserForm, StoryForm
+from monolith.urls import SUBMIT_URL, REACTION_URL, LATEST_URL, RANGE_URL
 
 stories = Blueprint('stories', __name__)
 
@@ -11,11 +16,49 @@ stories = Blueprint('stories', __name__)
 @stories.route('/stories')
 def _stories(message=''):
     allstories = db.session.query(Story)
+    context_vars = {"message": message, "stories": allstories,
+                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
+                    "range_url": RANGE_URL}
+    return render_template("stories.html", **context_vars)
 
-    return render_template("stories.html", message=message, stories=allstories,
-                           like_it_url="http://127.0.0.1:5000/stories/like/")
 
-  
+@stories.route('/stories/latest', methods=['GET'])
+def _latest(message=''):
+    # stories = db.session.query(Story).order_by(desc(Story.date))      ALL STORIES IN GOOD ORDER
+    ##subq = db.session.query(func.max(Story.date).label('max_date'), Story.author_id).group_by(Story.author_id).subquery('t1')
+    #stories = db.session.query(Story).group_by(Story.author_id, Story.date).order_by(Story.date.desc(), Story.author_id)
+    ##stories = db.session.query(Story).join(subq, Story.author_id == subq.c.author_id)
+    stories = db.engine.execute("SELECT * FROM story s1 WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id) ORDER BY s1.author_id")
+    context_vars = {"message": message, "stories": stories,
+                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
+                    "range_url": RANGE_URL}
+    return render_template('stories.html', **context_vars)
+
+
+@stories.route('/stories/range', methods=['GET'])
+def _range(message=''):
+    begin = request.args.get('begin')
+    end = request.args.get('end')
+    try:
+        if begin and len(begin) > 0:
+            begin_date = datetime.datetime.strptime(begin, '%Y-%m-%d')
+        else:
+            begin_date = datetime.datetime.min
+        if end and len(end) > 0:
+            end_date = datetime.datetime.strptime(end, '%Y-%m-%d')
+        else:
+            end_date = datetime.datetime.utcnow()
+    except ValueError:
+        # return redirect(url_for('stories._stories'))      da cambiare con flash etc
+        return render_template('stories.html', message='Wrong URL parameters.')
+    if begin_date > end_date:
+        return render_template('stories.html', message='Begin date cannot be higher than End date')
+    stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date)
+    context_vars = {"message": message, "stories": stories,
+                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
+                    "range_url": RANGE_URL}
+    return render_template('stories.html', **context_vars)
+
 # Open a story functionality (1.8)
 @stories.route('/stories/<int:id_story>', methods=['GET'])
 def _open_story(id_story):
@@ -35,7 +78,7 @@ def _write_story(message=''):
     form = StoryForm()
     # prendi parole dalla sessione
     figures = session['figures']
-    return render_template("write_story.html", submit_url="http://127.0.0.1:5000/stories/new/submit", form=form,
+    return render_template("write_story.html", submit_url=SUBMIT_URL, form=form,
                            words=figures, message=message)
 
 

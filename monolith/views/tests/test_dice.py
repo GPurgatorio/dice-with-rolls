@@ -5,6 +5,7 @@ import unittest
 import flask_testing
 from monolith.classes.DiceSet import Die
 from monolith.app import app as my_app
+from monolith.urls import WRITE_URL
 
 
 class TestDice(unittest.TestCase):
@@ -42,6 +43,4 @@ class TestTemplateDice(flask_testing.TestCase):
         self.client.post('/stories/new/roll')
         self.assert_template_used('roll_dice.html')
         self.assertEqual(len(self.get_context_variable('words')), 6)
-        self.assert_context('write_url', "http://127.0.0.1:5000/stories/write")
-
-
+        self.assert_context('write_url', WRITE_URL)
