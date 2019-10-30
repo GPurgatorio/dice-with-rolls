@@ -47,6 +47,46 @@ def create_app():
 
             db.session.commit()
 
+        q = db.session.query(User).filter(User.email == 'abc@abc.com')
+        user = q.first()
+        if user is None:
+            example = User()
+            example.firstname = 'Abc'
+            example.lastname = 'Abc'
+            example.email = 'abc@abc.com'
+            example.dateofbirth = datetime.datetime(2010, 10, 5)
+            example.is_admin = False
+            example.set_password('abc')
+            db.session.add(example)
+            db.session.commit()
+
+        q = db.session.query(User).filter(User.email == 'nini@nini.com')
+        user = q.first()
+        if user is None:
+            example = User()
+            example.firstname = 'Nini'
+            example.lastname = 'Nini'
+            example.email = 'nini@nini.com'
+            example.dateofbirth = datetime.datetime(2010, 10, 7)
+            example.is_admin = False
+            example.set_password('nini')
+            db.session.add(example)
+            db.session.commit()
+
+        # no stories
+        q = db.session.query(User).filter(User.email == 'no@stories.com')
+        user = q.first()
+        if user is None:
+            example = User()
+            example.firstname = 'No'
+            example.lastname = 'Stories'
+            example.email = 'no@stories.com'
+            example.dateofbirth = datetime.datetime(2010, 10, 5)
+            example.is_admin = False
+            example.set_password('no')
+            db.session.add(example)
+            db.session.commit()
+
         q = db.session.query(Story).filter(Story.id == 1)
         story = q.first()
         if story is None:
@@ -55,6 +95,55 @@ def create_app():
             example.likes = 42
             example.author_id = 1
             example.figures = 'example#admin'
+            print(example)
+            db.session.add(example)
+            db.session.commit()
+
+        q = db.session.query(Story).filter(Story.id == 2)
+        story = q.first()
+        if story is None:
+            example = Story()
+            example.text = 'Old story (dont see this)'
+            example.likes = 420
+            example.author_id = 2
+            example.figures = 'example#abc'
+            print(example)
+            db.session.add(example)
+            db.session.commit()
+
+        q = db.session.query(Story).filter(Story.id == 3)
+        story = q.first()
+        if story is None:
+            example = Story()
+            example.text = 'THIS ONE'
+            example.likes = 3
+            example.author_id = 2
+            example.figures = 'example#abc'
+            print(example)
+            db.session.add(example)
+            db.session.commit()
+
+        q = db.session.query(Story).filter(Story.id == 4)
+        story = q.first()
+        if story is None:
+            example = Story()
+            example.text = 'story from not admin xd'
+            example.likes = 100
+            example.author_id = 3
+            example.figures = 'example#nini'
+            print(example)
+            db.session.add(example)
+            db.session.commit()
+
+        q = db.session.query(Story).filter(Story.id == 5)
+        story = q.first()
+        if story is None:
+            example = Story()
+            example.text = 'very old story (11 11 2011)'
+            example.likes = 2
+            example.author_id = 3
+            example.figures = 'example#nini'
+            example.date = datetime.datetime(2011, 11, 11)
             print(example)
             db.session.add(example)
             db.session.commit()
