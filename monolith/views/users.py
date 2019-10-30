@@ -33,4 +33,4 @@ def _wall(userid):
 		user_info = None
 		if current_user is not None and hasattr(current_user, 'id'):
 			user_info=current_user
-		return render_template('my_wall.html', user_info=user_info)
+		return render_template('wall.html', user_info=user_info)
