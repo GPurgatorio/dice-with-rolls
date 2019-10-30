@@ -40,12 +40,12 @@ def _range(message=''):
     begin = request.args.get('begin')
     end = request.args.get('end')
     try:
-        if begin:
-            begin_date = datetime.datetime.strptime(begin, '%d-%m-%Y')
+        if begin and len(begin) > 0:
+            begin_date = datetime.datetime.strptime(begin, '%Y-%m-%d')
         else:
             begin_date = datetime.datetime.min
-        if end:
-            end_date = datetime.datetime.strptime(end, '%d-%m-%Y')
+        if end and len(end) > 0:
+            end_date = datetime.datetime.strptime(end, '%Y-%m-%d')
         else:
             end_date = datetime.datetime.utcnow()
     except ValueError:
