@@ -39,7 +39,7 @@ def _write_story(message=''):
                            words=figures, message=message)
 
 
-@stories.route('/stories/submit', methods=['POST'])
+@stories.route('/stories/new/submit', methods=['POST'])
 @login_required
 def _submit_story():
     form = StoryForm()
