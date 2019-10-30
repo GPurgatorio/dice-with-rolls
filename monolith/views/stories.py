@@ -8,6 +8,7 @@ from monolith.auth import admin_required, current_user
 from flask_login import (current_user, login_user, logout_user,
                          login_required)
 from monolith.forms import UserForm, StoryForm
+from monolith.urls import SUBMIT_URL, REACTION_URL, LATEST_URL, RANGE_URL
 
 stories = Blueprint('stories', __name__)
 
@@ -15,9 +16,10 @@ stories = Blueprint('stories', __name__)
 @stories.route('/stories')
 def _stories(message=''):
     allstories = db.session.query(Story)
-
-    return render_template("stories.html", message=message, stories=allstories,
-                           like_it_url="http://127.0.0.1:5000/stories/like/")
+    context_vars = {"message": message, "stories": allstories,
+                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
+                    "range_url": RANGE_URL}
+    return render_template("stories.html", **context_vars)
 
 
 @stories.route('/stories/latest', methods=['GET'])
@@ -62,7 +64,7 @@ def _write_story(message=''):
     form = StoryForm()
     # prendi parole dalla sessione
     figures = session['figures']
-    return render_template("write_story.html", submit_url="http://127.0.0.1:5000/stories/new/submit", form=form,
+    return render_template("write_story.html", submit_url=SUBMIT_URL, form=form,
                            words=figures, message=message)
 
 
