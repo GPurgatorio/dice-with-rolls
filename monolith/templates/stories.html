@@ -5,7 +5,9 @@
     <ul>
       {% for story in stories %}
       <li>
-      "{{story.text}}"    Likes: {{story.likes}} ({{story.date}})
+      "{{story.story.text}}"  <br/>
+          ({{story.story.date}})  <br/>
+      Likes:
       {% if current_user.is_authenticated %}
       <a href="{{reaction_url}}/{{story.id}}/Like">Like it!</a>
       <a href="{{reaction_url}}/{{story.id}}/Dislike">Unliike it!</a>

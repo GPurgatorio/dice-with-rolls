@@ -1,8 +1,8 @@
 from flask import Blueprint, redirect, render_template, request
-from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter
+from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, User
 from monolith.auth import admin_required, current_user
 from flask_login import (current_user, login_user, logout_user,
-                         login_required)
+                         login_required, fresh_login_required)
 from sqlalchemy import and_
 from monolith.forms import UserForm
 
@@ -17,7 +17,7 @@ class StoryWithReaction:
 
 @stories.route('/stories')
 def _stories(message=''):
-    allstories = db.session.query(Story)
+    allstories = db.session.query(Story).all()
     stories = []
     for story in allstories:
         new_StoryWithReaction = StoryWithReaction(story)
@@ -31,7 +31,7 @@ def _stories(message=''):
     return render_template("stories.html", message=message, stories=stories, reaction_url="http://127.0.0.1:5000/stories/reaction")
 
 
-@stories.route('/stories/reaction/<story_id>/<reaction_caption>')
+@stories.route('/stories/react/<story_id>/<reaction_caption>', methods=['GET', 'POST'])
 @login_required
 def _reaction(reaction_caption, story_id):
     #Retrieve all reactions with a specific user_id ad story_id
