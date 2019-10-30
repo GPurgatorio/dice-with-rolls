@@ -1,7 +1,15 @@
+import datetime
+
+from flask import Blueprint, redirect, render_template, request, abort, session
+from sqlalchemy import func, desc, asc
+
+from monolith.database import db, Story
 from flask import Blueprint, redirect, render_template, request
 from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, User
 from monolith.auth import admin_required, current_user
 from flask_login import (current_user, login_user, logout_user,
+from monolith.forms import UserForm, StoryForm
+from monolith.urls import SUBMIT_URL, REACTION_URL, LATEST_URL, RANGE_URL
                          login_required, fresh_login_required)
 from sqlalchemy import and_
 from monolith.forms import UserForm
@@ -17,6 +25,9 @@ class StoryWithReaction:
 
 @stories.route('/stories')
 def _stories(message=''):
+    context_vars = {"message": message, "stories": allstories,
+                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
+                    "range_url": RANGE_URL}
     allstories = db.session.query(Story).all()
     stories = []
     for story in allstories:

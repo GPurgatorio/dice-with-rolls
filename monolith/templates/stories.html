@@ -2,6 +2,19 @@
   <body>
     <h1>Story List</h1>
     <h5>{{message}}</h5>
+    <br><br>
+    <button type="button" onclick="window.location='{{ latest_url }}'">Latest Story</button>
+    <form>
+        <!--
+        https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date
+        At the moment, the best way to deal with dates in forms in a cross-browser
+        way is to have the user enter the day, month, and year in separate controls, or
+        to use a JavaScript library such as jQuery date picker.-->
+        <input type="date" name="begin" id="begin">
+        <input type="date" name="end" id="end">
+        <button type="button" onclick="window.location='{{ range_url }}?begin=' + begin.value + '&end=' + end.value">Search Period</button>
+    </form>
+
     <ul>
       {% for story in stories %}
       <li>

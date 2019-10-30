@@ -1,7 +1,13 @@
 <h1>Storytellers</h1>
 
 {% if current_user.is_authenticated %}
-  Hi {{ current_user.firstname }}! <a href="/logout">Logout</a>
+  Hi {{ current_user.firstname }}!
+    <br><br>
+    <button type="button" onclick="window.location='{{ logout_url }}'">Logout</button>
+    <button type="button" onclick="window.location='{{ read_url }}'">Read Stories</button>
+    <form action="{{ settings_url }}" method="POST">
+        <input type="submit" value="New Story">
+    </form>
 
   
     <h2>Your Stories</h2>
@@ -13,7 +19,9 @@
       </div>
     {% endfor %}
 
-
 {% else %}
-  Hi Anonymous, <a href="/login">Log in</a>
+  Hi Anonymous!
+    <br><br>
+    <button type="button" onclick="window.location='{{ login_url }}'">Login</button>
+    <button type="button" onclick="window.location='{{ register_url }}'">Register</button>
 {% endif %}

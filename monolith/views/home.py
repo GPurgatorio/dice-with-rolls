@@ -2,7 +2,7 @@ from flask import Blueprint, render_template
 
 from monolith.database import db, Story, Reaction
 from monolith.auth import current_user
-
+from monolith.urls import HOME_URL, LOGIN_URL, LOGOUT_URL, READ_URL, REGISTER_URL, WRITE_URL, SETTINGS_URL
 
 home = Blueprint('home', __name__)
 
@@ -17,5 +17,7 @@ def index():
         stories = db.session.query(Story).filter(Story.author_id == current_user.id)
     else:
         stories = None
-    return render_template("index.html", stories=stories)
-    #return {"ok": "ok"}
+    context_vars = {"stories": stories, "register_url": REGISTER_URL,
+                    "login_url": LOGIN_URL, "logout_url": LOGOUT_URL,
+                    "read_url": READ_URL, "settings_url": SETTINGS_URL}
+    return render_template("index.html", **context_vars)
