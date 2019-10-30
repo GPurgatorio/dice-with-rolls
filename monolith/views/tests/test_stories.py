@@ -23,3 +23,4 @@ class TestTemplateStories(flask_testing.TestCase):
         print('Author: ' + str(test_story.author))
         print('Date: ' + str(test_story.date))
         self.assertEqual(self.get_context_variable('story'), test_story)
+

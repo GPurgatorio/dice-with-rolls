@@ -32,6 +32,14 @@ def _create_user():
     return render_template('create_user.html', form=form)
 
 
+@users.route('/users/<userid>')
+def _wall(userid):
+    user_info = None
+    if current_user is not None and hasattr(current_user, 'id'):
+        user_info = current_user
+    return render_template('wall.html', user_info=user_info)
+
+
 # TODO Change methods to POST
 # TODO This method should not be callable outside the id_user's wall (?) so we could not check for id_user existence
 # Uniqueness is checked by the database
@@ -54,7 +62,7 @@ def _follow_user(id_user):
     new_follower.followed_id = id_user
     try:
         db.session.add(new_follower)
-        # TODO TO TEST
+        # TODO This update could be done with celery
         db.session.query(User).filter_by(id=id_user).update({'follower_counter': User.follower_counter + 1})
         db.session.commit()
 
@@ -81,7 +89,7 @@ def _unfollow_user(id_user):
         flash("User doesn't exist", 'error')
         return redirect(url_for('users._wall', id_user=id_user))
     Follower.query.filter_by(follower_id=current_user.id, followed_id=id_user).delete()
-    # TODO TO TEST
+    # TODO This update could be done with celery
     db.session.query(User).filter_by(id=id_user).update({'follower_counter': User.follower_counter - 1})
     db.session.commit()
     flash('Unfollowed')
@@ -105,11 +113,3 @@ def _check_follower_existence(follower_id, followed_id):
         return False
     else:
         return True
-
-
-@users.route('/users/<userid>')
-def _wall(userid):
-    user_info = None
-    if current_user is not None and hasattr(current_user, 'id'):
-        user_info = current_user
-    return render_template('wall.html', user_info=user_info)
