@@ -2,9 +2,12 @@ import string
 from flask import Blueprint, redirect, render_template, request, abort, session, make_response
 from monolith.database import db, Story, Like
 from monolith.views.dice import _roll_dice
+from flask import Blueprint, redirect, render_template, request, abort, session
+from monolith.database import db, Story
+from monolith.auth import admin_required, current_user
 from flask_login import (current_user, login_user, logout_user,
                          login_required)
-from monolith.forms import StoryForm
+from monolith.forms import UserForm, StoryForm
 
 stories = Blueprint('stories', __name__)
 
@@ -33,7 +36,7 @@ def _like(authorid, storyid):
     return _stories(message)
 
 
-@stories.route('/stories/write', methods=['GET', 'POST'])
+@stories.route('/stories/new/write', methods=['GET', 'POST'])
 @login_required
 def _write_story(message='', status=200):
     if 'figures' not in session:

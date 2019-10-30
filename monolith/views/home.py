@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 
-from monolith.database import db, Story, Like
+from monolith.database import db, Story
 from monolith.auth import current_user
 
 
@@ -17,4 +17,4 @@ def index():
         stories = db.session.query(Story).filter(Story.author_id == current_user.id)
     else:
         stories = None
-    return render_template("index.html", stories=stories)
+    return render_template("index.html", stories=stories, login_url="/users/login", logout_url="/users/logout")

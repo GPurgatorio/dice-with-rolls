@@ -1,6 +1,11 @@
+import json
+import random as rnd
+import unittest
+
 import flask_testing
 from flask import session
 from monolith.app import app as my_app
+from monolith.database import Story
 
 class TestStories(flask_testing.TestCase):
 
@@ -23,9 +28,12 @@ class TestStories(flask_testing.TestCase):
         self.assert200(self.client.get('/stories/write'))
         self.assert_template_used('write_story.html')
 
-
-
-
-
-
-
+    def test_existing_story(self):
+        self.client.get('/stories/1')
+        self.assert_template_used('story.html')
+        test_story = Story.query.filter_by(id=1).first()
+        print('L\'oggetto da db: \n')
+        print('User ID: ' + str(test_story.id))
+        print('Author: ' + str(test_story.author))
+        print('Date: ' + str(test_story.date))
+        self.assertEqual(self.get_context_variable('story'), test_story)
