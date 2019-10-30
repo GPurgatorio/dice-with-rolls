@@ -29,7 +29,10 @@ def _latest(message=''):
     #stories = db.session.query(Story).group_by(Story.author_id, Story.date).order_by(Story.date.desc(), Story.author_id)
     ##stories = db.session.query(Story).join(subq, Story.author_id == subq.c.author_id)
     stories = db.engine.execute("SELECT * FROM story s1 WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id) ORDER BY s1.author_id")
-    return render_template('stories.html', message=message, stories=stories)
+    context_vars = {"message": message, "stories": stories,
+                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
+                    "range_url": RANGE_URL}
+    return render_template('stories.html', **context_vars)
 
 
 @stories.route('/stories/range', methods=['GET'])
@@ -46,11 +49,15 @@ def _range(message=''):
         else:
             end_date = datetime.datetime.utcnow()
     except ValueError:
+        # return redirect(url_for('stories._stories'))      da cambiare con flash etc
         return render_template('stories.html', message='Wrong URL parameters.')
     if begin_date > end_date:
         return render_template('stories.html', message='Begin date cannot be higher than End date')
     stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date)
-    return render_template('stories.html', message=message, stories=stories)
+    context_vars = {"message": message, "stories": stories,
+                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
+                    "range_url": RANGE_URL}
+    return render_template('stories.html', **context_vars)
 
 # Open a story functionality (1.8)
 @stories.route('/stories/<int:id_story>', methods=['GET'])
