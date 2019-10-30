@@ -42,6 +42,6 @@ class TestTemplateDice(flask_testing.TestCase):
         self.client.post('/stories/new/roll')
         self.assert_template_used('roll_dice.html')
         self.assertEqual(len(self.get_context_variable('words')), 6)
-        self.assert_context('write_url', "http://127.0.0.1:5000/stories/write")
+        self.assert_context('write_url', "http://127.0.0.1:5000/stories/new/write")
 
 

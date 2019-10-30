@@ -1,6 +1,6 @@
 import string
 from flask import Blueprint, redirect, render_template, request, abort, session, make_response
-from monolith.database import db, Story, Like
+from monolith.database import db, Story
 from monolith.views.dice import _roll_dice
 from flask import Blueprint, redirect, render_template, request, abort, session
 from monolith.database import db, Story
@@ -19,31 +19,42 @@ def _stories(message='', status=200):
                                          like_it_url="http://127.0.0.1:5000/stories/like/"), status)
 
 
-@stories.route('/stories/like/<authorid>/<storyid>')
-@login_required
-def _like(authorid, storyid):
-    q = Like.query.filter_by(liker_id=current_user.id, story_id=storyid)
-    if q.first() is None:
-        new_like = Like()
-        new_like.liker_id = current_user.id
-        new_like.story_id = storyid
-        new_like.liked_id = authorid
-        db.session.add(new_like)
-        db.session.commit()
-        message = ''
+# Open a story functionality (1.8)
+@stories.route('/stories/<int:id_story>', methods=['GET'])
+def _open_story(id_story):
+    # Get the story object from database
+    story = Story.query.filter_by(id=id_story).first()
+    if story is not None:
+        rolled_dice = story.figures.split('#')
+        # TODO : aggiornare per le reactions
+        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice)
     else:
-        message = 'You\'ve already liked this story!'
-    return _stories(message)
+        return render_template('story.html', exists=False)
 
 
-@stories.route('/stories/new/write', methods=['GET', 'POST'])
+@stories.route('/stories/new/write', defaults={'id_story': None}, methods=['GET', 'POST'])
+@stories.route('/stories/new/write/<int:id_story>', methods=['GET', 'POST'])
 @login_required
-def _write_story(message='', status=200):
-    if 'figures' not in session:
-        return _roll_dice()
+def _write_story(id_story=None, message='', status=200):
+
+    form = StoryForm()
+    submit_url = "http://127.0.0.1:5000/stories/new/write"
+
+    if id_story is not None:
+        story = Story.query.filter_by(id=id_story).first()
+        if story is not None & story.author_id == current_user.id & story.is_draft:
+            form.text = story.text
+            session['figures'] = story.figures.split('#') #questo va sempre aggiornato? pensaci
+            submit_url = "http://127.0.0.1:5000/stories/new/write/"+id_story
+        else:
+            message = 'Request is invalid, check if you are the author of the story and it is still a draft'
+            return _stories(message=message, status=400)
+    else:
+        if 'figures' not in session:
+            return _roll_dice()
+
 
     figures = session['figures']
-    form = StoryForm()
 
     if 'POST' == request.method:
         if form.validate_on_submit():
@@ -67,15 +78,20 @@ def _write_story(message='', status=200):
             else:
                 message = 'Your story is a valid one! It has been published'
                 status = 201
-                new_story = Story()
-                new_story.author_id = current_user.id
-                new_story.figures = '#'.join(session['figures'])
-                form.populate_obj(new_story)
-                db.session.add(new_story)
-                db.session.commit()
+                if id_story is not None:
+                    old_story = Story.query.filter_by(id=id_story).first()
+                    old_story.text = form.text
+                    old_story.is_draft = False
+                else:
+                    new_story = Story()
+                    new_story.author_id = current_user.id
+                    new_story.figures = '#'.join(session['figures'])
+                    form.populate_obj(new_story)
+                    db.session.add(new_story)
+                    db.session.commit()
                 session.pop('figures')
                 return _stories(message=message, status=status)
 
     return make_response(
-        render_template("write_story.html", submit_url="http://127.0.0.1:5000/stories/write", form=form,
+        render_template("write_story.html", submit_url=submit_url, form=form,
                         words=figures, message=message), status)
