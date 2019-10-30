@@ -1,4 +1,5 @@
 # encoding: utf8
+from sqlalchemy import CheckConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 import enum
 from sqlalchemy.orm import relationship
@@ -46,8 +47,7 @@ class Story(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.Text(1000)) # around 200 (English) words 
     date = db.Column(db.DateTime)
-    likes = db.Column(db.Integer) # will store the number of likes, periodically updated in background
-    # define foreign key 
+    # define foreign key
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = relationship('User', foreign_keys='Story.author_id')
 
@@ -56,16 +56,46 @@ class Story(db.Model):
         self.date = dt.datetime.now()
 
 
-class Like(db.Model):
-    __tablename__ = 'like'
-    
-    liker_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    liker = relationship('User', foreign_keys='Like.liker_id')
+class ReactionCatalogue(db.Model):
+    __tablename__ = 'reaction_catalogue'
 
-    story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
-    author = relationship('Story', foreign_keys='Like.story_id')
+    reaction_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    reaction_caption = db.Column(db.Text(20))
 
-    liked_id = db.Column(db.Integer, db.ForeignKey('user.id')) # TODO: duplicated ?
-    liker = relationship('User', foreign_keys='Like.liker_id')
 
-    marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
+class Reaction(db.Model):
+    __tablename__ = 'reaction'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    reactor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    reactor = relationship('User', foreign_keys='Reaction.reactor_id')
+
+    story_id = db.Column(db.Integer, db.ForeignKey('story.id'))
+    author = relationship('Story', foreign_keys='Reaction.story_id')
+
+    reaction_type_id = db.Column(db.Integer, db.ForeignKey('reaction_catalogue.reaction_id'))
+    reaction_type = relationship('ReactionCatalogue', foreign_keys='Reaction.reaction_type_id')
+
+    marked = db.Column(db.Integer, default=0)  # True iff it has been counted in Story.likes
+
+#    __table_args__ = (CheckConstraint(marked == 0 or marked == 1 or marked == 2, name='check_marked_code'), {})
+
+
+class Counter(db.Model):
+    __tablename__ = 'counter'
+
+    reaction_type_id = db.Column(db.Integer, db.ForeignKey('reaction_catalogue.reaction_id'), primary_key=True)
+    reaction_type = relationship('ReactionCatalogue', foreign_keys='Counter.reaction_type_id')
+
+    story_id = db.Column(db.Integer , db.ForeignKey('story.id'), primary_key=True)
+    story = relationship('Story', foreign_keys='Counter.story_id')
+
+    counter = db.Column(db.Integer, default=0)
+
+
+
+
+
+
+
