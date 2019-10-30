@@ -32,9 +32,6 @@ def _create_user():
     return render_template('create_user.html', form=form)
 
 
-
-
-
 # TODO Change methods to POST
 # TODO This method should not be callable outside the id_user's wall (?) so we could not check for id_user existence
 # Uniqueness is checked by the database
@@ -112,7 +109,7 @@ def _check_follower_existence(follower_id, followed_id):
 
 @users.route('/users/<userid>')
 def _wall(userid):
-		user_info = None
-		if current_user is not None and hasattr(current_user, 'id'):
-			user_info=current_user
-		return render_template('wall.html', user_info=user_info)
+    user_info = None
+    if current_user is not None and hasattr(current_user, 'id'):
+        user_info = current_user
+    return render_template('wall.html', user_info=user_info)
