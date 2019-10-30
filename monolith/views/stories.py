@@ -1,4 +1,8 @@
+import datetime
+
 from flask import Blueprint, redirect, render_template, request, abort, session
+from sqlalchemy import func, desc, asc
+
 from monolith.database import db, Story
 from monolith.auth import admin_required, current_user
 from flask_login import (current_user, login_user, logout_user,
@@ -15,7 +19,30 @@ def _stories(message=''):
     return render_template("stories.html", message=message, stories=allstories,
                            like_it_url="http://127.0.0.1:5000/stories/like/")
 
-  
+
+@stories.route('/stories/latest', methods=['GET'])
+def _latest(message=''):
+    # stories = db.session.query(Story).order_by(desc(Story.date))      ALL STORIES IN GOOD ORDER
+    ##subq = db.session.query(func.max(Story.date).label('max_date'), Story.author_id).group_by(Story.author_id).subquery('t1')
+    #stories = db.session.query(Story).group_by(Story.author_id, Story.date).order_by(Story.date.desc(), Story.author_id)
+    ##stories = db.session.query(Story).join(subq, Story.author_id == subq.c.author_id)
+    stories = db.engine.execute("SELECT * FROM story s1 WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id) ORDER BY s1.author_id")
+    return render_template('stories.html', message=message, stories=stories)
+
+@stories.route('/stories/range', methods=['GET'])
+def _range(message=''):
+    begin = request.args.get('begin')
+    end = request.args.get('end')
+    try:
+        begin_date = datetime.datetime.strptime(begin, '%d-%m-%Y').date()
+        end_date = datetime.datetime.strptime(end, '%d-%m-%Y').date()
+    except ValueError:
+        return render_template('stories.html', message='Wrong URL parameters.')
+    if begin_date > end_date:
+        return render_template('stories.html', message='Begin date cannot be higher than End date')
+    stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date)
+    return render_template('stories.html', message=message, stories=stories)
+
 # Open a story functionality (1.8)
 @stories.route('/stories/<int:id_story>', methods=['GET'])
 def _open_story(id_story):
