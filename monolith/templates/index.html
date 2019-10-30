@@ -1,9 +1,8 @@
 <h1>Storytellers</h1>
 
 {% if current_user.is_authenticated %}
-  Hi {{ current_user.firstname }}! <br>
+  Hi {{ current_user.firstname }}! <a href="/logout">Logout</a>
   <a href="/users/{{current_user.id}}">My wall</a>
-  <a href="/logout">Logout</a>
 
   
     <h2>Your Stories</h2>
