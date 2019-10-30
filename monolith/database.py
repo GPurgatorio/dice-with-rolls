@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship
 import datetime as dt
 from flask_sqlalchemy import SQLAlchemy
 
-
 db = SQLAlchemy()
 
 
@@ -19,7 +18,7 @@ class User(db.Model):
     password = db.Column(db.Unicode(128))
     dateofbirth = db.Column(db.DateTime)
 
-    follower_counter = db.Column(db.Integer)
+    follower_counter = db.Column(db.Integer, default=0, )
 
     is_active = db.Column(db.Boolean, default=True)
     is_admin = db.Column(db.Boolean, default=False)
@@ -43,6 +42,8 @@ class User(db.Model):
 
     def get_id(self):
         return self.id
+
+    __table_args__ = (CheckConstraint(follower_counter >= 0, name='follower_counter_positive'),{})
 
 
 class Follower(db.Model):
