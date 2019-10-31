@@ -1,6 +1,7 @@
 import os
 from flask import Flask
-from monolith.database import db, User, Story
+from monolith.cache import cache
+from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
 from monolith.auth import login_manager
 import datetime
@@ -12,6 +13,11 @@ def create_app():
     app.config['SECRET_KEY'] = 'ANOTHER ONE'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # cache config
+    app.config['CACHE_TYPE'] = 'simple'
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+    # cache.init_app(app)
 
     for bp in blueprints:
         app.register_blueprint(bp)
@@ -136,9 +142,22 @@ def create_app():
             db.session.add(example)
             db.session.commit()
 
+        q = db.session.query(ReactionCatalogue)
+        catalogue = q.all()
+        if len(catalogue) == 0:
+            like = ReactionCatalogue()
+            like.reaction_id = 1
+            like.reaction_caption = 'Like'
+            dislike = ReactionCatalogue()
+            dislike.reaction_id = 2
+            dislike.reaction_caption = 'Dislike'
+            db.session.add(like)
+            db.session.add(dislike)
+            db.session.commit()
+
     return app
 
-
 app = create_app()
+
 if __name__ == '__main__':
     app.run()
