@@ -5,7 +5,7 @@ LOGIN_URL = HOME_URL + "users/login"
 LOGOUT_URL = HOME_URL + "users/logout"
 
 READ_URL = HOME_URL + "stories"
-SETTINGS_URL = HOME_URL + "stories/new/roll"
+SETTINGS_URL = HOME_URL + "stories/new/settings"
 WRITE_URL = HOME_URL + "stories/new/write"
 SUBMIT_URL = HOME_URL + "stories/new/submit"
 ROLL_URL = HOME_URL + "stories/new/roll"

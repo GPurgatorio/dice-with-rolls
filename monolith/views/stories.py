@@ -16,17 +16,17 @@ from monolith.forms import UserForm
 
 stories = Blueprint('stories', __name__)
 
+
 class StoryWithReaction:
     def __init__(self, _story):
         self.story = _story
         self.reactions ={}
 
 
-
 @stories.route('/stories')
 def _stories(message=''):
     allstories = db.session.query(Story).all()
-    stories = []
+    listed_stories = []
     for story in allstories:
         new_StoryWithReaction = StoryWithReaction(story)
         list_of_reactions = db.session.query(Counter.reaction_type_id).join(ReactionCatalogue).all()
@@ -34,9 +34,9 @@ def _stories(message=''):
         for item in list_of_reactions:
             new_StoryWithReaction.reactions[item.caption] = item.counter
 
-        stories.append(new_StoryWithReaction)
+        listed_stories.append(new_StoryWithReaction)
 
-    context_vars = {"message": message, "stories": stories,
+    context_vars = {"message": message, "stories": allstories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
                     "range_url": RANGE_URL}
 
@@ -62,7 +62,7 @@ def _reaction(reaction_caption, story_id):
         message = ''
     else:
         if old_reaction.reaction_type_id == reaction_type_id:
-            message = 'You have already reacted this story'
+            message = 'You have already reacted to this story!'
             return _stories(message)
         else:
 
@@ -93,7 +93,7 @@ def _delete_reaction(story_id):
     elif reaction.marked == 1:
         reaction.marked = 2
 
-    return _stories('Reaction eliminata')
+    return _stories('Reaction successfully deleted!')
 
 
 @stories.route('/stories/latest', methods=['GET'])
@@ -102,9 +102,9 @@ def _latest(message=''):
     ##subq = db.session.query(func.max(Story.date).label('max_date'), Story.author_id).group_by(Story.author_id).subquery('t1')
     # stories = db.session.query(Story).group_by(Story.author_id, Story.date).order_by(Story.date.desc(), Story.author_id)
     ##stories = db.session.query(Story).join(subq, Story.author_id == subq.c.author_id)
-    stories = db.engine.execute(
+    lat_stories = db.engine.execute(
         "SELECT * FROM story s1 WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id) ORDER BY s1.author_id")
-    context_vars = {"message": message, "stories": stories,
+    context_vars = {"message": message, "stories": lat_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
                     "range_url": RANGE_URL}
     return render_template('stories.html', **context_vars)
@@ -144,7 +144,9 @@ def _open_story(id_story):
     if story is not None:
         rolled_dice = story.figures.split('#')
         # TODO : aggiornare per le reactions
-        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice)
+        context_vars = {"exists": True, "story": story,
+                        "rolled_dice": rolled_dice}
+        return render_template('story.html', **context_vars)
     else:
         return render_template('story.html', exists=False)
 
@@ -155,8 +157,9 @@ def _write_story(message=''):
     form = StoryForm()
     # prendi parole dalla sessione
     figures = session['figures']
-    return render_template("write_story.html", submit_url=SUBMIT_URL, form=form,
-                           words=figures, message=message)
+    context_vars = {"message": message, "submit_url": SUBMIT_URL,
+                    "form": form, "words": figures}
+    return render_template("write_story.html", **context_vars)
 
 
 @stories.route('/stories/new/submit', methods=['POST'])
@@ -178,11 +181,11 @@ def _submit_story():
                 if w in session['figures']:
                     counter += 1
             if counter == len(session['figures']):
-                result = 'Your story is a valid one! It has been published'
+                result = 'Your story is a valid one! It has been published.'
                 db.session.add(new_story)
                 db.session.commit()
                 return _stories(message=result)
             else:
-                result = 'Your story doesn\'t contain all the words '
+                result = 'Your story doesn\'t contain all the words!'
 
     return _write_story(message=result)

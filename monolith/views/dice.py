@@ -6,21 +6,21 @@ from flask_login import login_required
 from werkzeug.exceptions import BadRequestKeyError
 
 from monolith.classes.DiceSet import DiceSet, Die
-from monolith.urls import WRITE_URL
+from monolith.urls import WRITE_URL, ROLL_URL
 
 dice = Blueprint('dice', __name__)
 
 
-@dice.route('/stories/new/settings', methods=['GET'])
+@dice.route('/stories/new/settings', methods=['POST'])
 @login_required
 def _settings():
-    return render_template('settings.html', roll_url="http://127.0.0.1:5000/stories/new/roll")
+    context_vars = {"roll_url": ROLL_URL}
+    return render_template('settings.html', **context_vars)
 
 
 @dice.route('/stories/new/roll', methods=['POST'])
 @login_required
 def _roll_dice():
-
     try:
         # get number of dice from the form of previous page
         dice_number = int(request.form['dice_number'])
@@ -43,13 +43,18 @@ def _roll_dice():
         except FileNotFoundError:
             print("File die" + str(i) + ".txt not found")
             session.clear()
-            return redirect(url_for('stories._stories', message="Can't find dice on server"))
+
+            context_vars = {"message": 'Can\'t find dice on the server.'}
+            return redirect(url_for('stories._stories', **context_vars))
     dice_set = DiceSet(dice_list)
     try:
         dice_set.throw_dice()
     except IndexError as e:
         # flash('Error in throwing dice', 'error')
         session.clear()
-        return redirect(url_for('stories._stories', message='Error in throwing dice'))
+        context_vars = {"message": 'Error in throwing dice'}
+        return redirect(url_for('stories._stories', **context_vars))
     session['figures'] = dice_set.pips
-    return render_template('roll_dice.html', words=dice_set.pips, write_url=WRITE_URL)
+
+    context_vars = {"words": dice_set.pips, "write_url": WRITE_URL}
+    return render_template('roll_dice.html', **context_vars)
