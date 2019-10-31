@@ -1,8 +1,6 @@
 import string
-from flask import Blueprint, redirect, render_template, request, abort, session, make_response
-from monolith.database import db, Story
 from monolith.views.dice import _roll_dice
-from flask import Blueprint, redirect, render_template, request, abort, session
+from flask import Blueprint, redirect, render_template, request, abort, session, make_response, url_for
 from monolith.database import db, Story
 from monolith.auth import admin_required, current_user
 from flask_login import (current_user, login_user, logout_user,
@@ -36,23 +34,23 @@ def _open_story(id_story):
 @stories.route('/stories/new/write/<int:id_story>', methods=['GET', 'POST'])
 @login_required
 def _write_story(id_story=None, message='', status=200):
-
     form = StoryForm()
     submit_url = "http://127.0.0.1:5000/stories/new/write"
 
     if id_story is not None:
-        story = Story.query.filter_by(id=id_story).first()
-        if story is not None & story.author_id == current_user.id & story.is_draft:
+        story = Story.query.filter(Story.id == id_story).first()
+        if story is not None and story.author_id == current_user.id and story.is_draft:
             form.text = story.text
-            session['figures'] = story.figures.split('#') #questo va sempre aggiornato? pensaci
-            submit_url = "http://127.0.0.1:5000/stories/new/write/"+id_story
+            session['figures'] = story.figures.split('#')  # questo va sempre aggiornato? pensaci
+            submit_url = "http://127.0.0.1:5000/stories/new/write/" + str(id_story)
         else:
             message = 'Request is invalid, check if you are the author of the story and it is still a draft'
-            return _stories(message=message, status=400)
+            print('ciao')
+            return redirect(url_for('stories._stories'))
     else:
         if 'figures' not in session:
-            return _roll_dice()
-
+            # redirect to home
+            return redirect('/', code=302)
 
     figures = session['figures']
 
@@ -71,7 +69,7 @@ def _write_story(id_story=None, message='', status=200):
                         break
 
             if len(dice_figures) > 0:
-                message = 'Your story doesn\'t contain all the words. Missing:'
+                message = 'Your story doesn\'t contain all the words. Missing: '
                 status = 400
                 for w in dice_figures:
                     message += w + ' '
@@ -79,18 +77,21 @@ def _write_story(id_story=None, message='', status=200):
                 message = 'Your story is a valid one! It has been published'
                 status = 201
                 if id_story is not None:
+                    print(id_story)
                     old_story = Story.query.filter_by(id=id_story).first()
-                    old_story.text = form.text
+                    old_story.text = form['text'].data
                     old_story.is_draft = False
                 else:
                     new_story = Story()
                     new_story.author_id = current_user.id
                     new_story.figures = '#'.join(session['figures'])
+                    new_story.is_draft = False
                     form.populate_obj(new_story)
                     db.session.add(new_story)
                     db.session.commit()
                 session.pop('figures')
-                return _stories(message=message, status=status)
+                return redirect(url_for('stories._stories'))
+                # redirect(url_for('stories._stories', message=message, status=status), code=status)
 
     return make_response(
         render_template("write_story.html", submit_url=submit_url, form=form,
