@@ -1,12 +1,13 @@
-import json
-import random as rnd
 import unittest
-
+import json
+from flask import request
 import flask_testing
-from monolith.classes.DiceSet import Die
-from monolith.database import db, User, Story
+from flask_login import login_user
+
 from monolith.app import app as my_app
+from monolith.database import db, User
 from monolith.forms import LoginForm
+
 import datetime
 
 class TestTemplateOtherWall(flask_testing.TestCase):

@@ -28,12 +28,12 @@ def create_user():
     return render_template('create_user.html', form=form)
 
 
-@users.route('/users/<int:userid>')
+@users.route('/users/<int:userid>', method=['GET'])
 def _wall(userid):
     user_info = None
-    
-    if current_user is not None and hasattr(current_user, 'id'):
-        user_info = current_user
+    user_info = User.query.filter_by(id=userid).first()
+
+    if user_info is not None and hasattr(user_info, 'id'):
 
         # Get the list of all stories
         all_stories = Story.query.filter_by(author_id=userid)
@@ -65,4 +65,6 @@ def _wall(userid):
 
         stats = [('avg_reactions', avg), ('num_reactions', tot_num_reactions), ('num_stories', tot_num_stories), ('avg_dice', avg_dice)]
 
-    return render_template('wall.html', user_info=user_info, stats=stats)
+        return render_template('wall.html', exists = True, user_info=user_info, stats=stats)
+
+    return render_template('wall.html', exists = False)
