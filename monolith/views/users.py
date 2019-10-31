@@ -40,7 +40,7 @@ def _wall(userid):
         
         # Total number of stories
         tot_num_stories = Story.query.filter_by(author_id=userid).count()
-
+        
         # Total number of reactions
         tot_num_reactions = 0
 
