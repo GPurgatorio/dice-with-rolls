@@ -31,7 +31,7 @@ def _stories(message=''):
 
         listed_stories.append(new_story_with_reaction)
 
-    context_vars = {"message": message, "stories": listed_stories,
+    context_vars = {"message": message, "stories": allstories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
                     "range_url": RANGE_URL}
 

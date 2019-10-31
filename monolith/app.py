@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from monolith.cache import cache
 from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
 from monolith.auth import login_manager
@@ -12,6 +13,11 @@ def create_app():
     app.config['SECRET_KEY'] = 'ANOTHER ONE'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # cache config
+    app.config['CACHE_TYPE'] = 'simple'
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+    # cache.init_app(app)
 
     for bp in blueprints:
         app.register_blueprint(bp)
@@ -81,7 +87,6 @@ def create_app():
         if story is None:
             example = Story()
             example.text = 'Trial story of example admin user :)'
- #           example.likes = 42
             example.author_id = 1
             example.figures = 'example#admin'
             print(example)
@@ -155,6 +160,5 @@ def create_app():
 
 app = create_app()
 
-app = create_app()
 if __name__ == '__main__':
     app.run()

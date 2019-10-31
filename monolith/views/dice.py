@@ -7,6 +7,7 @@ from werkzeug.exceptions import BadRequestKeyError
 
 from monolith.classes.DiceSet import DiceSet, Die
 from monolith.urls import WRITE_URL, ROLL_URL
+from monolith.cache import cache
 
 dice = Blueprint('dice', __name__)
 
@@ -29,7 +30,7 @@ def _roll_dice():
             raise ValueError
     except BadRequestKeyError:  # i'm here after re-rolling dice
         dice_number = session['dice_number']
-    except (KeyError, ValueError, BadRequestKeyError):  # i'm here directly, have to go from settings before
+    except (KeyError, ValueError):  # i'm here directly, have to go from settings before
         flash('Invalid number of dice!', 'error')
         session.pop('dice_number', None)
         return redirect(url_for('dice._settings'))
@@ -54,4 +55,5 @@ def _roll_dice():
         session.pop('dice_number', None)
         return redirect(url_for('stories._stories', message='Error in throwing dice'))
     session['figures'] = dice_set.pips
-    return render_template('roll_dice.html', words=dice_set.pips, write_url=WRITE_URL)
+    context_vars = {'dice_number': dice_number, 'words': dice_set.pips, 'write_url': WRITE_URL, 'roll_url': ROLL_URL}
+    return render_template('roll_dice.html', **context_vars)
