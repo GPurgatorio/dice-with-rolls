@@ -3,6 +3,8 @@ import random as rnd
 import unittest
 
 import flask_testing
+from flask import url_for
+
 from monolith.classes.DiceSet import Die
 from monolith.app import app as my_app
 
@@ -39,9 +41,10 @@ class TestTemplateDice(flask_testing.TestCase):
 
     def test_words_length(self):
 
-        self.client.post('/stories/new/roll')
-        self.assert_template_used('roll_dice.html')
-        self.assertEqual(len(self.get_context_variable('words')), 6)
-        self.assert_context('write_url', "http://127.0.0.1:5000/stories/write")
+        response = self.client.post('/stories/new/roll')
+        #self.assert_template_used('roll_dice.html')
+        #self.assertEqual(len(self.get_context_variable('words')), 6)
+        #self.assert_context('write_url', "http://127.0.0.1:5000/stories/write")
+        self.assertRedirects(response, url_for("stories._stories"))
 
 
