@@ -16,7 +16,7 @@ class TestTemplateStories(flask_testing.TestCase):
         my_app.login_manager.init_app(my_app)
         return my_app
 
-    def test_user_statistics(self):
+    #def test_user_statistics(self):
         # self.client.get('/users/2')
         # #self.assert_template_used('wall.html')
         # test_user = User.query.filter_by(id=2)

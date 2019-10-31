@@ -17,7 +17,6 @@ class StoryWithReaction:
         self.story = _story
         self.reactions = {}
 
-
 @stories.route('/stories')
 def _stories(message=''):
     allstories = db.session.query(Story).all()
@@ -28,7 +27,6 @@ def _stories(message=''):
 
         for item in list_of_reactions:
             new_story_with_reaction.reactions[item.caption] = item.counter
-
         listed_stories.append(new_story_with_reaction)
 
     context_vars = {"message": message, "stories": allstories,
@@ -59,7 +57,7 @@ def _reaction(reaction_caption, story_id):
         # message = ''
     else:
         if old_reaction.reaction_type_id == reaction_type_id:
-            message = 'You have already reacted this story'
+            message = 'You have already reacted to this story!'
             return _stories(message)
         else:
 
@@ -90,12 +88,11 @@ def _delete_reaction(story_id):
     elif reaction.marked == 1:
         reaction.marked = 2
 
-    return _stories('Reaction eliminata')
+    return _stories('Reaction successfully deleted!')
 
 
 @stories.route('/stories/latest', methods=['GET'])
 def _latest(message=''):
-
     listed_stories = db.engine.execute(
         "SELECT * FROM story s1 "
         "WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id) "
@@ -141,7 +138,9 @@ def _open_story(id_story):
     if story is not None:
         rolled_dice = story.figures.split('#')
         # TODO : aggiornare per le reactions
-        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice)
+        context_vars = {"exists": True, "story": story,
+                        "rolled_dice": rolled_dice}
+        return render_template('story.html', **context_vars)
     else:
         return render_template('story.html', exists=False)
 
@@ -152,8 +151,9 @@ def _write_story(message=''):
     form = StoryForm()
     # prendi parole dalla sessione
     figures = session['figures']
-    return render_template("write_story.html", submit_url=SUBMIT_URL, form=form,
-                           words=figures, message=message)
+    context_vars = {"message": message, "submit_url": SUBMIT_URL,
+                    "form": form, "words": figures}
+    return render_template("write_story.html", **context_vars)
 
 
 @stories.route('/stories/new/submit', methods=['POST'])
@@ -175,11 +175,11 @@ def _submit_story():
                 if w in session['figures']:
                     counter += 1
             if counter == len(session['figures']):
-                result = 'Your story is a valid one! It has been published'
+                result = 'Your story is a valid one! It has been published.'
                 db.session.add(new_story)
                 db.session.commit()
                 return _stories(message=result)
             else:
-                result = 'Your story doesn\'t contain all the words '
+                result = 'Your story doesn\'t contain all the words!'
 
     return _write_story(message=result)
