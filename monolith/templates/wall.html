@@ -7,7 +7,21 @@
             Date of birth: {{user_info.dateofbirth}} <br> <br>
 
             Email: {{user_info.email}}
-
+            <h3>Statistics</h3>
+            <table style="text-align: center; border-spacing: 7px">
+                <tr>
+                    <td>{{stats[2][1]}}</td>
+                    <td>{{stats[1][1]}}</td>
+                    <td>{{stats[0][1]}}</td>
+                    <td>{{stats[3][1]}}</td>
+                </tr>
+                <tr>
+                    <td><b># Stories</b></td>
+                    <td><b># Reactions</b></td>
+                    <td><b>Avg reactions per story</b></td>
+                    <td><b>Avg dice per story</b></td>
+                </tr>
+            </table>
         {% else %}
             <a href="http://127.0.0.1:5000/login")>Log in</a> to see the wall
         {% endif %}

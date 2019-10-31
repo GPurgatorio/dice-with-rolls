@@ -55,8 +55,3 @@ class TestReaction(flask_testing.TestCase):
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(len(marked_reactions), 0)
         self.assertEqual(len(to_be_deleted_reactions), len_to_be_deleted_reactions + 1)
-
-
-
-
-

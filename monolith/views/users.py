@@ -1,5 +1,5 @@
 from flask import Blueprint, redirect, render_template, request
-from monolith.database import db, User
+from monolith.database import db, User, Story, Counter
 from monolith.auth import admin_required, current_user
 from monolith.forms import UserForm
 
