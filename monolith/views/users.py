@@ -12,7 +12,7 @@ def _users():
     return render_template("users.html", users=usrs)
 
 
-@users.route('/users/create', methods=['GET', 'POST'])
+@users.route('/users/create', methods=['POST'])
 def create_user():
     form = UserForm()
     if request.method == 'POST':
@@ -28,9 +28,11 @@ def create_user():
     return render_template('create_user.html', form=form)
 
 
-@users.route('/users/<userid>')
+@users.route('/users/<int:userid>', methods=['GET'])
 def _wall(userid):
-		user_info = None
-		if current_user is not None and hasattr(current_user, 'id'):
-			user_info=current_user
-		return render_template('wall.html', user_info=user_info)
+
+    user_info = User.query.filter_by(id=userid).first()
+    if user_info is not None:
+        return render_template('wall.html', exists = True, user_info=user_info)
+    else:
+        return render_template('wall.html', exists = False)

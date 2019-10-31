@@ -1,7 +1,7 @@
 <html>
     <body>
-        {% if current_user.is_authenticated %}
-        		<h5> {{user_info.firstname}}'s wall </h5>
+        {% if exists %}
+        	<h5> {{user_info.firstname}}'s wall </h5>
             First Name: {{user_info.firstname}} <br>
             Last Name: {{user_info.lastname}} <br>
             Date of birth: {{user_info.dateofbirth}} <br> <br>
@@ -9,7 +9,8 @@
             Email: {{user_info.email}}
 
         {% else %}
-            <a href="http://127.0.0.1:5000/login")>Log in</a> to see the wall
+            <h5> Sorry, the user you've searched doesn't exist!  </h5>
+            <!-- Redirect to somewhere -->
         {% endif %}
     </body>
 </html>
