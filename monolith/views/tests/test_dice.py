@@ -41,9 +41,9 @@ class TestTemplateDice(flask_testing.TestCase):
         my_app.login_manager.init_app(my_app)
         return my_app
 
-    # Tests for GET, PUT and DEL requests ( /settings )
+    # Tests for POST, PUT and DEL requests ( /settings )
     def test_requests_settings(self):
-        self.assert405(self.client.get('stories/new/settings'))
+        self.assert405(self.client.post('stories/new/settings'))
         self.assert405(self.client.put('stories/new/settings'))
         self.assert405(self.client.delete('stories/new/settings'))
 
@@ -53,7 +53,7 @@ class TestTemplateDice(flask_testing.TestCase):
         self.assert405(self.client.delete('stories/new/roll'))
 
     def test_settings(self):
-        self.client.post('/stories/new/settings')
+        self.client.get('/stories/new/settings')
         self.assert_template_used('settings.html')
 
     # 9 is out of range (2,7) -> redirect to settings

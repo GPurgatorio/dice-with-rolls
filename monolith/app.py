@@ -84,6 +84,7 @@ def create_app():
  #           example.likes = 42
             example.author_id = 1
             example.figures = 'example#admin'
+            example.date = datetime.datetime.strptime('2019-10-20', '%Y-%m-%d')
             print(example)
             db.session.add(example)
             db.session.commit()
@@ -92,7 +93,8 @@ def create_app():
         story = q.first()
         if story is None:
             example = Story()
-            example.text = 'Old story (dont see this)'
+            example.text = 'Old story (dont see this in /latest)'
+            example.date = datetime.datetime.strptime('2019-10-10', '%Y-%m-%d')
             example.likes = 420
             example.author_id = 2
             example.figures = 'example#abc'
@@ -104,7 +106,8 @@ def create_app():
         story = q.first()
         if story is None:
             example = Story()
-            example.text = 'THIS ONE'
+            example.text = 'You should see this one in /latest'
+            example.date = datetime.datetime.strptime('2019-10-13', '%Y-%m-%d')
             example.likes = 3
             example.author_id = 2
             example.figures = 'example#abc'
@@ -116,7 +119,8 @@ def create_app():
         story = q.first()
         if story is None:
             example = Story()
-            example.text = 'story from not admin xd'
+            example.text = 'story from not admin'
+            example.date = datetime.datetime.strptime('2018-12-30', '%Y-%m-%d')
             example.likes = 100
             example.author_id = 3
             example.figures = 'example#nini'
@@ -129,6 +133,7 @@ def create_app():
         if story is None:
             example = Story()
             example.text = 'very old story (11 11 2011)'
+            example.date = datetime.datetime.strptime('2011-11-11', '%Y-%m-%d')
             example.likes = 2
             example.author_id = 3
             example.figures = 'example#nini'
@@ -155,6 +160,5 @@ def create_app():
 
 app = create_app()
 
-app = create_app()
 if __name__ == '__main__':
     app.run()
