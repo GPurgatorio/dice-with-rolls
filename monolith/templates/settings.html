@@ -16,7 +16,7 @@
         <br/><br/>
         <input type="submit" value="Go rolling dice!">
     </form>
-    {% with messages = get_flashed_messages(category_filter=['error']) %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         <ul class=flashes>
             {% for category, message in messages %}
