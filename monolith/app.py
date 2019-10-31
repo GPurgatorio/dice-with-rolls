@@ -4,6 +4,7 @@ from flask import Flask
 from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
 from monolith.auth import login_manager
+from monolith.tasks import task_try
 import datetime
 
 
@@ -166,4 +167,5 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
+    task_try.delay()
     app.run()

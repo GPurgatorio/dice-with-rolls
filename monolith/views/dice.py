@@ -55,6 +55,8 @@ def _roll_dice():
         session.pop('dice_number', None)
         return redirect(url_for('stories._stories', message='Error in throwing dice'))
     session['figures'] = dice_set.pips
+
     context_vars = {'dice_number': dice_number, 'words': dice_set.pips,
                     'write_url': WRITE_URL, 'settings_url': SETTINGS_URL}
     return render_template('roll_dice.html', **context_vars)
+
