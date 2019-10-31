@@ -1,0 +1,12 @@
+
+venv/
+
+storytellers_monolith.egg-info/
+
+.idea/
+
+monolith/__pycache__/
+
+.DS_Store
+
+monolith/views/__pycache__/

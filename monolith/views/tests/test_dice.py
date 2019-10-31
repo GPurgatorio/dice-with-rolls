@@ -7,6 +7,7 @@ from flask import url_for
 
 from monolith.classes.DiceSet import Die
 from monolith.app import app as my_app
+from monolith.urls import WRITE_URL
 
 
 class TestDice(unittest.TestCase):
@@ -38,13 +39,3 @@ class TestTemplateDice(flask_testing.TestCase):
         my_app.config['LOGIN_DISABLED'] = True
         my_app.login_manager.init_app(my_app)
         return my_app
-
-    def test_words_length(self):
-
-        response = self.client.post('/stories/new/roll')
-        #self.assert_template_used('roll_dice.html')
-        #self.assertEqual(len(self.get_context_variable('words')), 6)
-        #self.assert_context('write_url', "http://127.0.0.1:5000/stories/write")
-        self.assertRedirects(response, url_for("stories._stories"))
-
-

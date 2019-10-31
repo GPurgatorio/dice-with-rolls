@@ -16,6 +16,7 @@ def login():
         q = db.session.query(User).filter(User.email == email)
         user = q.first()
         print(q.first().id)
+        print(user)
         if user is not None and user.authenticate(password):
             login_user(user)
             return redirect('/')

@@ -6,6 +6,7 @@ from flask_login import login_required
 from werkzeug.exceptions import BadRequestKeyError
 
 from monolith.classes.DiceSet import DiceSet, Die
+from monolith.urls import WRITE_URL
 
 dice = Blueprint('dice', __name__)
 
@@ -51,4 +52,4 @@ def _roll_dice():
         session.clear()
         return redirect(url_for('stories._stories', message='Error in throwing dice'))
     session['figures'] = dice_set.pips
-    return render_template('roll_dice.html', words=dice_set.pips, write_url="http://127.0.0.1:5000/stories/new/write")
+    return render_template('roll_dice.html', words=dice_set.pips, write_url=WRITE_URL)
