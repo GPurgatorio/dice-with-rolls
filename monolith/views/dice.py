@@ -6,12 +6,12 @@ from flask_login import login_required
 from werkzeug.exceptions import BadRequestKeyError
 
 from monolith.classes.DiceSet import DiceSet, Die
-from monolith.urls import WRITE_URL, ROLL_URL
+from monolith.urls import WRITE_URL, ROLL_URL, SETTINGS_URL
 
 dice = Blueprint('dice', __name__)
 
 
-@dice.route('/stories/new/settings', methods=['POST'])
+@dice.route('/stories/new/settings', methods=['GET'])
 @login_required
 def _settings():
     context_vars = {"roll_url": ROLL_URL}
@@ -32,7 +32,7 @@ def _roll_dice():
     except ValueError:
         flash('Invalid number of dice!', 'error')
         session.clear()
-        return redirect(url_for('_settings'))
+        return redirect(url_for('dice._settings'))
 
     # random sampling dice and throw them
     dice_indexes = rnd.sample(range(0, 6), dice_number)
@@ -56,5 +56,5 @@ def _roll_dice():
         return redirect(url_for('stories._stories', **context_vars))
     session['figures'] = dice_set.pips
 
-    context_vars = {"words": dice_set.pips, "write_url": WRITE_URL}
+    context_vars = {"words": dice_set.pips, "write_url": WRITE_URL, "settings_url": SETTINGS_URL}
     return render_template('roll_dice.html', **context_vars)
