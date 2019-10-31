@@ -7,10 +7,6 @@ from monolith.urls import HOME_URL, LOGIN_URL, LOGOUT_URL, READ_URL, REGISTER_UR
 home = Blueprint('home', __name__)
 
 
-def _strava_auth_url(config):
-    return '127.0.0.1:5000'
-
-
 @home.route('/')
 def index():
     if current_user is not None and hasattr(current_user, 'id'):

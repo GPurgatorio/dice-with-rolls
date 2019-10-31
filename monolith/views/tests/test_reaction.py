@@ -9,14 +9,6 @@ from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, U
 from monolith.forms import LoginForm
 
 
-def login(client, email, password):
-    return
-
-
-def logout(client):
-    return client.get('/logout', follow_redirects=True)
-
-
 class TestReaction(flask_testing.TestCase):
 
     def create_app(self):
@@ -50,7 +42,6 @@ class TestReaction(flask_testing.TestCase):
         self.assertEqual(unmarked_reactions[0].reaction_type_id, 2)
         self.assertEqual(len(unmarked_reactions), 1)
 
-
         Reaction.query.filter(Reaction.story_id == '1', Reaction.marked == 0).first().marked = 1
         db.session.commit()
 
@@ -58,7 +49,6 @@ class TestReaction(flask_testing.TestCase):
         unmarked_reactions = Reaction.query.filter(Reaction.marked == 0).all()
         marked_reactions = Reaction.query.filter(Reaction.marked == 1).all()
         to_be_deleted_reactions = Reaction.query.filter(Reaction.marked == 2).all()
-
 
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(len(marked_reactions), 0)
