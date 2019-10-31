@@ -74,21 +74,17 @@ def _wall(userid):
     return render_template('wall.html', user_info=user_info, stats=stats)
 
 
-# TODO Change methods to POST
-# TODO This method should not be callable outside the id_user's wall (?) so we could not check for id_user existence
-# Uniqueness is checked by the database
 @users.route('/users/<int:id_user>/follow', methods=['POST'])
 @login_required
 def _follow_user(id_user):
-    if _check_follower_existence(current_user.id, id_user):
-        flash("You already follow this storyteller", 'error')
-        return redirect(url_for('users._wall', userid=id_user))
     if id_user == current_user.id:
-        flash("You can't follow yourself", 'error')
+        flash("You can't follow yourself")
         return redirect(url_for('users._wall', userid=id_user))
     if not _check_user_existence(id_user):
-        # TODO This should redirect somewhere else because id_user doesn't exists
-        flash("User doesn't exist", 'error')
+        flash("Storyteller doesn't exist")
+        return redirect(url_for('users._wall', userid=current_user.id))
+    if _check_follower_existence(current_user.id, id_user):
+        flash("You already follow this storyteller")
         return redirect(url_for('users._wall', userid=id_user))
 
     new_follower = Follower()
@@ -101,10 +97,9 @@ def _follow_user(id_user):
         db.session.commit()
 
     except IntegrityError as e:
-        # TODO This exception is also thrown if he/she already follow
-        flash("Error", 'error')
+        flash("Error")
         return redirect(url_for('users._wall', userid=id_user))
-        # print("FOLLOWED " + new_follower.followed_id + "FOLLOWER " + new_follower.follower_id)
+
     flash('Followed')
     return redirect(url_for('users._wall', userid=id_user))
 
@@ -113,15 +108,16 @@ def _follow_user(id_user):
 @users.route('/users/<int:id_user>/unfollow', methods=['POST'])
 @login_required
 def _unfollow_user(id_user):
-    if not _check_follower_existence(current_user.id, id_user):
-        flash("You should follow him first", 'error')
-        return redirect(url_for('users._wall', userid=id_user))
     if id_user == current_user.id:
-        flash("You can't unfollow yourself", 'error')
+        flash("You can't unfollow yourself")
         return redirect(url_for('users._wall', userid=id_user))
     if not _check_user_existence(id_user):
-        flash("User doesn't exist", 'error')
+        flash("Storyteller doesn't exist")
+        return redirect(url_for('users._wall', userid=current_user.id))
+    if not _check_follower_existence(current_user.id, id_user):
+        flash("You should follow him first")
         return redirect(url_for('users._wall', userid=id_user))
+
     Follower.query.filter_by(follower_id=current_user.id, followed_id=id_user).delete()
     # TODO This update could be done with celery
     db.session.query(User).filter_by(id=id_user).update({'follower_counter': User.follower_counter - 1})
