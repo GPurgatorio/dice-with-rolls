@@ -9,7 +9,7 @@ _APP = None
 
 @celery.task
 def fetch_all_runs():
-    global _APP
+    """global _APP
     # lazy init
     if _APP is None:
         from monolith.app import create_app
@@ -18,5 +18,6 @@ def fetch_all_runs():
     else:
         app = _APP
 
-    return runs_fetched
+    return celery.r"""
+    return "This is a task"
 
