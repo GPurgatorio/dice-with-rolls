@@ -18,6 +18,8 @@ class TestReaction(flask_testing.TestCase):
         return my_app
 
     def test1(self):
+        len_to_be_deleted_reactions = len(Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1, Reaction.marked == 2).all())
+
         payload = {'email': 'example@example.com',
                             'password': 'admin'}
 
@@ -28,7 +30,7 @@ class TestReaction(flask_testing.TestCase):
         self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
 
         self.assert_template_used('stories.html')
-        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.marked == 0).all()
+        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1,  Reaction.marked == 0).all()
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(unmarked_reactions[0].reaction_type_id, 1)
 
@@ -46,16 +48,10 @@ class TestReaction(flask_testing.TestCase):
         db.session.commit()
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
-        unmarked_reactions = Reaction.query.filter(Reaction.marked == 0).all()
-        marked_reactions = Reaction.query.filter(Reaction.marked == 1).all()
-        to_be_deleted_reactions = Reaction.query.filter(Reaction.marked == 2).all()
+        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1, Reaction.marked == 0).all()
+        marked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1,Reaction.marked == 1).all()
+        to_be_deleted_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1, Reaction.marked == 2).all()
 
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(len(marked_reactions), 0)
-        # TODO this increments EVERY time it gets tested, first time it will pass, then it won't anymore
-        # self.assertEqual(len(to_be_deleted_reactions), 1)
-
-
-
-
-
+        self.assertEqual(len(to_be_deleted_reactions), len_to_be_deleted_reactions + 1)

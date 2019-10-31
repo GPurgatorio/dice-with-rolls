@@ -20,12 +20,9 @@ class TestTemplateStories(flask_testing.TestCase):
         self.client.get('/stories/1')
         self.assert_template_used('story.html')
         test_story = Story.query.filter_by(id=1).first()
-        print('L\'oggetto da db: \n')
-        print('User ID: ' + str(test_story.id))
-        print('Author: ' + str(test_story.author))
-        print('Date: ' + str(test_story.date))
         self.assertEqual(self.get_context_variable('story'), test_story)
 
+<<<<<<< HEAD
     def test_latest_story(self):
         # testing that the total number of users is higher than the number of latest stories per user
         self.client.get(LATEST_URL)
@@ -66,6 +63,4 @@ class TestTemplateStories(flask_testing.TestCase):
         self.client.get(RANGE_URL + '?begin=2012-10-15&end=2020-10-10')
         req_stories = Story.query.filter(Story.date >= d).filter(Story.date <= e).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
-
-
 
