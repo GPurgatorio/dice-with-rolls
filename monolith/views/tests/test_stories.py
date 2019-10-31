@@ -22,7 +22,6 @@ class TestTemplateStories(flask_testing.TestCase):
         test_story = Story.query.filter_by(id=1).first()
         self.assertEqual(self.get_context_variable('story'), test_story)
 
-<<<<<<< HEAD
     def test_latest_story(self):
         # testing that the total number of users is higher than the number of latest stories per user
         self.client.get(LATEST_URL)

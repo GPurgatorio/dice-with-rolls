@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from monolith.cache import cache
+# from monolith.cache import cache
 from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
 from monolith.auth import login_manager
