@@ -10,13 +10,7 @@
     {% endif %}
 {% endwith %}
 {% if current_user.is_authenticated %}
-<h2> {{ user_info.firstname }}'s wall </h2>
-First Name: {{ user_info.firstname }} <br>
-Last Name: {{ user_info.lastname }} <br>
-Date of birth: {{ user_info.dateofbirth }} <br> <br>
-<body>
-{% if current_user.is_authenticated %}
-    <h5> {{ user_info.firstname }}'s wall </h5>
+    <h2> {{ user_info.firstname }}'s wall </h2>
     First Name: {{ user_info.firstname }} <br>
     Last Name: {{ user_info.lastname }} <br>
     Date of birth: {{ user_info.dateofbirth }} <br> <br>

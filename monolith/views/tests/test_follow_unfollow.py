@@ -1,16 +1,19 @@
 import datetime
-import json
-import random as rnd
 import unittest
+from flask import Flask
+
+from monolith.forms import LoginForm
+from monolith.views import blueprints
+from monolith.auth import login_manager
 
 import flask_testing
-from monolith.app import app as my_app
+
 from monolith.database import Story, User, db
-from monolith.urls import RANGE_URL, LATEST_URL
 
 
 class TestTemplateStories(flask_testing.TestCase):
     app = None
+
     # First thing called
     def create_app(self):
         global app
@@ -80,7 +83,7 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assert_message_flashed('Followed')
 
     def test_unfollow(self):
-        self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
+        self.client.post('/users/{}/follow'.format(2))
         response = self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assert_message_flashed('Unfollowed')
@@ -102,16 +105,6 @@ class TestTemplateStories(flask_testing.TestCase):
 
         response = self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
         self.assert401(response, 'You must login to unfollow')
-
-    # def test_user_statistics(self):
-
-
-# self.client.get('/users/2')
-# #self.assert_template_used('wall.html')
-# test_user = User.query.filter_by(id=2)
-# self.assertEqual(self.get_context_variable('user_info').id, test_user.id)
-# test_stats = [('avg_reactions', 0.0), ('num_reactions', 0), ('num_stories', 2), ('avg_dice', 2.0)]
-# self.assertEqual(self.get_context_variable('stats'), test_stats)
 
 
 if __name__ == '__main__':
