@@ -1,23 +1,36 @@
+import time
+
 import flask_testing
 import unittest
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+from monolith.forms import LoginForm
 from monolith.views import blueprints
 from monolith.database import db
 from monolith.auth import login_manager
-#from monolith.app import app as my_app, db
+from monolith.database import db, User, Story
+import datetime
 
 
 class TestTemplateStories(flask_testing.TestCase):
-    SQLALCHEMY_DATABASE_URI = "sqlite:///test_storytellers.db"
-    TESTING = True
+    app = None
 
-    #First thing called
+    # First thing called
     def create_app(self):
-        app = Flask(__name__)
+        global app
+        app = Flask(__name__, template_folder='../../templates')
+        app.config['TESTING'] = True
         app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
         app.config['SECRET_KEY'] = 'ANOTHER ONE'
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config['WTF_CSRF_ENABLED'] = False
+
+        # app.config['LOGIN_DISABLED'] = True
+        # cache config
+        app.config['CACHE_TYPE'] = 'simple'
+        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 
         for bp in blueprints:
             app.register_blueprint(bp)
@@ -26,25 +39,74 @@ class TestTemplateStories(flask_testing.TestCase):
         db.init_app(app)
         login_manager.init_app(app)
         db.create_all(app=app)
-        print("CREATE APP")
-        my_app.config['LOGIN_DISABLED'] = True
-        my_app.login_manager.init_app(my_app)
-        return my_app
+
+        return app
 
     # Set up database for testing here
     def setUp(self) -> None:
         print("SET UP")
-        db.create_all()
+        with app.app_context():
+            example = User()
+            example.firstname = 'Admin'
+            example.lastname = 'Admin'
+            example.email = 'example@example.com'
+            example.dateofbirth = datetime.datetime(2020, 10, 5)
+            example.is_admin = True
+            example.set_password('admin')
+            db.session.add(example)
 
-    #Executed at end of tests
+            example2 = User()
+            example2.firstname = 'Admin'
+            example2.lastname = 'Admin'
+            example2.email = 'example2@example2.com'
+            example2.dateofbirth = datetime.datetime(2020, 10, 5)
+            example2.is_admin = True
+            example2.set_password('admin')
+            db.session.add(example2)
+
+            db.session.commit()
+
+        payload = {'email': 'example@example.com',
+                   'password': 'admin'}
+
+        form = LoginForm(data=payload)
+
+        self.client.post('/users/login', data=form.data, follow_redirects=True)
+
+    # Executed at end of tests
     def tearDown(self) -> None:
         print("TEAR DOWN")
         db.session.remove()
         db.drop_all()
 
     def test_follow(self):
-        print("TEST_FOLLOW")
-        assert True
+        response = self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
+        self.assert_template_used('wall.html')
+        self.assert_message_flashed('Followed')
+
+    def test_unfollow(self):
+        self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
+        response = self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
+        self.assert_template_used('wall.html')
+        self.assert_message_flashed('Unfollowed')
+
+    def test_redirect_follow(self):
+        response = self.client.post('/users/{}/follow'.format(2))
+        self.assert_redirects(response, '/users/{}'.format(2))
+
+    def test_redirect_unfollow(self):
+        response = self.client.post('/users/{}/unfollow'.format(2))
+        self.assert_redirects(response, '/users/{}'.format(2))
+
+    def test_login_required(self):
+        response = self.client.post('/users/logout')
+        # Log out success
+        self.assert_redirects(response, '/')
+        response = self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
+        self.assert401(response, 'You must login to follow')
+
+        response = self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
+        self.assert401(response, 'You must login to unfollow')
 
 
 if __name__ == '__main__':

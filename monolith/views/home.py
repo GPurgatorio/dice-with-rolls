@@ -1,14 +1,10 @@
 from flask import Blueprint, render_template
 
-from monolith.database import db, Story
+from monolith.database import db, Story, Reaction
 from monolith.auth import current_user
 from monolith.urls import HOME_URL, LOGIN_URL, LOGOUT_URL, READ_URL, REGISTER_URL, WRITE_URL, SETTINGS_URL
 
 home = Blueprint('home', __name__)
-
-
-def _strava_auth_url(config):
-    return '127.0.0.1:5000'
 
 
 @home.route('/')

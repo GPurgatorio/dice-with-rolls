@@ -34,17 +34,6 @@ def create_app():
             example.is_admin = True
             example.set_password('admin')
             db.session.add(example)
-
-            # We create two users to facilitate development and first tests
-            example2 = User()
-            example2.firstname = 'Admin2'
-            example2.lastname = 'Admin2'
-            example2.email = 'example2@example2.com'
-            example2.dateofbirth = datetime.datetime(2020, 10, 5)
-            example2.is_admin = True
-            example2.set_password('admin2')
-            db.session.add(example2)
-
             db.session.commit()
 
         q = db.session.query(User).filter(User.email == 'abc@abc.com')
@@ -92,7 +81,6 @@ def create_app():
         if story is None:
             example = Story()
             example.text = 'Trial story of example admin user :)'
-            example.likes = 42
             example.author_id = 1
             example.figures = 'example#admin'
             print(example)

@@ -85,16 +85,20 @@ class ReactionCatalogue(db.Model):
 class Reaction(db.Model):
     __tablename__ = 'reaction'
 
-    reactor_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    reactor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     reactor = relationship('User', foreign_keys='Reaction.reactor_id')
 
-    story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
-    story = relationship('Story', foreign_keys='Reaction.story_id')
+    story_id = db.Column(db.Integer, db.ForeignKey('story.id'))
+    author = relationship('Story', foreign_keys='Reaction.story_id')
 
     reaction_type_id = db.Column(db.Integer, db.ForeignKey('reaction_catalogue.reaction_id'))
     reaction_type = relationship('ReactionCatalogue', foreign_keys='Reaction.reaction_type_id')
 
-    marked = db.Column(db.Boolean, default=False)  # True iff it has been counted in Story.likes
+    marked = db.Column(db.Integer, default=0)  # True iff it has been counted in Story.likes
+
+#    __table_args__ = (CheckConstraint(marked == 0 or marked == 1 or marked == 2, name='check_marked_code'), {})
 
 
 class Counter(db.Model):
@@ -103,7 +107,14 @@ class Counter(db.Model):
     reaction_type_id = db.Column(db.Integer, db.ForeignKey('reaction_catalogue.reaction_id'), primary_key=True)
     reaction_type = relationship('ReactionCatalogue', foreign_keys='Counter.reaction_type_id')
 
-    story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
+    story_id = db.Column(db.Integer , db.ForeignKey('story.id'), primary_key=True)
     story = relationship('Story', foreign_keys='Counter.story_id')
 
     counter = db.Column(db.Integer, default=0)
+
+
+
+
+
+
+

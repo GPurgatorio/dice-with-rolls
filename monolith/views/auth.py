@@ -16,13 +16,14 @@ def login():
         q = db.session.query(User).filter(User.email == email)
         user = q.first()
         print(q.first().id)
+        print(user)
         if user is not None and user.authenticate(password):
             login_user(user)
             return redirect('/')
     return render_template('login.html', form=form)
 
 
-@auth.route("/users/logout")
+@auth.route("/users/logout", methods=['POST'])
 def logout():
     logout_user()
     return redirect('/')

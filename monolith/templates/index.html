@@ -5,16 +5,16 @@
     <br><br>
     <button type="button" onclick="window.location='{{ logout_url }}'">Logout</button>
     <button type="button" onclick="window.location='{{ read_url }}'">Read Stories</button>
-    <form action="{{ settings_url }}" method="POST">
+    <form action="{{ settings_url }}" method="GET">
         <input type="submit" value="New Story">
     </form>
 
   
     <h2>Your Stories</h2>
-    {% for story in stories%}
+    {% for story in stories %}
       <div>
         <li>
-          {{story.text}} -- Likes:{{story.likes}}
+          {{story.text}} --
         </li>
       </div>
     {% endfor %}

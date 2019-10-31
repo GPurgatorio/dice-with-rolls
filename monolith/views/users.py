@@ -1,7 +1,6 @@
 from flask import Blueprint, redirect, render_template, request, flash, abort, url_for
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
-
 from monolith.database import db, User, Follower
 from monolith.auth import admin_required, current_user
 from monolith.forms import UserForm
@@ -43,19 +42,19 @@ def _wall(userid):
 # TODO Change methods to POST
 # TODO This method should not be callable outside the id_user's wall (?) so we could not check for id_user existence
 # Uniqueness is checked by the database
-@users.route('/users/<int:id_user>/follow', methods=['GET'])
+@users.route('/users/<int:id_user>/follow', methods=['POST'])
 @login_required
 def _follow_user(id_user):
     if _check_follower_existence(current_user.id, id_user):
         flash("You already follow this storyteller", 'error')
-        return redirect(url_for('users._wall', id_user=id_user))
+        return redirect(url_for('users._wall', userid=id_user))
     if id_user == current_user.id:
         flash("You can't follow yourself", 'error')
-        return redirect(url_for('users._wall', id_user=id_user))
+        return redirect(url_for('users._wall', userid=id_user))
     if not _check_user_existence(id_user):
         # TODO This should redirect somewhere else because id_user doesn't exists
         flash("User doesn't exist", 'error')
-        return redirect(url_for('users._wall', id_user=id_user))
+        return redirect(url_for('users._wall', userid=id_user))
 
     new_follower = Follower()
     new_follower.follower_id = current_user.id
@@ -69,31 +68,31 @@ def _follow_user(id_user):
     except IntegrityError as e:
         # TODO This exception is also thrown if he/she already follow
         flash("Error", 'error')
-        return redirect(url_for('users._wall', id_user=id_user))
+        return redirect(url_for('users._wall', userid=id_user))
         # print("FOLLOWED " + new_follower.followed_id + "FOLLOWER " + new_follower.follower_id)
     flash('Followed')
-    return redirect(url_for('users._wall', id_user=id_user))
+    return redirect(url_for('users._wall', userid=id_user))
 
 
 # TODO Check if he/she follow the user
-@users.route('/users/<int:id_user>/unfollow', methods=['GET'])
+@users.route('/users/<int:id_user>/unfollow', methods=['POST'])
 @login_required
 def _unfollow_user(id_user):
     if not _check_follower_existence(current_user.id, id_user):
         flash("You should follow him first", 'error')
-        return redirect(url_for('users._wall', id_user=id_user))
+        return redirect(url_for('users._wall', userid=id_user))
     if id_user == current_user.id:
         flash("You can't unfollow yourself", 'error')
-        return redirect(url_for('users._wall', id_user=id_user))
+        return redirect(url_for('users._wall', userid=id_user))
     if not _check_user_existence(id_user):
         flash("User doesn't exist", 'error')
-        return redirect(url_for('users._wall', id_user=id_user))
+        return redirect(url_for('users._wall', userid=id_user))
     Follower.query.filter_by(follower_id=current_user.id, followed_id=id_user).delete()
     # TODO This update could be done with celery
     db.session.query(User).filter_by(id=id_user).update({'follower_counter': User.follower_counter - 1})
     db.session.commit()
     flash('Unfollowed')
-    return redirect(url_for('users._wall', id_user=id_user))
+    return redirect(url_for('users._wall', userid=id_user))
 
 
 def _check_user_existence(id_user):
