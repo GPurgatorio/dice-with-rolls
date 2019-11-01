@@ -69,7 +69,7 @@ def _submit_story():
                 result = 'Your story doesn\'t contain all the words '
 
     return _write_story(message=result)
-    
+   
     
 @stories.route('/stories/random', methods=['GET'])
 def _random_story():
@@ -83,6 +83,7 @@ def _random_story():
     else:
         pos = randint(0, len(recent_stories)-1)
         return _open_story(recent_stories[pos].id)
+
         
 
 
