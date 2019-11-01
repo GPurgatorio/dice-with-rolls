@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+from random import randint
+
 from flask import Blueprint, redirect, render_template, request, abort, session
 from monolith.database import db, Story
 from monolith.auth import admin_required, current_user
@@ -66,3 +69,20 @@ def _submit_story():
                 result = 'Your story doesn\'t contain all the words '
 
     return _write_story(message=result)
+    
+    
+@stories.route('/stories/random', methods=['GET'])
+def _random_story():
+    #return render_template("no_recent_stories.html", write_url="http://127.0.0.1:5000/stories/new/roll")
+    # get all the stories written in the last three days 
+    begin = (datetime.now() - timedelta(3)).date()
+    recent_stories = db.session.query(Story).filter(Story.date >= begin).all()
+    # pick a random story from them
+    if len(recent_stories)==0:
+        return render_template("no_recent_stories.html", write_url="http://127.0.0.1:5000/stories/new/roll")
+    else:
+        pos = randint(0, len(recent_stories)-1)
+        return _open_story(recent_stories[pos].id)
+        
+
+
