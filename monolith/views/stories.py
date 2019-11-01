@@ -1,4 +1,4 @@
-
+from random import randint
 import datetime
 import string
 from flask import Blueprint, redirect, render_template, request, abort, session, make_response, url_for
@@ -8,7 +8,7 @@ from sqlalchemy import and_
 
 from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter
 from monolith.forms import StoryForm
-from monolith.urls import SUBMIT_URL, REACTION_URL, LATEST_URL, RANGE_URL
+from monolith.urls import SUBMIT_URL, REACTION_URL, LATEST_URL, RANGE_URL, SETTINGS_URL, RANDOM_URL
 
 
 stories = Blueprint('stories', __name__)
@@ -34,7 +34,7 @@ def _stories(message=''):
 
     context_vars = {"message": message, "stories": allstories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL}
+                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
 
     return render_template("stories.html", **context_vars)
 
@@ -213,3 +213,17 @@ def _write_story(id_story=None, message='', status=200):
     return make_response(
         render_template("write_story.html", submit_url=submit_url, form=form,
                         words=figures, message=message), status)
+
+
+@stories.route('/stories/random', methods=['GET'])
+def _random_story():
+    # get all the stories written in the last three days 
+    begin = (datetime.datetime.now() - datetime.timedelta(3)).date()
+    recent_stories = db.session.query(Story).filter(Story.date >= begin).all()
+    # pick a random story from them
+    if len(recent_stories)==0:
+        context_vars = {"settings_url":SETTINGS_URL}
+        return render_template("no_recent_stories.html", **context_vars)
+    else:
+        pos = randint(0, len(recent_stories)-1)
+        return _open_story(recent_stories[pos].id)

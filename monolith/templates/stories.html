@@ -14,6 +14,7 @@
         <input type="date" name="end" id="end">
         <button type="button" onclick="window.location='{{ range_url }}?begin=' + begin.value + '&end=' + end.value">Search Period</button>
     </form>
+    <button type="button" onclick="window.location='{{ random_recent_url }}'">Random Recent Story </button>
 
     <ul>
       {% for story in stories %}
