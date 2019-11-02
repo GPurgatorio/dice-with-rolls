@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 import wtforms as f
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, ValidationError, Length
 
 
 class LoginForm(FlaskForm):
@@ -19,5 +19,6 @@ class UserForm(FlaskForm):
 
 
 class StoryForm(FlaskForm):
-    text = f.TextField('text', validators=[DataRequired()])  # TODO: Add check on length (1000 chrs)
+    text = f.TextAreaField('text', validators=[DataRequired(), Length(min=1, max=1000, message='Your story is too long (max 1000 characters)')])  # TODO: Add check on length (1000 chrs)
     display = ['text']
+

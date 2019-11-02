@@ -1,4 +1,5 @@
 import json
+import os
 import random as rnd
 import unittest
 
@@ -39,3 +40,39 @@ class TestTemplateDice(flask_testing.TestCase):
         my_app.config['LOGIN_DISABLED'] = True
         my_app.login_manager.init_app(my_app)
         return my_app
+
+    # Tests for POST, PUT and DEL requests ( /settings )
+    def test_requests_settings(self):
+        self.assert405(self.client.post('stories/new/settings'))
+        self.assert405(self.client.put('stories/new/settings'))
+        self.assert405(self.client.delete('stories/new/settings'))
+
+    def test_requests_roll(self):
+        self.assert405(self.client.get('stories/new/roll'))
+        self.assert405(self.client.put('stories/new/roll'))
+        self.assert405(self.client.delete('stories/new/roll'))
+
+    def test_settings(self):
+        self.client.get('/stories/new/settings')
+        self.assert_template_used('settings.html')
+
+    # 9 is out of range (2,7) -> redirect to settings
+    def test_oob_roll(self):
+        self.assertRedirects(self.client.post('/stories/new/roll', data={'dice_number': 9}), '/stories/new/settings')
+
+    # Redirect from session (abc fails, throws ValueError, gets 8 from session, out of range -> redirect)
+    def test_oob_roll_sess(self):
+        with self.client.session_transaction() as sess:
+            sess['dice_number'] = 8
+            self.assertRedirects(self.client.post('/stories/new/roll', data={'dice_number': 'abc'}), '/stories/new/settings')
+
+"""
+    # Correct execution's flow of roll
+    def test_roll(self):
+        with self.client.session_transaction() as sess:
+            sess['dice_number'] = 2
+        rnd.seed(2)             # File die0.txt
+        # Riga 43: dice_list.append(Die('monolith/resources/die' + str(i) + '.txt')) -> File not Found -> fail del test
+        self.client.post('/stories/new/roll')
+        self.assert_template_used('stories.html')
+"""
