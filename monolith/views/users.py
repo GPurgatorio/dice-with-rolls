@@ -11,7 +11,6 @@ users = Blueprint('users', __name__)
 
 
 @users.route('/users')
-@login_required
 def _users():
     usrs = db.session.query(User)
     return render_template("users.html", users=usrs)

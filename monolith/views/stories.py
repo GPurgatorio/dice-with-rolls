@@ -118,14 +118,17 @@ def _range(message=''):
         else:
             begin_date = datetime.datetime.min
         if end and len(end) > 0:
-            end_date = datetime.datetime.strptime(end, '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(end, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
         else:
-            end_date = datetime.datetime.utcnow()
+            # replace is needed because of solar/legal hour.
+            # Stories are written at time X in db, and searched at time X-1
+            end_date = datetime.datetime.utcnow().replace(hour=23, minute=59, second=59)
     except ValueError:
         # return redirect(url_for('stories._stories'))      da cambiare con flash etc
         return render_template('stories.html', message='Wrong URL parameters.')
     if begin_date > end_date:
         return render_template('stories.html', message='Begin date cannot be higher than End date')
+
     listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date)
     context_vars = {"message": message, "stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
