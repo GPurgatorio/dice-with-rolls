@@ -88,6 +88,8 @@ class TestTemplateStories(flask_testing.TestCase):
         response = self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
         self.assert401(response, 'You must login to unfollow')
 
+
+    ##### FOLLOW #####
     def test_follow(self):
         response = self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
         self.assert_template_used('wall.html')
