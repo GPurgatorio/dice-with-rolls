@@ -104,7 +104,7 @@ def _latest(message=''):
 
     context_vars = {"message": message, "stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL}
+                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
     return render_template('stories.html', **context_vars)
 
 
@@ -136,7 +136,7 @@ def _range(message=''):
     listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date)
     context_vars = {"message": message, "stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL}
+                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
     return render_template('stories.html', **context_vars)
 
 
@@ -229,8 +229,10 @@ def _random_story():
     recent_stories = db.session.query(Story).filter(Story.date >= begin).all()
     # pick a random story from them
     if len(recent_stories)==0:
-        context_vars = {"settings_url":SETTINGS_URL}
-        return render_template("no_recent_stories.html", **context_vars)
+        message = "Oops, there are no recent stories!"
+        context_vars = {"message": message, "reaction_url": REACTION_URL, "latest_url": LATEST_URL, 
+                        "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
+        return render_template("stories.html", **context_vars)
     else:
         pos = randint(0, len(recent_stories)-1)
         return _open_story(recent_stories[pos].id)
