@@ -94,6 +94,7 @@ def _delete_reaction(story_id):
     return _stories('Reaction successfully deleted!')
 
 
+# Gets the last story for each registered user
 @stories.route('/stories/latest', methods=['GET'])
 def _latest(message=''):
     listed_stories = db.engine.execute(
@@ -107,11 +108,14 @@ def _latest(message=''):
     return render_template('stories.html', **context_vars)
 
 
+# Searches for stories that were made in a specific range of time [begin_date, end_date]
 @stories.route('/stories/range', methods=['GET'])
 def _range(message=''):
+    # Get the two parameters
     begin = request.args.get('begin')
     end = request.args.get('end')
 
+    # Construct begin_date and end_date (given or default)
     try:
         if begin and len(begin) > 0:
             begin_date = datetime.datetime.strptime(begin, '%Y-%m-%d')
@@ -120,7 +124,7 @@ def _range(message=''):
         if end and len(end) > 0:
             end_date = datetime.datetime.strptime(end, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
         else:
-            # replace is needed because of solar/legal hour.
+            # Here .replace is needed because of solar/legal hour!
             # Stories are written at time X in db, and searched at time X-1
             end_date = datetime.datetime.utcnow().replace(hour=23, minute=59, second=59)
     except ValueError:
