@@ -106,12 +106,3 @@ class TestTemplateStories(flask_testing.TestCase):
         print("TEAR DOWN")
         db.session.remove()
         db.drop_all()
-
-    # TO fix
-    # def test_user_statistics(self):
-    #     response = self.client.get('/users/1')
-    #     self.assert_template_used('wall.html')
-    #     test_user = User.query.filter_by(id=1)
-    #     #self.assertEqual(self.get_context_variable('user_info'), test_user)
-    #     test_stats = [('num_reactions', 28), ('num_stories', 2)]
-    #     self.assertEqual(self.get_context_variable('stats'), test_stats)

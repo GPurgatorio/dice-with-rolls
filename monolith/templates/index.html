@@ -3,10 +3,12 @@
 {% if current_user.is_authenticated %}
   Hi {{ current_user.firstname }}!
     <br><br>
-    <button type="button" onclick="window.location='{{ logout_url }}'">Logout</button>
+    <form action={{ logout_url }} method="POST">
+        <input type="submit" value="Logout">
+    </form>
     <button type="button" onclick="window.location='{{ read_url }}'">Read Stories</button>
     <form action="{{ settings_url }}" method="GET">
-        <input type="submit" value="New Story">
+        <input type="submit" value="New Story" >
     </form>
 
   
