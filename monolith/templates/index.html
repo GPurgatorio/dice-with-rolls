@@ -10,6 +10,9 @@
     <form action="{{ settings_url }}" method="GET">
         <input type="submit" value="New Story" >
     </form>
+    <form action="{{ users_url }}/{{ current_user.id }}" method="GET">
+      <input type="submit" value="My wall" >
+  </form>
 
   
     <h2>Your Stories</h2>

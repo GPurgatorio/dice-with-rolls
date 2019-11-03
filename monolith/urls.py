@@ -3,6 +3,7 @@ HOME_URL = "http://127.0.0.1:5000/"
 REGISTER_URL = HOME_URL + "users/create"
 LOGIN_URL = HOME_URL + "users/login"
 LOGOUT_URL = HOME_URL + "users/logout"
+USERS_URL = HOME_URL + "users"
 
 READ_URL = HOME_URL + "stories"
 SETTINGS_URL = HOME_URL + "stories/new/settings"
