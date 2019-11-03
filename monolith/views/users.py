@@ -88,8 +88,12 @@ def _wall(userid):
     # If I'm a generic user that open a wall
     else:
         user_info = User.query.filter_by(id=userid).first()
-        statistics.append(('num_reactions', tot_num_reactions))
-        statistics.append(('num_stories', tot_num_stories))
+        
+        if user_info is not None:
+            statistics.append(('num_reactions', tot_num_reactions))
+            statistics.append(('num_stories', tot_num_stories))
+        else:
+            return render_template('wall.html', not_found=True)
 
     return render_template('wall.html', my_wall=my_wall, user_info=user_info, stats=statistics)
 
