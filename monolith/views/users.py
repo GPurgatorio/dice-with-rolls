@@ -1,3 +1,4 @@
+from datetime import date
 from flask import Blueprint, redirect, render_template, request, flash, abort, url_for
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
@@ -20,17 +21,29 @@ def _users():
 @users.route('/users/create', methods=['GET', 'POST'])
 def _create_user():
     form = UserForm()
+    message = ""
     if request.method == 'POST':
 
         if form.validate_on_submit():
-            new_user = User()
-            form.populate_obj(new_user)
-            new_user.set_password(form.password.data)  # pw should be hashed with some salt
-            db.session.add(new_user)
-            db.session.commit()
-            return redirect('/users')
+            # check if the email already exists
+            email = form.data['email']
+            user = db.session.query(User).filter(User.email == email).first()
+            if user is None:
+                # check if date of birth < today
+                dateofbirth = form.data['dateofbirth']
+                if dateofbirth < date.today():
+                    new_user = User()
+                    form.populate_obj(new_user)
+                    new_user.set_password(form.password.data)  # pw should be hashed with some salt
+                    db.session.add(new_user)
+                    db.session.commit()
+                    return redirect('/users')
+                else:
+                    message = "Wrong date of birth."
+            else:
+                message = "The email address is already being used."
 
-    return render_template('create_user.html', form=form)
+    return render_template('create_user.html', form=form, message=message)
 
 
 @users.route('/users/<int:userid>', methods=['GET'])
