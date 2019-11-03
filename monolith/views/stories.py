@@ -1,6 +1,9 @@
 from random import randint
 import datetime
+import itertools
+import re
 import string
+
 from flask import Blueprint, redirect, render_template, request, abort, session, make_response, url_for
 from flask import session
 from flask_login import (current_user, login_required)
@@ -143,15 +146,41 @@ def _range(message=''):
 # Open a story functionality (1.8)
 @stories.route('/stories/<int:id_story>', methods=['GET'])
 def _open_story(id_story):
-    # Get the story object from database
     story = Story.query.filter_by(id=id_story).first()
+
     if story is not None:
+        # Splitting the names of figures
         rolled_dice = story.figures.split('#')
-        # TODO : aggiornare per le reactions
-        context_vars = {"exists": True, "story": story,
-                        "rolled_dice": rolled_dice}
-        return render_template('story.html', **context_vars)
-    else:
+        
+        # Get all the reactions for that story
+        all_reactions = list(db.engine.execute("SELECT reaction_caption FROM reaction_catalogue ORDER BY reaction_caption"))
+        query = "SELECT reaction_caption, counter as num_story_reactions FROM counter c, reaction_catalogue r WHERE reaction_type_id = reaction_id AND story_id = " + str(id_story) + " ORDER BY reaction_caption"
+        story_reactions = list(db.engine.execute(query))
+        num_story_reactions = Counter.query.filter_by(story_id=id_story).join(ReactionCatalogue).count()
+        num_reactions = ReactionCatalogue.query.count()
+
+        # Create tuples of counter per reaction
+        list_tuples = list()
+        reactions_counters = list()
+
+        # Generate tuples (reaction, counter)
+        if num_reactions != 0 and num_story_reactions != 0:
+            for combination in itertools.zip_longest(all_reactions, story_reactions):
+                list_tuples.append(combination)
+
+            for i in range(0, num_reactions):
+                reaction = str(list_tuples[i][0]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
+                counter = re.sub('\D', '', str(list_tuples[i][1]))
+                reactions_counters.append((reaction, counter))
+
+        else:
+            for i in range(0, num_reactions):
+                reaction = str(all_reactions[i]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
+                counter = 0
+                reactions_counters.append((reaction, counter))
+
+        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice, reactions=reactions_counters)
+      else:
         return render_template('story.html', exists=False)
 
 

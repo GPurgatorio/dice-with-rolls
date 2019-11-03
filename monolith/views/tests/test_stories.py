@@ -189,11 +189,13 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assertLessEqual(self.get_context_variable('stories').rowcount, num_users)
 
     def test_range_story(self):
+      
         # Testing range without parameters
         self.client.get(RANGE_URL)
         self.assert_template_used('stories.html')
         all_stories = db.session.query(Story).all()
         self.assertEqual(self.get_context_variable('stories').all(), all_stories)
+
 
         # Testing range with only one parameter (begin)
         self.client.get(RANGE_URL + '?begin=2013-10-10')
@@ -207,6 +209,7 @@ class TestTemplateStories(flask_testing.TestCase):
         req_stories = Story.query.filter(Story.date <= e).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
 
+
         # Testing range with begin date > end date
         self.client.get(RANGE_URL + '?begin=2012-12-12&end=2011-10-10')
         self.assertEqual(self.get_context_variable('message'), 'Begin date cannot be higher than End date')
@@ -217,7 +220,6 @@ class TestTemplateStories(flask_testing.TestCase):
         self.client.get(RANGE_URL + '?begin=2012-10-15&end=2020-10-10')
         req_stories = Story.query.filter(Story.date >= d).filter(Story.date <= e).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
-
 
 class TestStories(flask_testing.TestCase):
 
