@@ -1,6 +1,9 @@
-
+from random import randint
 import datetime
+import itertools
+import re
 import string
+
 from flask import Blueprint, redirect, render_template, request, abort, session, make_response, url_for
 from flask import session
 from flask_login import (current_user, login_required)
@@ -8,7 +11,7 @@ from sqlalchemy import and_
 
 from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter
 from monolith.forms import StoryForm
-from monolith.urls import SUBMIT_URL, REACTION_URL, LATEST_URL, RANGE_URL
+from monolith.urls import SUBMIT_URL, REACTION_URL, LATEST_URL, RANGE_URL, SETTINGS_URL, RANDOM_URL
 
 
 stories = Blueprint('stories', __name__)
@@ -35,7 +38,7 @@ def _stories(message=''):
 
     context_vars = {"message": message, "stories": allstories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL}
+                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
 
     return render_template("stories.html", **context_vars)
 
@@ -94,6 +97,7 @@ def _delete_reaction(story_id):
     return _stories('Reaction successfully deleted!')
 
 
+# Gets the last story for each registered user
 @stories.route('/stories/latest', methods=['GET'])
 def _latest(message=''):
     listed_stories = db.engine.execute(
@@ -103,47 +107,79 @@ def _latest(message=''):
 
     context_vars = {"message": message, "stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL}
+                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
     return render_template('stories.html', **context_vars)
 
 
+# Searches for stories that were made in a specific range of time [begin_date, end_date]
 @stories.route('/stories/range', methods=['GET'])
 def _range(message=''):
+    # Get the two parameters
     begin = request.args.get('begin')
     end = request.args.get('end')
 
+    # Construct begin_date and end_date (given or default)
     try:
         if begin and len(begin) > 0:
             begin_date = datetime.datetime.strptime(begin, '%Y-%m-%d')
         else:
             begin_date = datetime.datetime.min
         if end and len(end) > 0:
-            end_date = datetime.datetime.strptime(end, '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(end, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
         else:
-            end_date = datetime.datetime.utcnow()
+            # Here .replace is needed because of solar/legal hour!
+            # Stories are written at time X in db, and searched at time X-1
+            end_date = datetime.datetime.utcnow().replace(hour=23, minute=59, second=59)
     except ValueError:
         # return redirect(url_for('stories._stories'))      da cambiare con flash etc
         return render_template('stories.html', message='Wrong URL parameters.')
     if begin_date > end_date:
         return render_template('stories.html', message='Begin date cannot be higher than End date')
+
     listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date)
     context_vars = {"message": message, "stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL}
+                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
     return render_template('stories.html', **context_vars)
 
 
 # Open a story functionality (1.8)
 @stories.route('/stories/<int:id_story>', methods=['GET'])
 def _open_story(id_story):
-    # Get the story object from database
     story = Story.query.filter_by(id=id_story).first()
+
     if story is not None:
+        # Splitting the names of figures
         rolled_dice = story.figures.split('#')
-        # TODO : aggiornare per le reactions
-        context_vars = {"exists": True, "story": story,
-                        "rolled_dice": rolled_dice}
-        return render_template('story.html', **context_vars)
+        
+        # Get all the reactions for that story
+        all_reactions = list(db.engine.execute("SELECT reaction_caption FROM reaction_catalogue ORDER BY reaction_caption"))
+        query = "SELECT reaction_caption, counter as num_story_reactions FROM counter c, reaction_catalogue r WHERE reaction_type_id = reaction_id AND story_id = " + str(id_story) + " ORDER BY reaction_caption"
+        story_reactions = list(db.engine.execute(query))
+        num_story_reactions = Counter.query.filter_by(story_id=id_story).join(ReactionCatalogue).count()
+        num_reactions = ReactionCatalogue.query.count()
+
+        # Create tuples of counter per reaction
+        list_tuples = list()
+        reactions_counters = list()
+
+        # Generate tuples (reaction, counter)
+        if num_reactions != 0 and num_story_reactions != 0:
+            for combination in itertools.zip_longest(all_reactions, story_reactions):
+                list_tuples.append(combination)
+
+            for i in range(0, num_reactions):
+                reaction = str(list_tuples[i][0]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
+                counter = re.sub('\D', '', str(list_tuples[i][1]))
+                reactions_counters.append((reaction, counter))
+
+        else:
+            for i in range(0, num_reactions):
+                reaction = str(all_reactions[i]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
+                counter = 0
+                reactions_counters.append((reaction, counter))
+
+        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice, reactions=reactions_counters)
     else:
         return render_template('story.html', exists=False)
 
@@ -213,3 +249,19 @@ def _write_story(id_story=None, message='', status=200):
     return make_response(
         render_template("write_story.html", submit_url=submit_url, form=form,
                         words=figures, message=message), status)
+
+
+@stories.route('/stories/random', methods=['GET'])
+def _random_story():
+    # get all the stories written in the last three days 
+    begin = (datetime.datetime.now() - datetime.timedelta(3)).date()
+    recent_stories = db.session.query(Story).filter(Story.date >= begin).all()
+    # pick a random story from them
+    if len(recent_stories)==0:
+        message = "Oops, there are no recent stories!"
+        context_vars = {"message": message, "reaction_url": REACTION_URL, "latest_url": LATEST_URL, 
+                        "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
+        return render_template("stories.html", **context_vars)
+    else:
+        pos = randint(0, len(recent_stories)-1)
+        return _open_story(recent_stories[pos].id)

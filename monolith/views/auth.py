@@ -11,19 +11,25 @@ auth = Blueprint('auth', __name__)
 @auth.route('/users/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if form.validate_on_submit():
-        email, password = form.data['email'], form.data['password']
-        q = db.session.query(User).filter(User.email == email)
-        user = q.first()
-        print(q.first().id)
-        print(user)
-        if user is not None and user.authenticate(password):
-            login_user(user)
-            return redirect('/')
-    return render_template('login.html', form=form)
+    message = ""
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            email, password = form.data['email'], form.data['password']
+            q = db.session.query(User).filter(User.email == email)
+            user = q.first()
+            if user is None:
+                message = 'This email does not exist.'
+            elif user is not None and not user.authenticate(password):
+                message = 'Password is uncorrect.'
+            else:
+                login_user(user)
+                return redirect('/')
+
+    return render_template('login.html', form=form, message=message)
 
 
-@auth.route("/users/logout")
+@auth.route("/users/logout", methods=['POST'])
 def logout():
     logout_user()
     return redirect('/')

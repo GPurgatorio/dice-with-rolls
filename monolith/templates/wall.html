@@ -1,6 +1,10 @@
 <html>
     <body>
-        {% if current_user.is_authenticated %}
+        <a href="/"><a href="/stories"><button><</button> Come back to the home page</a>
+        {% if not_found %}
+            <h3 style="text-align: center;">Sorry! The user you're looking for doesn't exist!</h3>
+        {% else %}
+        {% if my_wall %}
         		<h2> {{user_info.firstname}}'s wall </h2>
             First Name: {{user_info.firstname}} <br>
             Last Name: {{user_info.lastname}} <br>
@@ -22,8 +26,25 @@
                     <td><b>Avg dice per story</b></td>
                 </tr>
             </table>
-        {% else %}
-            <a href="http://127.0.0.1:5000/login")>Log in</a> to see the wall
+        {% else: %}
+            <h2> {{user_info.firstname}}'s wall </h2>
+            First Name: {{user_info.firstname}} <br>
+            Last Name: {{user_info.lastname}} <br>
+            Date of birth: {{user_info.dateofbirth}} <br> <br>
+
+            Email: {{user_info.email}}
+            <h3>Statistics</h3>
+            <table style="text-align: center; border-spacing: 7px">
+                <tr>
+                    <td>{{stats[1][1]}}</td>
+                    <td>{{stats[0][1]}}</td>
+                </tr>
+                <tr>
+                    <td><b># Stories</b></td>
+                    <td><b># Reactions</b></td>
+                </tr>
+            </table>
+        {% endif %}
         {% endif %}
     </body>
 </html>
