@@ -180,7 +180,7 @@ def _open_story(id_story):
                 reactions_counters.append((reaction, counter))
 
         return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice, reactions=reactions_counters)
-      else:
+    else:
         return render_template('story.html', exists=False)
 
 
