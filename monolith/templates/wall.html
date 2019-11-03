@@ -1,6 +1,9 @@
 <html>
     <body>
         <a href="/"><a href="/stories"><button><</button> Come back to the home page</a>
+        {% if not_found %}
+            <h3 style="text-align: center;">Sorry! The user you're looking for doesn't exist!</h3>
+        {% else %}
         {% if my_wall %}
         		<h2> {{user_info.firstname}}'s wall </h2>
             First Name: {{user_info.firstname}} <br>
@@ -23,7 +26,7 @@
                     <td><b>Avg dice per story</b></td>
                 </tr>
             </table>
-        {% else %}
+        {% else: %}
             <h2> {{user_info.firstname}}'s wall </h2>
             First Name: {{user_info.firstname}} <br>
             Last Name: {{user_info.lastname}} <br>
@@ -41,6 +44,7 @@
                     <td><b># Reactions</b></td>
                 </tr>
             </table>
+        {% endif %}
         {% endif %}
     </body>
 </html>
