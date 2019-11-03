@@ -2,6 +2,7 @@ from flask import Blueprint, redirect, render_template, request
 from monolith.database import db, User, Story, Counter
 from monolith.auth import admin_required, current_user
 from monolith.forms import UserForm
+import re
 
 users = Blueprint('users', __name__)
 
@@ -34,22 +35,30 @@ def _wall(userid):
     statistics = list()
     my_wall = False
     
+    # Get the list of all stories
+    all_stories = Story.query.filter_by(author_id=userid)
+
+    # Total number of stories
+    tot_num_stories = Story.query.filter_by(author_id=userid).count()
+        
+    # Total number of reactions
+    tot_num_reactions = 0
+
+    for story in all_stories:
+        result = list(db.engine.execute("SELECT sum(counter) as num_reactions FROM counter WHERE story_id = " + str(story.id) + " GROUP BY story_id"))
+        num_react = re.sub('\D', '', str(result))
+            
+        if not num_react:
+            num_react = 0
+        else:
+            num_react = int(re.sub('\D', '', str(result)))
+
+        tot_num_reactions += num_react
+
     # If I open my wall 
     if current_user is not None and hasattr(current_user, 'id') and current_user.id == userid:
         user_info = current_user
         my_wall = True
-
-        # Get the list of all stories
-        all_stories = Story.query.filter_by(author_id=userid)
-        
-        # Total number of stories
-        tot_num_stories = Story.query.filter_by(author_id=userid).count()
-        
-        # Total number of reactions
-        tot_num_reactions = 0
-
-        for story in all_stories:
-            tot_num_reactions += Counter.query.filter_by(story_id=story.id).count()
 
         # Average number of dice per story
         avg_dice = 0.0
@@ -75,22 +84,7 @@ def _wall(userid):
     # If I'm a generic user that open a wall
     else:
         user_info = User.query.filter_by(id=userid).first()
-
-        # Get the list of all stories
-        all_stories = Story.query.filter_by(author_id=userid)
-        
-        # Total number of stories
-        tot_num_stories = Story.query.filter_by(author_id=userid).count()
-        
-        # Total number of reactions
-        tot_num_reactions = 0
-
-        for story in all_stories:
-            tot_num_reactions += Counter.query.filter_by(story_id=story.id).count()
-            rolled_dice = story.figures.split('#')
-
         statistics.append(('num_reactions', tot_num_reactions))
         statistics.append(('num_stories', tot_num_stories))
-
 
     return render_template('wall.html', my_wall=my_wall, user_info=user_info, stats=statistics)
