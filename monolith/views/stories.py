@@ -19,18 +19,19 @@ class StoryWithReaction:
         self.story = _story
         self.reactions = {}
 
-@stories.route('/stories')
 
+@stories.route('/stories')
 def _stories(message=''):
     allstories = db.session.query(Story).all()
     listed_stories = []
-    for story in allstories:
+    # TODO check this commented code
+    """for story in allstories:
         new_story_with_reaction = StoryWithReaction(story)
         list_of_reactions = db.session.query(Counter.reaction_type_id).join(ReactionCatalogue).all()
 
         for item in list_of_reactions:
             new_story_with_reaction.reactions[item.caption] = item.counter
-        listed_stories.append(new_story_with_reaction)
+        listed_stories.append(new_story_with_reaction)"""
 
     context_vars = {"message": message, "stories": allstories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
@@ -75,7 +76,6 @@ def _reaction(reaction_caption, story_id):
                 new_reaction.reaction_type_id = reaction_type_id
                 db.session.add(new_reaction)
                 db.session.commit()
-
     db.session.commit()
 
     return _stories('')

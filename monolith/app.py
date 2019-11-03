@@ -1,35 +1,34 @@
-import os
+import datetime
+
 from flask import Flask
-# from monolith.cache import cache
+
+from monolith.auth import login_manager
 from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
-from monolith.auth import login_manager
-from monolith.tasks import task_try
-import datetime
 
 
 def create_app():
-    app = Flask(__name__)
-    app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
-    app.config['SECRET_KEY'] = 'ANOTHER ONE'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    flask_app = Flask(__name__)
+    flask_app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
+    flask_app.config['SECRET_KEY'] = 'ANOTHER ONE'
+    flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
+    flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # cache config
-    app.config['CACHE_TYPE'] = 'simple'
-    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+    flask_app.config['CACHE_TYPE'] = 'simple'
+    flask_app.config['CACHE_DEFAULT_TIMEOUT'] = 300
     # cache.init_app(app)
 
     for bp in blueprints:
-        app.register_blueprint(bp)
-        bp.app = app
+        flask_app.register_blueprint(bp)
+        bp.app = flask_app
 
-    db.init_app(app)
-    login_manager.init_app(app)
-    db.create_all(app=app)
+    db.init_app(flask_app)
+    login_manager.init_app(flask_app)
+    db.create_all(app=flask_app)
 
     # create a first admin user
-    with app.app_context():
+    with flask_app.app_context():
         q = db.session.query(User).filter(User.email == 'example@example.com')
         user = q.first()
         if user is None:
@@ -91,7 +90,6 @@ def create_app():
             example.author_id = 1
             example.figures = 'example#admin'
             example.date = datetime.datetime.strptime('2019-10-20', '%Y-%m-%d')
-            print(example)
             db.session.add(example)
             db.session.commit()
 
@@ -104,7 +102,6 @@ def create_app():
             example.likes = 420
             example.author_id = 2
             example.figures = 'example#abc'
-            print(example)
             db.session.add(example)
             db.session.commit()
 
@@ -117,7 +114,6 @@ def create_app():
             example.likes = 3
             example.author_id = 2
             example.figures = 'example#abc'
-            print(example)
             db.session.add(example)
             db.session.commit()
 
@@ -130,7 +126,6 @@ def create_app():
             example.likes = 100
             example.author_id = 3
             example.figures = 'example#nini'
-            print(example)
             db.session.add(example)
             db.session.commit()
 
@@ -144,7 +139,6 @@ def create_app():
             example.author_id = 3
             example.figures = 'example#nini'
             example.date = datetime.datetime(2011, 11, 11)
-            print(example)
             db.session.add(example)
             db.session.commit()
 
@@ -161,11 +155,10 @@ def create_app():
             db.session.add(dislike)
             db.session.commit()
 
-    return app
+    return flask_app
 
 
 app = create_app()
 
 if __name__ == '__main__':
-    task_try.delay()
     app.run()
