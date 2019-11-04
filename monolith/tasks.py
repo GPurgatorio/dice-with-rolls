@@ -1,23 +1,67 @@
 from celery import Celery
-from monolith.database import db, User, Story
+from sqlalchemy import and_
+
+from monolith.app import create_app
+from monolith.database import *
+
+_APP = None
 
 BACKEND = BROKER = 'redis://localhost:6379'
 celery = Celery(__name__, backend=BACKEND, broker=BROKER)
 
-_APP = None
+celery.conf.beat_schedule = {
+    'like_task': {
+        'task': 'monolith.tasks.like_task',
+        'schedule': 5.0
+    },
+}
+celery.conf.timezone = 'UTC'
 
 
 @celery.task
-def fetch_all_runs():
-    """global _APP
+def like_task():
+    global _APP
     # lazy init
     if _APP is None:
-        from monolith.app import create_app
-        app = create_app()
-        db.init_app(app)
-    else:
-        app = _APP
+        print("App not yet initalized")
+        _APP = create_app()
+        db.init_app(_APP)
 
-    return celery.r"""
-    return "This is a task"
+    with _APP.app_context():
+        q = db.engine.execute(
+            "SELECT story_id, reaction_type_id, reaction_caption, COUNT(*) AS count, marked "
+            "FROM reaction r "
+            "JOIN reaction_catalogue rc on r.reaction_type_id = rc.reaction_id "
+            "JOIN story s on r.story_id = s.id "
+            "WHERE marked=0 OR marked=2 "
+            "GROUP BY story_id, reaction_type_id, marked "
+            "ORDER BY story_id, reaction_type_id, marked").fetchall()
 
+        print("Analyzing {} reactions: \n".format(len(q)))
+
+        for r in q:
+            print("Story {}: {} {}(s) marked to {}".format(r.story_id, r.count, r.reaction_caption, r.marked))
+            counter_row = Counter.query.filter(and_(Counter.reaction_type_id == r.reaction_type_id,
+                                                    Counter.story_id == r['story_id'])).first()
+            if r['marked'] == 0:  # INCREASE COUNTER
+
+                if counter_row is None:  # non-existing counter
+                    # Create counter and set it
+                    new_counter = Counter()
+                    new_counter.reaction_type_id = r.reaction_type_id
+                    new_counter.story_id = r.story_id
+                    new_counter.counter = r.count
+                    db.session.add(new_counter)
+                    # db.session.commit()
+                else:  # existing counter
+                    counter_row.counter = counter_row.counter + r.count
+
+            else:  # DECREASE COUNTER
+                counter_row.counter = counter_row.counter - r.count
+
+            # Delete all the rows with marked = 2
+            Reaction.query.filter(Reaction.marked == 2).delete()
+
+            # Update all the rows with marked = 1
+            Reaction.query.filter(Reaction.marked == 0).update({Reaction.marked: 1})
+        db.session.commit()
