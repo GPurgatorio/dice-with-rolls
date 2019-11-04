@@ -1,11 +1,11 @@
 from random import randint
 import datetime
 import string
-from flask import Blueprint, redirect, render_template, request, abort, session, make_response, url_for
+from flask import Blueprint, redirect, render_template, request, abort, session, make_response, url_for, flash
 from flask import session
 from flask_login import (current_user, login_required)
 from sqlalchemy import and_
-
+from sqlalchemy.exc import IntegrityError
 from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter
 from monolith.forms import StoryForm
 from monolith.urls import HOME_URL, WRITE_URL, REACTION_URL, LATEST_URL, RANGE_URL, SETTINGS_URL, RANDOM_URL
@@ -154,6 +154,8 @@ def _open_story(id_story):
         return render_template('story.html', exists=False)
 
 
+# Get the form to write a new story or continue a draft
+# Publish the story or save as draft
 @stories.route('/stories/new/write', defaults={'id_story': None}, methods=['GET'])
 @stories.route('/stories/new/write/<int:id_story>', methods=['GET'])
 @stories.route('/stories/new/write/<int:as_draft>', methods=['POST'])
@@ -163,30 +165,38 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
     submit_url = WRITE_URL + '/0'
     draft_url = WRITE_URL + '/1'
 
+    # Setting session to modify draft
     if 'GET' == request.method and id_story is not None:
         story = Story.query.filter(Story.id == id_story).first()
         if story is not None and story.author_id == current_user.id and story.is_draft:
-            form.text = story.text
+            form.text.data = story.text
             session['figures'] = story.figures.split('#')
             session['id_story'] = story.id
         else:
-            message = 'Request is invalid, check if you are the author of the story and it is still a draft'
-            return redirect(url_for('stories._stories'))
+            flash('Request is invalid, check if you are the author of the story and it is still a draft')
+            return redirect(HOME_URL+'users/'+str(current_user.id)+'/drafts')
 
+    # Check if there are the words to write the story
     if 'figures' not in session:
-        message = 'Request is invalid, you need to set a story before'
-        return redirect(HOME_URL, code=302)
+        flash('Request is invalid, you need to set a story before')
+        return redirect(HOME_URL)
 
     elif 'POST' == request.method:
         draft = bool(as_draft)
         if form.validate_on_submit():
             if draft:
                 if 'id_story' in session:
-                    story = Story.query.filter(Story.id == id_story).first()
-                    story.text = form.text
-                    story.date = datetime.datetime.now()
-                    session.pop('story_id')
+                    # Update a draft
+                    try:
+                        db.session.query(Story).filter_by(id=session['id_story']).update(
+                            {'text': form.text.data, 'date': datetime.datetime.now()})
+                    except IntegrityError as e:
+                        flash("Error")
+                        return redirect(HOME_URL, code=302)
+                    db.session.commit()
+                    session.pop('id_story')
                 else:
+                    # Save new story as draft
                     new_story = Story()
                     new_story.author_id = current_user.id
                     new_story.figures = '#'.join(session['figures'])
@@ -195,34 +205,36 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
                     db.session.add(new_story)
                     db.session.commit()
                 session.pop('figures')
-                return redirect(HOME_URL, code=302)
+                return redirect(HOME_URL+'users/'+str(current_user.id)+'/drafts')
             else:
+                # Check validity
                 dice_figures = session['figures'].copy()
                 trans = str.maketrans(string.punctuation, ' ' * len(string.punctuation))
                 new_s = form['text'].data.translate(trans).lower()
                 story_words = new_s.split(' ')
-
                 for w in story_words:
                     if w in dice_figures:
                         dice_figures.remove(w)
                         if not dice_figures:
                             break
-
                 if len(dice_figures) > 0:
                     message = 'Your story doesn\'t contain all the words. Missing: '
                     status = 400
                     for w in dice_figures:
                         message += w + ' '
                 else:
-                    message = 'Your story is a valid one! It has been published'
-                    status = 201
                     if 'id_story' in session:
-                        print(id_story)
-                        old_story = Story.query.filter_by(id=session['id_story']).first()
-                        old_story.text = form['text'].data
-                        old_story.is_draft = False
-                        session.pop('story_id')
+                        # Publish a draft
+                        try:
+                            db.session.query(Story).filter_by(id=session['id_story']).update(
+                                {'text': form.text.data, 'date': datetime.datetime.now(), 'is_draft': False})
+                        except IntegrityError as e:
+                            flash("Error")
+                            return redirect(HOME_URL, code=302)
+                        db.session.commit()
+                        session.pop('id_story')
                     else:
+                        # Publish a new story
                         new_story = Story()
                         new_story.author_id = current_user.id
                         new_story.figures = '#'.join(session['figures'])
@@ -231,7 +243,8 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
                         db.session.add(new_story)
                         db.session.commit()
                     session.pop('figures')
-                    return redirect(url_for('stories._stories'))
+                    flash('Your story is a valid one! It has been published')
+                    return redirect(HOME_URL+'users/'+str(current_user.id)+'/stories')
 
     return make_response(
         render_template("write_story.html", submit_url=submit_url, draft_url=draft_url, form=form,

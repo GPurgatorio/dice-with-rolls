@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
 </head>
 <body>
-<h2>Your Drafts</h2>
+<h2>Your Stories</h2>
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         <ul class=flashes>
@@ -14,19 +14,12 @@
         </ul>
     {% endif %}
 {% endwith %}
-{% for draft in drafts %}
+{% for story in stories %}
     <div>
         <li>
-            {{ draft.text }} -- {{ draft.figures }} -- <a href="{{ write_url+'/'+ draft.id|string }}"> modify </a>
+            {{ story.text }} -- {{ story.figures }}
         </li>
     </div>
 {% endfor %}
 </body>
 </html>
-<script>
-    document.addEventListener("click", function (event) {
-        {% for draft in drafts %}
-            console.log("{{write_url+'/'+ draft.id|string}}")
-        {% endfor %}
-    })
-</script>
