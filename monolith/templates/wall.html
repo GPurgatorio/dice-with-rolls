@@ -33,8 +33,8 @@
                     <td><b>Avg dice per story</b></td>
                 </tr>
             </table>
-            <a class="pure-button" href="users/{{user_info.id}}/stories"><span class="book-open">My stories</span></a>
-            <a class="pure-button" href="users/{{user_info.id}}/drafts"><span class="firstdraft">My drafts</span></a>
+            <a class="pure-button" href="{{user_info.id}}/stories"><span class="book-open">My stories</span></a>
+            <a class="pure-button" href="{{user_info.id}}/drafts"><span class="firstdraft">My drafts</span></a>
         {% else %}
             <h2> {{user_info.firstname}}'s wall </h2>
             First Name: {{user_info.firstname}} <br>
