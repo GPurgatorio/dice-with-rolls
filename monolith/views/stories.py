@@ -2,6 +2,7 @@ import datetime
 
 from flask import Blueprint, render_template, request
 from flask import session
+from flask_cors import cross_origin
 from flask_login import (current_user, login_required)
 from sqlalchemy import and_
 
@@ -80,7 +81,7 @@ def _reaction(reaction_caption, story_id):
     return _stories('')
 
 
-@stories.route('/stories/delete_reaction/<story_id>')
+@stories.route('/stories/react/<story_id>/<reaction_caption>', methods=['DELETE'])
 @login_required
 def _delete_reaction(story_id):
     reaction = Reaction.query.filter_by(liker_id=current_user.id, story_id=story_id, reaction_type_id=0 or 1).first()
@@ -133,19 +134,6 @@ def _range(message=''):
     return render_template('stories.html', **context_vars)
 
 
-# Open a story functionality (1.8)
-@stories.route('/stories/<int:id_story>', methods=['GET'])
-def _open_story(id_story):
-    # Get the story object from database
-    story = Story.query.filter_by(id=id_story).first()
-    if story is not None:
-        rolled_dice = story.figures.split('#')
-        # TODO : aggiornare per le reactions
-        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice)
-    else:
-        return render_template('story.html', exists=False)
-
-
 @stories.route('/stories/new/write', methods=['GET', 'POST'])
 @login_required
 def _write_story(message=''):
@@ -183,3 +171,28 @@ def _submit_story():
                 result = 'Your story doesn\'t contain all the words '
 
     return _write_story(message=result)
+
+
+@stories.route('/stories/<int:id_story>', methods=['GET', 'POST'])
+@login_required
+def _manage_stories(id_story):
+    if request.method == 'GET':
+        # Get the story object from database
+        story = Story.query.filter_by(id=id_story).first()
+        if story is not None:
+            rolled_dice = story.figures.split('#')
+            # TODO : aggiornare per le reactions
+            return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice)
+        else:
+            return render_template('story.html', exists=False)
+
+    if request.method == 'POST':
+        story_to_delete = Story.query.filter(Story.id == id_story)
+        if(story_to_delete.first().author_id != current_user.id):
+            return _stories('Cannot delete other user\'s story')
+        else:
+            story_to_delete.delete()
+            db.session.commit()
+            return _stories('')
+
+
