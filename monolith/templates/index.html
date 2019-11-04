@@ -14,7 +14,7 @@
     {% for story in stories %}
       <div>
         <li>
-          {{story.text}} --
+            {{story.text}} <form action="/stories/{{ story.id }}" method="POST"><button>DELETE</button></form>
         </li>
       </div>
     {% endfor %}

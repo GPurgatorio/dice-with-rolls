@@ -3,6 +3,8 @@ from flask import Flask
 from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
 from monolith.auth import login_manager
+from flask_cors import CORS
+
 import datetime
 
 
@@ -12,6 +14,9 @@ def create_app():
     app.config['SECRET_KEY'] = 'ANOTHER ONE'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+#    app.config['CORS_HEADERS'] = 'Content-Type'
+
+    CORS(app)
 
     for bp in blueprints:
         app.register_blueprint(bp)
