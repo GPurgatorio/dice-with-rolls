@@ -13,6 +13,7 @@ from sqlalchemy import and_
 from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter
 from monolith.forms import StoryForm
 from monolith.urls import SUBMIT_URL, REACTION_URL, LATEST_URL, RANGE_URL, SETTINGS_URL, RANDOM_URL
+from monolith.views.home import index
 
 
 stories = Blueprint('stories', __name__)
@@ -210,27 +211,16 @@ def _write_story(id_story=None, message='', status=200):
                         words=figures, message=message), status)
 
 
-@stories.route('/stories/<int:id_story>', methods=['GET', 'POST'])
+@stories.route('/stories/delete/<int:id_story>', methods=['POST'])
 @login_required
 def _manage_stories(id_story):
-    if request.method == 'GET':
-        # Get the story object from database
-        story = Story.query.filter_by(id=id_story).first()
-        if story is not None:
-            rolled_dice = story.figures.split('#')
-            # TODO : aggiornare per le reactions
-            return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice)
-        else:
-            return render_template('story.html', exists=False)
-
-    if request.method == 'POST':
         story_to_delete = Story.query.filter(Story.id == id_story)
         if(story_to_delete.first().author_id != current_user.id):
-            return _stories('Cannot delete other user\'s story')
+            return index('Cannot delete other user\'s story')
         else:
             story_to_delete.delete()
             db.session.commit()
-            return _stories('')
+            return redirect('/')
 
 
 
@@ -249,3 +239,47 @@ def _random_story():
     else:
         pos = randint(0, len(recent_stories)-1)
         return _open_story(recent_stories[pos].id)
+
+# Open a story functionality (1.8)
+@stories.route('/stories/<int:id_story>', methods=['GET'])
+def _open_story(id_story):
+
+    story = Story.query.filter_by(id=id_story).first()
+
+    if story is not None:
+        # Splitting the names of figures
+        rolled_dice = story.figures.split('#')
+
+        # Get all the reactions for that story
+        all_reactions = list(
+            db.engine.execute("SELECT reaction_caption FROM reaction_catalogue ORDER BY reaction_caption"))
+        query = "SELECT reaction_caption, counter as num_story_reactions FROM counter c, reaction_catalogue r WHERE reaction_type_id = reaction_id AND story_id = " + str(
+            id_story) + " ORDER BY reaction_caption"
+        story_reactions = list(db.engine.execute(query))
+        num_story_reactions = Counter.query.filter_by(story_id=id_story).join(ReactionCatalogue).count()
+        num_reactions = ReactionCatalogue.query.count()
+
+        # Create tuples of counter per reaction
+        list_tuples = list()
+        reactions_counters = list()
+
+        # Generate tuples (reaction, counter)
+        if num_reactions != 0 and num_story_reactions != 0:
+            for combination in itertools.zip_longest(all_reactions, story_reactions):
+                list_tuples.append(combination)
+
+            for i in range(0, num_reactions):
+                reaction = str(list_tuples[i][0]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
+                counter = re.sub('\D', '', str(list_tuples[i][1]))
+                reactions_counters.append((reaction, counter))
+
+        else:
+            for i in range(0, num_reactions):
+                reaction = str(all_reactions[i]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
+                counter = 0
+                reactions_counters.append((reaction, counter))
+
+        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice,
+                               reactions=reactions_counters)
+    else:
+        return render_template('story.html', exists=False)
