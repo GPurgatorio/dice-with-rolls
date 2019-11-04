@@ -1,13 +1,13 @@
 import flask_testing
 import datetime
-from flask import Flask
+from flask import Flask, url_for
 from monolith.views import blueprints
 from monolith.auth import login_manager
 
 from monolith.app import app as my_app
 from monolith.forms import LoginForm, StoryForm
 from monolith.database import Story, User, db
-from monolith.urls import RANGE_URL, LATEST_URL
+from monolith.urls import HOME_URL, RANGE_URL, LATEST_URL, WRITE_URL
 
 
 class TestTemplateStories(flask_testing.TestCase):
@@ -180,7 +180,7 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assert_template_used('story.html')
         test_story = Story.query.filter_by(id=1).first()
         self.assertEqual(self.get_context_variable('story'), test_story)
-        
+
     def test_latest_story(self):
         # Testing that the total number of users is higher or equal than the number of latest stories per user
         self.client.get(LATEST_URL)
@@ -220,77 +220,201 @@ class TestTemplateStories(flask_testing.TestCase):
 
 
 class TestStories(flask_testing.TestCase):
+    app = None
 
+    # First thing called
     def create_app(self):
-        my_app.config['WTF_CSRF_ENABLED'] = False
-        my_app.login_manager.init_app(my_app)
-        return my_app
+        global app
+        app = Flask(__name__, template_folder='../../templates')
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
+        app.config['SECRET_KEY'] = 'ANOTHER ONE'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config['WTF_CSRF_ENABLED'] = False
 
-    def test_stories(self):
-        self.client.get('/stories')
-        self.assert_200(self.client.get('/stories'))
-        self.assert_template_used('stories.html')
+        # app.config['LOGIN_DISABLED'] = True
+        # cache config
+        app.config['CACHE_TYPE'] = 'simple'
+        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 
-    def test_write_story(self):
-        payload = {'email': 'example@example.com',
+        for bp in blueprints:
+            app.register_blueprint(bp)
+            bp.app = app
+
+        db.init_app(app)
+        login_manager.init_app(app)
+        db.create_all(app=app)
+
+        return app
+
+    # Set up database for testing here
+    def setUp(self) -> None:
+        with app.app_context():
+            # Create admin user (if not present)
+            q = db.session.query(User).filter(User.email == 'example@example.com')
+            user = q.first()
+            if user is None:
+                example = User()
+                example.firstname = 'Admin'
+                example.lastname = 'Admin'
+                example.email = 'example@example.com'
+                example.dateofbirth = datetime.datetime(2020, 10, 5)
+                example.is_admin = True
+                example.set_password('admin')
+                db.session.add(example)
+                db.session.commit()
+
+            # Create non admin user (if not present)
+            q = db.session.query(User).filter(User.email == 'abc@abc.com')
+            user = q.first()
+            if user is None:
+                example = User()
+                example.firstname = 'Abc'
+                example.lastname = 'Abc'
+                example.email = 'abc@abc.com'
+                example.dateofbirth = datetime.datetime(2010, 10, 5)
+                example.is_admin = False
+                example.set_password('abc')
+                db.session.add(example)
+                db.session.commit()
+
+            # Create the first story, default from teacher's code
+            q = db.session.query(Story).filter(Story.id == 1)
+            story = q.first()
+            if story is None:
+                example = Story()
+                example.text = 'Trial story of example admin user :)'
+                example.author_id = 1
+                example.figures = 'example#admin'
+                example.is_draft = False
+                db.session.add(example)
+                db.session.commit()
+
+            # Create a story of a different user
+            q = db.session.query(Story).filter(Story.id == 2)
+            story = q.first()
+            if story is None:
+                example = Story()
+                example.text = 'You won\'t modify this story'
+                example.author_id = 2
+                example.figures = 'modify#story'
+                example.is_draft = False
+                db.session.add(example)
+                db.session.commit()
+
+            # Create a draft for the logged user
+            q = db.session.query(Story).filter(Story.id == 3)
+            story = q.first()
+            if story is None:
+                example = Story()
+                example.text = 'This is an example of draft'
+                example.author_id = 1
+                example.figures = 'example#draft'
+                example.is_draft = True
+                db.session.add(example)
+                db.session.commit()
+
+            # Create a draft of a different user
+            q = db.session.query(Story).filter(Story.id == 4)
+            story = q.first()
+            if story is None:
+                example = Story()
+                example.text = 'This is an example of draft that you can\'t modify'
+                example.date = datetime.datetime.strptime('2018-12-30', '%Y-%m-%d')
+                example.author_id = 2
+                example.figures = 'example#draft'
+                example.is_draft = True
+                db.session.add(example)
+                db.session.commit()
+
+            payload = {'email': 'example@example.com',
                    'password': 'admin'}
 
-        form = LoginForm(data=payload)
+            form = LoginForm(data=payload)
 
-        self.client.post('/users/login', data=form.data, follow_redirects=True)
+            self.client.post('/users/login', data=form.data, follow_redirects=True)
 
-        # test write without rolling dice
-        self.assert_redirects(self.client.get('/stories/new/write'), '/')
-        self.client.get('/stories/new/write', follow_redirects=True)
+    # Executed at end of each test
+    def tearDown(self) -> None:
+        db.session.remove()
+        db.drop_all()
+
+    def test_write_story(self):
+
+        # Testing writing without rolling dice
+        response = self.client.get(WRITE_URL)
+        self.assert_redirects(response, HOME_URL)
+        self.client.get(WRITE_URL, follow_redirects=False)
         self.assert_template_used('index.html')
 
-        # test write with right session
+        # Testing writing of a valid draft story
+        response = self.client.get(WRITE_URL+'/3')
+        self.assert200(response)
+        self.assert_template_used('write_story.html')
+        self.assert_context('words', ['example', 'draft'])
+
+        # Testing writing of other user's draft
+        response = self.client.get(WRITE_URL + '/4')
+        self.assert_redirects(response, 'http://127.0.0.1:5000/users/1/drafts')
+
+        # Testing writing of an already published story
+        response = self.client.get(WRITE_URL + '/1')
+        self.assert_redirects(response, 'http://127.0.0.1:5000/users/1/drafts')
+
+        # Testing writing of a new story with valid session
         with self.client.session_transaction() as session:
             session['figures'] = ['beer', 'cat', 'dog']
-        self.assert200(self.client.get('/stories/new/write'))
+        response = self.client.get(WRITE_URL)
+        self.assert200(response)
         self.assert_template_used('write_story.html')
+        self.assert_context('words', ['beer', 'cat', 'dog'])
 
-        # test write with invalid story
+        # Testing publishing invalid story
         payload = {'text': 'my cat is drinking a gin tonic with my neighbour\'s dog'}
         form = StoryForm(data=payload)
-        response = self.client.post('/stories/new/write', data=form.data)
+        response = self.client.post('/stories/new/write/0', data=form.data)
         self.assert400(response)
         self.assert_template_used('write_story.html')
         self.assert_context('message', 'Your story doesn\'t contain all the words. Missing: beer ')
 
-        # test write story with valide one
+        # Testing publishing valid story
         payload1 = {'text': 'my cat is drinking a beer with my neighbour\'s dog'}
         form1 = StoryForm(data=payload1)
-        response = self.client.post('/stories/new/write', data=form1.data, follow_redirects=True)
-        self.assert_status(response, 200)
-        self.assert_template_used('stories.html')
+        response = self.client.post('/stories/new/write/0', data=form1.data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/stories')
 
-        # test write story with draft id
-        draft = Story()
-        draft.author_id = 1
-        draft.figures = 'dog#cat#beer'
-        draft.text = 'halloween bye bye'
-        draft.is_draft = True
-        db.session.add(draft)
-        db.session.commit()
-        draft_db = Story.query.filter(Story.figures == 'dog#cat#beer', Story.text == 'halloween bye bye',
-                                      Story.author_id == 1).first()
+        # Testing saving a new story as draft
+        with self.client.session_transaction() as session:
+            session['figures'] = ['beer', 'cat', 'dog']
+        payload2 = {'text': 'my cat is drinking'}
+        form2 = StoryForm(data=payload2)
+        response = self.client.post('/stories/new/write/1', data=form2.data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/drafts')
 
-        url = '/stories/new/write/' + str(draft_db.id)
-        response = self.client.get(url)
-        self.assert200(response)
-        self.assert_template_used('write_story.html')
+        # Testing saving a draft again
+        with self.client.session_transaction() as session:
+            session['figures'] = ['beer', 'cat', 'dog']
+            session['id_story'] = 6
+        response = self.client.post('/stories/new/write/1', data=form2.data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/drafts')
+        q = db.session.query(Story).filter(Story.id == 7).first()
+        self.assertEqual(q, None)
 
-        response = self.client.post(url, data=form1.data, follow_redirects=True)
-        self.assert200(response)
-        self.assert_template_used('stories.html')
-        self.assertEqual(draft_db.is_draft, False)
-        self.assertEqual(draft_db.text, 'my cat is drinking a beer with my neighbour\'s dog')
+        # Testing publishing a draft story
+        with self.client.session_transaction() as session:
+            session['figures'] = ['beer', 'cat', 'dog']
+            session['id_story'] = 6
+        payload3 = {'text': 'my cat is drinking dog and beer'}
+        form3 = StoryForm(data=payload3)
+        response = self.client.post('/stories/new/write/0', data=form3.data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/stories')
+        q = db.session.query(Story).filter(Story.id == 7).first()
+        self.assertEqual(q, None)
+        q = db.session.query(Story).filter(Story.id == 6).first()
+        self.assertEqual(q.is_draft, False)
 
-        # test write story with invalid draft (not yours)
-        response = self.client.post(url, data=form1.data)
-        self.assert_status(response, 302)
-        # test write story with invalid draft (not draft)
-        response = self.client.post(url, data=form1.data)
-        self.assert_status(response, 302)
-        self.assert_template_used('stories.html')
