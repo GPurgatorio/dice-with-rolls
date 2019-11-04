@@ -8,7 +8,7 @@ home = Blueprint('home', __name__)
 
 
 @home.route('/')
-def index():
+def index(message=''):
     if current_user is not None and hasattr(current_user, 'id'):
         stories = db.session.query(Story).filter(Story.author_id == current_user.id)
     else:
@@ -16,5 +16,5 @@ def index():
     context_vars = {"stories": stories, "register_url": REGISTER_URL,
                     "login_url": LOGIN_URL, "logout_url": LOGOUT_URL,
                     "read_url": READ_URL, "settings_url": SETTINGS_URL,
-                    "users_url": USERS_URL}
+                    "users_url": USERS_URL, "message" : message}
     return render_template("index.html", **context_vars)

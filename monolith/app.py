@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 # from monolith.cache import cache
 from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
@@ -7,11 +8,13 @@ import datetime
 
 
 def create_app():
+  
     flask_app = Flask(__name__)
     flask_app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
     flask_app.config['SECRET_KEY'] = 'ANOTHER ONE'
     flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
     flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
     # cache config
     flask_app.config['CACHE_TYPE'] = 'simple'

@@ -14,8 +14,8 @@
         </p>
         <p>
           <h3>Reactions:</h3>
-          {% for i in range(0, reactions|length): %}
-            {% if not reactions[i][1]: %}
+          {% for i in range(0, reactions|length) %}
+            {% if not reactions[i][1] %}
               <b>{{reactions[i][0]}}</b>: 0
             {% else: %}
               <b>{{reactions[i][0]}}</b>: {{reactions[i][1]}}
