@@ -145,7 +145,8 @@ def _range(message=''):
     return render_template('stories.html', **context_vars)
 
 
-@stories.route('/stories/new/write', methods=['GET', 'POST'])
+@stories.route('/stories/new/write', defaults={'id_story': None}, methods=['GET', 'POST'])
+@stories.route('/stories/new/write/<int:id_story>', methods=['GET', 'POST'])
 @login_required
 def _write_story(id_story=None, message='', status=200):
     form = StoryForm()
