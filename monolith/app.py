@@ -4,7 +4,7 @@ from flask import Flask
 from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
 from monolith.auth import login_manager
-from monolith.tasks import task_try
+#from monolith.tasks import task_try
 import datetime
 
 

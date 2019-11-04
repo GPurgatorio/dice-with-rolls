@@ -1,8 +1,4 @@
-import unittest
-import json
-from flask import request
 import flask_testing
-from flask_login import login_user
 
 from monolith.app import app as my_app
 from monolith.database import db, User
@@ -20,13 +16,13 @@ class TestTemplateOtherWall(flask_testing.TestCase):
     def test_user_wall(self):
         # looking for non-existing user without login
         id = 10
-        self.client.get('/users/' + id)
+        self.client.get('/users/' + str(id))
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), False)
 
         # looking for existing user without login
         id = 1
-        self.client.get('/users/' + id)
+        self.client.get('/users/' + str(id))
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), True)
         user_info = User.query.filter_by(id=id).first()
@@ -57,13 +53,13 @@ class TestTemplateOtherWall(flask_testing.TestCase):
 
         # looking for non-existing user after login
         id = 10
-        self.client.get('/users/' + id)
+        self.client.get('/users/' + str(id))
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), False)
 
         # looking for existing user after login
         id = 2
-        self.client.get('/users/' + id)
+        self.client.get('/users/' + str(id))
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), True)
         user_info = User.query.filter_by(id=id).first()
@@ -71,7 +67,7 @@ class TestTemplateOtherWall(flask_testing.TestCase):
 
         # looking for owned wall after login
         id = 1
-        self.client.get('/users/' + id)
+        self.client.get('/users/' + str(id))
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), True)
         user_info = User.query.filter_by(id=id).first()
