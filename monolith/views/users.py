@@ -28,7 +28,7 @@ def create_user():
     return render_template('create_user.html', form=form)
 
 
-@users.route('/users/<int:userid>', method=['GET'])
+@users.route('/users/<int:userid>', methods=['GET'])
 def _wall(userid):
     user_info = None
     user_info = User.query.filter_by(id=userid).first()
