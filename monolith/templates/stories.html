@@ -2,7 +2,13 @@
   <body>
     <a href="/"><button><</button> Come back to the home page</a>
     <h1>Story List</h1>
-    <h5>{{message}}</h5>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <h5 class="{{ category }}">{{ message }}</h5>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <br><br>
     <button type="button" onclick="window.location='{{ latest_url }}'">Latest Story</button>
     <form>

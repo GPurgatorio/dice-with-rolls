@@ -15,7 +15,6 @@ def create_app():
     flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
     flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-
     # cache config
     flask_app.config['CACHE_TYPE'] = 'simple'
     flask_app.config['CACHE_DEFAULT_TIMEOUT'] = 300

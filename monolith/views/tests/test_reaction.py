@@ -18,7 +18,9 @@ class TestReaction(flask_testing.TestCase):
         return my_app
 
     def test1(self):
-        len_to_be_deleted_reactions = len(Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1, Reaction.marked == 2).all())
+        len_to_be_deleted_reactions = len(Reaction.query.filter(Reaction.story_id == '1',
+                                                                Reaction.reactor_id == 1,
+                                                                Reaction.marked == 2).all())
 
         payload = {'email': 'example@example.com',
                             'password': 'admin'}
@@ -27,7 +29,7 @@ class TestReaction(flask_testing.TestCase):
 
         self.client.post('/users/login', data=form.data, follow_redirects=True)
 
-        self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
+        self.client.post('http://127.0.0.1:5000/stories/react/1/Like', follow_redirects=True)
 
         self.assert_template_used('stories.html')
         unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1,  Reaction.marked == 0).all()
@@ -36,7 +38,7 @@ class TestReaction(flask_testing.TestCase):
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
         self.assert_template_used('stories.html')
-        self.assert_context('message', 'You have already reacted to this story!')
+        self.assert_message_flashed('Reaction successfully deleted!')
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Dislike')
         self.assert_template_used('stories.html')

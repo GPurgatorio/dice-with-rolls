@@ -10,7 +10,7 @@ BACKEND = BROKER = 'redis://localhost:6379'
 celery = Celery(__name__, backend=BACKEND, broker=BROKER)
 
 celery.conf.beat_schedule = {
-    'like_task': {
+    'react_task': {
         'task': 'monolith.tasks.like_task',
         'schedule': 5.0
     },
@@ -43,7 +43,7 @@ def like_task():
             print("Story {}: {} {}(s) marked to {}".format(r.story_id, r.count, r.reaction_caption, r.marked))
             counter_row = Counter.query.filter(and_(Counter.reaction_type_id == r.reaction_type_id,
                                                     Counter.story_id == r['story_id'])).first()
-            if r['marked'] == 0:  # INCREASE COUNTER
+            if r.marked == 0:  # INCREASE COUNTER
 
                 if counter_row is None:  # non-existing counter
                     # Create counter and set it
@@ -52,7 +52,6 @@ def like_task():
                     new_counter.story_id = r.story_id
                     new_counter.counter = r.count
                     db.session.add(new_counter)
-                    # db.session.commit()
                 else:  # existing counter
                     counter_row.counter = counter_row.counter + r.count
 

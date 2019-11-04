@@ -39,21 +39,22 @@ def _roll_dice():
     dice_list = []
     for i in dice_indexes:
         try:
-            filename = os.path.dirname(os.path.abspath(__file__))
-            print(filename)
-            dice_list.append(Die('monolith/resources/die' + str(i) + '.txt'))
+            dirname = os.path.dirname(os.path.abspath(__file__))
+            path = dirname + "/../resources/"
+            dice_list.append(Die(path + 'die' + str(i) + '.txt'))
         except FileNotFoundError:
             print("File die" + str(i) + ".txt not found")
             session.pop('dice_number', None)
-            return redirect(url_for('stories._stories', message="Can't find dice on server"))
+            flash("Can't find dice on server", 'error')
+            return redirect(url_for('home.index'))
 
     dice_set = DiceSet(dice_list)
     try:
         dice_set.throw_dice()
-    except IndexError as e:
-        # flash('Error in throwing dice', 'error')
+    except IndexError:
         session.pop('dice_number', None)
-        return redirect(url_for('stories._stories', message='Error in throwing dice'))
+        flash('Error in throwing dice', 'error')
+        return redirect(url_for('home.index'))
     session['figures'] = dice_set.pips
 
     context_vars = {'dice_number': dice_number, 'words': dice_set.pips,

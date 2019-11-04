@@ -1,6 +1,7 @@
 werkzeug
 sqlalchemy
 flask
+flask-cors
 flask-login
 flask-testing
 flask-caching

@@ -1,10 +1,5 @@
 import datetime
-import unittest
-import json
-from flask import request, jsonify, g, current_app
 import flask_testing
-from flask_login import login_user, current_user
-
 from monolith.app import app as my_app
 from monolith.database import db, Story, User
 from monolith.forms import LoginForm
@@ -44,15 +39,14 @@ class TestDeletion(flask_testing.TestCase):
         test_story.is_draft = 0
         test_story.figures = "Test#admin"
 
-        dummy_Story = Story()
-        dummy_Story.text = "Test story from dummy user"
-        dummy_Story.author_id = dummy_id
-        dummy_Story.is_draft = 0
-        dummy_Story.figures = "Test#dummy"
-
+        dummy_story = Story()
+        dummy_story.text = "Test story from dummy user"
+        dummy_story.author_id = dummy_id
+        dummy_story.is_draft = 0
+        dummy_story.figures = "Test#dummy"
 
         db.session.add(test_story)
-        db.session.add(dummy_Story)
+        db.session.add(dummy_story)
         db.session.commit()
 
         story_id = Story.query.filter(Story.text == "Test story from admin user").first().id
@@ -60,13 +54,11 @@ class TestDeletion(flask_testing.TestCase):
 
         self.client.post('/stories/delete/' + str(story_id))
         self.assert_template_used('index.html')
-        self.assert_context('message', '')
 
         self.assertEqual(len(Story.query.filter(Story.id == story_id).all()), 0)
 
         self.client.post('/stories/delete/' + str(dummy_story_id))
         self.assert_template_used('index.html')
-        self.assert_context('message', 'Cannot delete other user\'s story')
+        self.assert_message_flashed("Cannot delete other user's story", 'error')
 
         self.assertEqual(len(Story.query.filter(Story.id == dummy_story_id).all()), 1)
-
