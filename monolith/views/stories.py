@@ -189,7 +189,7 @@ def _manage_stories(id_story):
     if request.method == 'POST':
         story_to_delete = Story.query.filter(Story.id == id_story)
         if(story_to_delete.first().author_id != current_user.id):
-            return _stories('Impossibile cancellare storie di altri utenti')
+            return _stories('Cannot delete other user\'s story')
         else:
             story_to_delete.delete()
             db.session.commit()
