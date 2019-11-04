@@ -28,22 +28,22 @@ def _roll_dice():
         if dice_number not in range(2, 7):
             raise ValueError('number')
 
-        # get dice set
-        dice_set = request.form['dice_set']
-        session['dice_set'] = dice_set
-        print(dice_set)
-        if dice_set not in {'standard', 'animal', 'halloween'}:
+        # get dice set from the form of previous page
+        dice_img_set = request.form['dice_img_set']
+        session['dice_img_set'] = dice_img_set
+        if dice_img_set not in {'standard', 'animal', 'halloween'}:
             raise ValueError('set')
 
     except BadRequestKeyError:  # i'm here after re-rolling dice
         dice_number = session['dice_number']
+        dice_img_set = session['dice_img_set']
     except (KeyError, ValueError):  # i'm here directly, have to go from settings before
         if ValueError is 'number':
             flash('Invalid number of dice!', 'error')
             session.pop('dice_number', None)
         else:
             flash('Invalid dice set!', 'error')
-            session.pop('dice_set', None)
+            session.pop('dice_img_set', None)
         return redirect(url_for('dice._settings'))
 
     # random sampling dice and throw them
@@ -53,10 +53,11 @@ def _roll_dice():
         try:
             filename = os.path.dirname(os.path.abspath(__file__))
             print(filename)
-            dice_list.append(Die('monolith/resources/' + dice_set + '/die' + str(i) + '.txt'))
+            dice_list.append(Die('monolith/resources/' + dice_img_set + '/die' + str(i) + '.txt'))
         except FileNotFoundError:
             print("File die" + str(i) + ".txt not found")
             session.pop('dice_number', None)
+            session.pop('dice_img_set', None)
             return redirect(url_for('stories._stories', message="Can't find dice on server"))
 
     dice_set = DiceSet(dice_list)
@@ -65,6 +66,7 @@ def _roll_dice():
     except IndexError as e:
         # flash('Error in throwing dice', 'error')
         session.pop('dice_number', None)
+        session.pop('dice_img_set', None)
         return redirect(url_for('stories._stories', message='Error in throwing dice'))
     session['figures'] = dice_set.pips
 

@@ -23,13 +23,13 @@ class TestDice(unittest.TestCase):
             die = Die("monolith/resources/dieEmpty.txt")
 
         # die check
-        die = Die("monolith/resources/die0.txt")
+        die = Die("monolith/resources/standard/die0.txt")
         expected_faced = ['bike', 'moonandstars', 'bag', 'bird', 'crying', 'angry']
         self.assertEqual(die.faces, expected_faced)
 
     def test_throw_die(self):
         rnd.seed(666)
-        die = Die("monolith/resources/die0.txt")
+        die = Die("monolith/resources/standard/die0.txt")
         res = die.throw_die()
         self.assertEqual(res, 'bird')
 
@@ -58,13 +58,14 @@ class TestTemplateDice(flask_testing.TestCase):
 
     # 9 is out of range (2,7) -> redirect to settings
     def test_oob_roll(self):
-        self.assertRedirects(self.client.post('/stories/new/roll', data={'dice_number': 9}), '/stories/new/settings')
+        self.assertRedirects(self.client.post('/stories/new/roll', data={'dice_number': 9, 'dice_img_set': 'standard'}), '/stories/new/settings')
 
     # Redirect from session (abc fails, throws ValueError, gets 8 from session, out of range -> redirect)
     def test_oob_roll_sess(self):
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 8
-            self.assertRedirects(self.client.post('/stories/new/roll', data={'dice_number': 'abc'}), '/stories/new/settings')
+            sess['dice_img_set'] = 'standard'
+            self.assertRedirects(self.client.post('/stories/new/roll', data={'dice_number': 'abc', 'dice_img_set': 'standard'}), '/stories/new/settings')
 
 """
     # Correct execution's flow of roll
