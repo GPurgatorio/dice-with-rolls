@@ -20,13 +20,13 @@ class TestTemplateOtherWall(flask_testing.TestCase):
     def test_user_wall(self):
         # looking for non-existing user without login
         id = 10
-        self.client.get('/users/10')
+        self.client.get('/users/' + id)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), False)
 
         # looking for existing user without login
         id = 1
-        self.client.get('/users/1')
+        self.client.get('/users/' + id)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), True)
         user_info = User.query.filter_by(id=id).first()
@@ -57,13 +57,13 @@ class TestTemplateOtherWall(flask_testing.TestCase):
 
         # looking for non-existing user after login
         id = 10
-        self.client.get('/users/10')
+        self.client.get('/users/' + id)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), False)
 
         # looking for existing user after login
         id = 2
-        self.client.get('/users/2')
+        self.client.get('/users/' + id)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), True)
         user_info = User.query.filter_by(id=id).first()
@@ -71,8 +71,14 @@ class TestTemplateOtherWall(flask_testing.TestCase):
 
         # looking for owned wall after login
         id = 1
-        self.client.get('/users/1')
+        self.client.get('/users/' + id)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('exists'), True)
         user_info = User.query.filter_by(id=id).first()
         self.assertEqual(self.get_context_variable('user_info'), user_info)
+
+    # test method not allowed
+    def test_methods_wall(self):
+        self.assert405(self.client.post('/users/1'))
+        self.assert405(self.client.put('/users/1'))
+        self.assert405(self.client.delete('/users/1'))
