@@ -1,5 +1,6 @@
 <html>
   <body>
+    <a href="/stories"><button><</button> Come back to all stories</a>
     {% if not exists %}
     <div style="margin: 0 auto; width: 80%; text-align: center; vertical-align: middle;">
       <h1>Sorry the story you've searched doesn't exist!</h1>
@@ -9,7 +10,17 @@
     <div style="margin: 0 auto; width: 80%; text-align: center; vertical-align: middle;">
       <h1>Story #{{story.id}}</h1>
         <p>
-          <b>Author:</b> {{story.author}} - <b>Date:</b> {{story.date}} - <b>{{story.likes}} Likes</b>
+          <b>Author:</b> {{story.author}} <b>Date:</b> {{story.date}}
+        </p>
+        <p>
+          <h3>Reactions:</h3>
+          {% for i in range(0, reactions|length): %}
+            {% if not reactions[i][1]: %}
+              <b>{{reactions[i][0]}}</b>: 0
+            {% else: %}
+              <b>{{reactions[i][0]}}</b>: {{reactions[i][1]}}
+            {% endif %}
+          {% endfor %}
         </p>
     </div>
     <div style="margin: 0 auto; width: 80%; text-align: center; vertical-align: middle;">

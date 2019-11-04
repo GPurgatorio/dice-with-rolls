@@ -6,7 +6,7 @@ from flask_login import login_required
 from werkzeug.exceptions import BadRequestKeyError
 
 from monolith.classes.DiceSet import DiceSet, Die
-from monolith.urls import WRITE_URL, ROLL_URL
+from monolith.urls import WRITE_URL, ROLL_URL, SETTINGS_URL
 
 dice = Blueprint('dice', __name__)
 
@@ -14,13 +14,13 @@ dice = Blueprint('dice', __name__)
 @dice.route('/stories/new/settings', methods=['GET'])
 @login_required
 def _settings():
-    return render_template('settings.html', roll_url=ROLL_URL)
+    context_vars = {"roll_url": ROLL_URL}
+    return render_template('settings.html', **context_vars)
 
 
 @dice.route('/stories/new/roll', methods=['POST'])
 @login_required
 def _roll_dice():
-
     try:
         # get number of dice from the form of previous page
         dice_number = int(request.form['dice_number'])
@@ -29,7 +29,7 @@ def _roll_dice():
             raise ValueError
     except BadRequestKeyError:  # i'm here after re-rolling dice
         dice_number = session['dice_number']
-    except (KeyError, ValueError, BadRequestKeyError):  # i'm here directly, have to go from settings before
+    except (KeyError, ValueError):  # i'm here directly, have to go from settings before
         flash('Invalid number of dice!', 'error')
         session.pop('dice_number', None)
         return redirect(url_for('dice._settings'))
@@ -46,6 +46,7 @@ def _roll_dice():
             print("File die" + str(i) + ".txt not found")
             session.pop('dice_number', None)
             return redirect(url_for('stories._stories', message="Can't find dice on server"))
+
     dice_set = DiceSet(dice_list)
     try:
         dice_set.throw_dice()
@@ -54,4 +55,8 @@ def _roll_dice():
         session.pop('dice_number', None)
         return redirect(url_for('stories._stories', message='Error in throwing dice'))
     session['figures'] = dice_set.pips
-    return render_template('roll_dice.html', words=dice_set.pips, write_url=WRITE_URL)
+
+    context_vars = {'dice_number': dice_number, 'words': dice_set.pips,
+                    'write_url': WRITE_URL, 'settings_url': SETTINGS_URL}
+    return render_template('roll_dice.html', **context_vars)
+

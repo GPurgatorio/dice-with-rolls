@@ -36,7 +36,7 @@ class TestReaction(flask_testing.TestCase):
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
         self.assert_template_used('stories.html')
-        self.assert_context('message', 'You have already reacted this story')
+        self.assert_context('message', 'You have already reacted to this story!')
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Dislike')
         self.assert_template_used('stories.html')
@@ -55,8 +55,3 @@ class TestReaction(flask_testing.TestCase):
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(len(marked_reactions), 0)
         self.assertEqual(len(to_be_deleted_reactions), len_to_be_deleted_reactions + 1)
-
-
-
-
-
