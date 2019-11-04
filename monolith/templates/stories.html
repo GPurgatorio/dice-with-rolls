@@ -20,12 +20,12 @@
     <ul>
       {% for item in stories %}
       <li>
-      "{{item.story.text}}"  <br/>
-          ({{item.story.date}})  <br/>
+      "{{item.text}}"  <br/>
+          ({{item.date}})  <br/>
       Likes:
       {% if current_user.is_authenticated %}
-      <a href="{{reaction_url}}/{{item.story.id}}/Like">Like it!</a>
-      <a href="{{reaction_url}}/{{item.story.id}}/Dislike">Unliike it!</a>
+      <a href="{{reaction_url}}/{{item.id}}/Like">Like it!</a>
+      <a href="{{reaction_url}}/{{item.id}}/Dislike">Unliike it!</a>
       {% endif %}
       </li>
       {% endfor %}
