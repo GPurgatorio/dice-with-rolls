@@ -6,7 +6,7 @@ from monolith.auth import login_manager
 
 from monolith.app import app as my_app
 from monolith.forms import LoginForm, StoryForm
-from monolith.database import Story, User, db
+from monolith.database import Story, User, db, ReactionCatalogue
 from monolith.urls import RANGE_URL, LATEST_URL
 
 
@@ -163,6 +163,18 @@ class TestTemplateStories(flask_testing.TestCase):
                 db.session.add(example)
                 db.session.commit()
 
+            # Add two reactions (Like and Dislike)
+            like_reaction = ReactionCatalogue()
+            like_reaction.reaction_caption = 'Like'
+            dislike_reaction = ReactionCatalogue()
+            dislike_reaction.reaction_caption = 'Dislike'
+            love_reaction = ReactionCatalogue()
+            love_reaction.reaction_caption = 'Love'
+            db.session.add(like_reaction)
+            db.session.add(dislike_reaction)
+            db.session.add(love_reaction)
+            db.session.commit()
+
         payload = {'email': 'example@example.com',
                    'password': 'admin'}
 
@@ -180,6 +192,14 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assert_template_used('story.html')
         test_story = Story.query.filter_by(id=1).first()
         self.assertEqual(self.get_context_variable('story'), test_story)
+        # Ordered reactions
+        reactions = [('Dislike', 0), ('Like', 0), ('Love', 0)]
+        self.assert_context('reactions', reactions)
+
+    def test_non_existing_story(self):
+        self.client.get('/stories/50')
+        self.assert_template_used('story.html')
+        self.assertEqual(self.get_context_variable('exists'), False)
         
     def test_latest_story(self):
         # Testing that the total number of users is higher or equal than the number of latest stories per user
