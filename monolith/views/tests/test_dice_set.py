@@ -1,76 +1,103 @@
+import datetime
 import unittest
+from flask import Flask
+from sqlalchemy.exc import IntegrityError
+
+from monolith.forms import LoginForm
+from monolith.views import blueprints
+from monolith.auth import login_manager
 
 import flask_testing
 
-from monolith.app import app as my_app
-from monolith.database import db, User
-from monolith.forms import LoginForm
+from monolith.database import Story, User, db, Follower
 
-import datetime
 
 class TestDiceSet(flask_testing.TestCase):
+    app = None
 
+    # First thing called
     def create_app(self):
-        my_app.config['LOGIN_DISABLED'] = False
-        my_app.login_manager.init_app(my_app)
-        return my_app
+        global app
+        app = Flask(__name__, template_folder='../../templates')
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
+        app.config['SECRET_KEY'] = 'ANOTHER ONE'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config['WTF_CSRF_ENABLED'] = False
+
+        app.config['LOGIN_DISABLED'] = False
+        # cache config
+        app.config['CACHE_TYPE'] = 'simple'
+        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+
+        for bp in blueprints:
+            app.register_blueprint(bp)
+            bp.app = app
+
+        db.init_app(app)
+        login_manager.init_app(app)
+        db.create_all(app=app)
+
+        return app
+
+    def test_authorization(self):
+        response = self.client.post('/users/logout')
+
+        self.assert_redirects(response, '/')
+
+        self.assert401(self.client.get('stories/new/settings'))
+        self.assert401(self.client.post('stories/new/roll'))
+
 
     def test_dice_set(self):
+        with app.app_context():
+            example = User()
+            example.firstname = 'Admin'
+            example.lastname = 'Admin'
+            example.email = 'example@example.com'
+            example.dateofbirth = datetime.datetime(2020, 10, 5)
+            example.is_admin = True
+            example.set_password('admin')
+            db.session.add(example)
 
-        # create a test user
-        with my_app.app_context():
-            q = db.session.query(User).filter(User.email == 'test@test.com')
-            user = q.first()
-            if user is None:
-                example = User()
-                example.firstname = 'Test'
-                example.lastname = 'Test'
-                example.email = 'test@test.com'
-                example.dateofbirth = datetime.datetime(2020, 10, 5)
-                example.is_admin = False
-                example.set_password('test')
-                db.session.add(example)
-                db.session.commit()
+            db.session.commit()
 
-        # login with admin user
         payload = {'email': 'example@example.com',
-                    'password': 'admin'}
+                   'password': 'admin'}
 
         form = LoginForm(data=payload)
 
-        self.client.post('/users/login', data=form.data, follow_redirects=True)
+        self.assert200(self.client.post('/users/login', data=form.data, follow_redirects=True))
 
         # test settings template
-        self.client.get('/stories/new/settings')
-        #self.assert_template_used('settings.html')
+        
+        self.assert200(self.client.get('/stories/new/settings'))
+        self.assert_template_used('settings.html')
 
         # test set not exist
         self.assertRedirects(self.client.post('/stories/new/roll', 
-                            data={'dice_number': 2, 'dice_set': 'notexist'}), '/stories/new/settings')
+                            data={'dice_number': 2, 'dice_img_set': 'notexist'}), '/stories/new/settings')
 
         # test set not exist from same page with bad request key
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 2
             sess['dice_img_set'] = 'notexist'
             self.assertRedirects(self.client.post('/stories/new/roll', 
-                            data={'dice_set': 'badrequestkey'}), '/stories/new/settings')
+                            data={'dice_number': 2, 'dice_img_set': 'badrequestkey'}), '/stories/new/settings')
 
         # test set exist 
         self.client.post('/stories/new/roll', 
-                            data={'dice_number': 2, 'dice_set': 'halloween'})
+                            data={'dice_number': 2, 'dice_img_set': 'halloween'})
         self.assert_template_used('roll_dice.html')
 
-        # test set not exist from same page with bad request key
+        # test set exist from same page with bad request key
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 2
             sess['dice_img_set'] = 'animal'
             self.client.post('/stories/new/roll', 
-                            data={'dice_set': 'badrequestkey'})
+                            data={'dice_img_set': 'badrequestkey'})
             self.assert_template_used('roll_dice.html')
-
-    # test authorization
-    def test_athorization(self):
-        self.assert401(self.client.get('stories/new/settings'))
 
     # Tests for POST, PUT and DEL requests ( /settings )
     def test_requests_settings(self):

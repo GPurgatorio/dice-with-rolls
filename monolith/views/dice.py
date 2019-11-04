@@ -25,12 +25,14 @@ def _roll_dice():
         # get number of dice from the form of previous page
         dice_number = int(request.form['dice_number'])
         session['dice_number'] = dice_number
-        if dice_number not in range(2, 7):
-            raise ValueError('number')
 
         # get dice set from the form of previous page
-        dice_img_set = request.form['dice_img_set']
+        dice_img_set = str(request.form['dice_img_set'])
         session['dice_img_set'] = dice_img_set
+
+        # check retrived data
+        if dice_number not in range(2, 7):
+            raise ValueError('number')
         if dice_img_set not in {'standard', 'animal', 'halloween'}:
             raise ValueError('set')
 
