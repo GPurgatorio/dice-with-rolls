@@ -191,7 +191,8 @@ def _write_story(id_story=None, message='', status=200):
         story = Story.query.filter(Story.id == id_story).first()
         if story is not None and story.author_id == current_user.id and story.is_draft:
             form.text.data = story.text
-            session['figures'] = story.figures.split('#')
+            rolled_dice = story.figures.split('#')
+            session['figures'] = rolled_dice[1:-1]
             session['id_story'] = story.id
         else:
             flash('Request is invalid, check if you are the author of the story and it is still a draft')
@@ -254,7 +255,7 @@ def _write_story(id_story=None, message='', status=200):
                         # Publish a new story
                         new_story = Story()
                         new_story.author_id = current_user.id
-                        new_story.figures = '#'.join(session['figures'])
+                        new_story.figures = '#' + '#'.join(session['figures']) + '#'
                         new_story.is_draft = False
                         form.populate_obj(new_story)
                         db.session.add(new_story)

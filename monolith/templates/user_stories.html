@@ -17,9 +17,12 @@
 {% for story in stories %}
     <div>
         <li>
-            {{ story.text }} -- {{ story.figures }}
+            {{ story.text }} -- {{ story.figures }} --  <a href="{{ open_url+'/'+ story.id|string }}"> open </a>
         </li>
     </div>
 {% endfor %}
+<a href="{{ home_url }}">
+   <button>Home</button>
+</a>
 </body>
 </html>
