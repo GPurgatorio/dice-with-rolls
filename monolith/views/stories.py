@@ -159,9 +159,13 @@ def _open_story(id_story):
 
             for i in range(0, num_reactions):
                 reaction = str(list_tuples[i][0]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
-                counter = re.sub(r'\D', '', str(list_tuples[i][1]))
+                counter = re.sub(r'\D', '', str(list_tuples[i][1])) 
+                if not counter:
+                    counter = 0
+                else:
+                    counter = int(counter)
+                
                 reactions_counters.append((reaction, counter))
-
         else:
             for reaction in all_reactions:
                 reactions_counters.append((reaction.reaction_caption, 0))
