@@ -137,6 +137,7 @@ def _open_story(id_story):
     if story is not None:
         #  Splitting the names of figures
         rolled_dice = story.figures.split('#')
+        rolled_dice = rolled_dice[1:-1]
 
         # Get all the reactions for that story
         all_reactions = list(
@@ -162,10 +163,8 @@ def _open_story(id_story):
                 reactions_counters.append((reaction, counter))
 
         else:
-            for i in range(0, num_reactions):
-                reaction = str(all_reactions[i]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
-                counter = 0
-                reactions_counters.append((reaction, counter))
+            for reaction in all_reactions:
+                reactions_counters.append((reaction.reaction_caption, 0))
 
         return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice,
                                reactions=reactions_counters)
