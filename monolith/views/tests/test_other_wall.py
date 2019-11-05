@@ -1,19 +1,56 @@
+import datetime
+import unittest
+
 import flask_testing
 
-from monolith.app import app as my_app
-from monolith.database import db, User
+from monolith.database import User, db
 from monolith.forms import LoginForm
-
-import datetime
+from monolith.app import create_test_app
 
 class TestTemplateOtherWall(flask_testing.TestCase):
+    app = None
 
+    # First thing called
     def create_app(self):
-        my_app.config['LOGIN_DISABLED'] = False
-        my_app.login_manager.init_app(my_app)
-        return my_app
+        global app
+        app = create_test_app()
+        return app
 
-    def test_user_wall(self):
+    # Set up database for testing
+    def setup_DB(self) -> None:
+        with app.app_context():
+            example = User()
+            example.firstname = 'Admin'
+            example.lastname = 'Admin'
+            example.email = 'example@example.com'
+            example.dateofbirth = datetime.datetime(2020, 10, 5)
+            example.is_admin = True
+            example.set_password('admin')
+            db.session.add(example)
+
+            example2 = User()
+            example2.firstname = 'Admin'
+            example2.lastname = 'Admin'
+            example2.email = 'example2@example2.com'
+            example2.dateofbirth = datetime.datetime(2020, 10, 5)
+            example2.is_admin = True
+            example2.set_password('admin')
+            db.session.add(example2)
+
+            db.session.commit()
+
+        payload = {'email': 'example@example.com',
+                   'password': 'admin'}
+
+        form = LoginForm(data=payload)
+
+        self.client.post('/users/login', data=form.data, follow_redirects=True)
+
+    def test_wall_nologin(self):
+        response = self.client.post('/users/logout')
+        # Log out success
+        self.assert_redirects(response, '/')
+
         # looking for non-existing user without login
         id = 10
         self.client.get('/users/' + str(id))
@@ -28,29 +65,7 @@ class TestTemplateOtherWall(flask_testing.TestCase):
         user_info = User.query.filter_by(id=id).first()
         self.assertEqual(self.get_context_variable('user_info'), user_info)
 
-        # create a test user
-        with my_app.app_context():
-            q = db.session.query(User).filter(User.email == 'test@test.com')
-            user = q.first()
-            if user is None:
-                example = User()
-                example.firstname = 'Test'
-                example.lastname = 'Test'
-                example.email = 'test@test.com'
-                example.dateofbirth = datetime.datetime(2020, 10, 5)
-                example.is_admin = False
-                example.set_password('test')
-                db.session.add(example)
-                db.session.commit()
-
-        # login with admin user
-        payload = {'email': 'example@example.com',
-                    'password': 'admin'}
-
-        form = LoginForm(data=payload)
-
-        self.client.post('/users/login', data=form.data, follow_redirects=True)
-
+    def test_wall_login(self):
         # looking for non-existing user after login
         id = 10
         self.client.get('/users/' + str(id))
@@ -65,7 +80,7 @@ class TestTemplateOtherWall(flask_testing.TestCase):
         user_info = User.query.filter_by(id=id).first()
         self.assertEqual(self.get_context_variable('user_info'), user_info)
 
-        # looking for owned wall after login
+        # looking for personal wall after login
         id = 1
         self.client.get('/users/' + str(id))
         self.assert_template_used('wall.html')
@@ -78,3 +93,7 @@ class TestTemplateOtherWall(flask_testing.TestCase):
         self.assert405(self.client.post('/users/1'))
         self.assert405(self.client.put('/users/1'))
         self.assert405(self.client.delete('/users/1'))
+
+
+if __name__ == '__main__':
+    unittest.main()
