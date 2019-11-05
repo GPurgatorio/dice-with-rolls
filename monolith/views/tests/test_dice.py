@@ -8,7 +8,7 @@ import flask_testing
 from monolith.app import create_test_app
 from monolith.classes.DiceSet import Die, DiceSet
 
-path = os.path.dirname(os.path.abspath(__file__)) + "/../../resources/"
+path = os.path.dirname(os.path.abspath(__file__)) + "/../../resources/standard"
 
 
 class TestDice(unittest.TestCase):
@@ -86,14 +86,14 @@ class TestTemplateDice(flask_testing.TestCase):
 
     # 9 is out of range (2,7) -> redirect to settings
     def test_oob_roll(self):
-        result = self.client.post('/stories/new/roll', data={'dice_number': 9})
+        result = self.client.post('/stories/new/roll', data={'dice_number': 9, 'dice_img_set': 'standard'})
         self.assertRedirects(result, '/stories/new/settings')
 
     # Redirect from session (abc fails, throws ValueError, gets 8 from session, out of range -> redirect)
     def test_oob_roll_sess(self):
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 8
-            result = self.client.post('/stories/new/roll', data={'dice_number': 'abc'})
+            result = self.client.post('/stories/new/roll', data={'dice_number': 'abc', 'dice_img_set': 'standard'})
             self.assertRedirects(result, '/stories/new/settings')
 
     # Correct execution's flow of roll
