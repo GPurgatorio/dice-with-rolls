@@ -1,7 +1,7 @@
 <html>
  <body>
  <h5>Le parole sono: {{ words }}</h5>
-  <form action={{ submit_url }} method="POST">
+  <form id ="write_story_form"  action = {{ submit_url }} method="POST">
     {{ form.hidden_tag() }}
     <dl>
      {% for field in form.display %}
@@ -15,10 +15,20 @@
      {% endfor %}
     </dl>
     <p>
-    <input type=submit value="Submit">
-    <input type=submit value="Save as draft">
+    <input type=submit onclick="submitForm('submit')" value="Submit"/>
+    <input type=submit onclick="submitForm('draft')" value="Save as draft"/>
   </form>
  <h5> {{ message }} </h5>
  </body>
 </html>
-
+<script>
+    function submitForm(action)
+    {
+        if (action == "submit"){
+            document.getElementById('as_draft').value = 0
+        }else {
+            document.getElementById('as_draft').value = 1
+        }
+        document.getElementById('write_story_form').submit();
+    }
+</script>
