@@ -8,7 +8,7 @@ import flask_testing
 from monolith.app import create_test_app
 from monolith.classes.DiceSet import Die, DiceSet
 
-path = os.path.dirname(os.path.abspath(__file__)) + "/../../resources/standard"
+path = os.path.dirname(os.path.abspath(__file__)) + "/../../resources/standard/"
 
 
 class TestDice(unittest.TestCase):
@@ -101,5 +101,5 @@ class TestTemplateDice(flask_testing.TestCase):
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 2
         rnd.seed(2)             # File die0.txt
-        self.client.post('/stories/new/roll')
+        self.client.post('/stories/new/roll', data={'dice_number': 4, 'dice_img_set': 'animal'})
         self.assert_template_used('roll_dice.html')

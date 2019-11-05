@@ -21,31 +21,39 @@ def _settings():
 @dice.route('/stories/new/roll', methods=['POST'])
 @login_required
 def _roll_dice():
+
+    # check dice_number
     try:
         # get number of dice from the form of previous page
         dice_number = int(request.form['dice_number'])
         session['dice_number'] = dice_number
 
+        # check retrieved data
+        if dice_number not in range(2, 7):
+            raise ValueError
+
+    except BadRequestKeyError:  # i'm here after re-rolling dice
+        dice_number = session['dice_number']
+    except (KeyError, ValueError):  # i'm here directly, have to go from settings before
+        flash('Invalid number of dice!', 'error')
+        session.pop('dice_number', None)
+        return redirect(url_for('dice._settings'))
+
+    # check dice_set
+    try:
         # get dice set from the form of previous page
         dice_img_set = str(request.form['dice_img_set'])
         session['dice_img_set'] = dice_img_set
 
-        # check retrived data
-        if dice_number not in range(2, 7):
-            raise ValueError('number')
+        # check retrieved data
         if dice_img_set not in {'standard', 'animal', 'halloween'}:
-            raise ValueError('set')
+            raise ValueError
 
     except BadRequestKeyError:  # i'm here after re-rolling dice
-        dice_number = session['dice_number']
         dice_img_set = session['dice_img_set']
     except (KeyError, ValueError):  # i'm here directly, have to go from settings before
-        if ValueError is 'number':
-            flash('Invalid number of dice!', 'error')
-            session.pop('dice_number', None)
-        else:
-            flash('Invalid dice set!', 'error')
-            session.pop('dice_img_set', None)
+        flash('Invalid dice set!', 'error')
+        session.pop('dice_img_set', None)
         return redirect(url_for('dice._settings'))
 
     # random sampling dice and throw them
