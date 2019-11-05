@@ -2,12 +2,14 @@ import datetime
 import unittest
 
 import flask_testing
+from sqlalchemy.exc import IntegrityError
 
-from monolith.database import User, db
+from monolith.database import User, db, Follower
 from monolith.forms import LoginForm
 from monolith.app import create_test_app
 
-class TestTemplateOtherWall(flask_testing.TestCase):
+
+class TestOtherWall(flask_testing.TestCase):
     app = None
 
     # First thing called
@@ -16,8 +18,9 @@ class TestTemplateOtherWall(flask_testing.TestCase):
         app = create_test_app()
         return app
 
-    # Set up database for testing
-    def setup_DB(self) -> None:
+    # Set up database for testing here
+    def setUp(self) -> None:
+        print("SET UP")
         with app.app_context():
             example = User()
             example.firstname = 'Admin'
@@ -46,47 +49,50 @@ class TestTemplateOtherWall(flask_testing.TestCase):
 
         self.client.post('/users/login', data=form.data, follow_redirects=True)
 
+    # Executed at end of each test
+    def tearDown(self) -> None:
+        print("TEAR DOWN")
+        db.session.remove()
+        db.drop_all()
+
+    def test_wall_login(self):
+        # looking for non-existing user after login
+        id = 100
+        self.client.get('/users/{}'.format(id), follow_redirects=True)
+        self.assert_template_used('wall.html')
+        self.assertEqual(self.get_context_variable('not_found'), True)
+
+        # looking for existing user after login
+        id = 2
+        self.client.get('/users/{}'.format(id), follow_redirects=True)
+        self.assert_template_used('wall.html')
+        self.assertEqual(self.get_context_variable('not_found'), False)
+        self.assertEqual(self.get_context_variable('my_wall'), False)
+
+        # looking for personal wall after login
+        id = 1
+        self.client.get('/users/{}'.format(id), follow_redirects=True)
+        self.assert_template_used('wall.html')
+        self.assertEqual(self.get_context_variable('not_found'), False)
+        self.assertEqual(self.get_context_variable('my_wall'), True)
+
     def test_wall_nologin(self):
         response = self.client.post('/users/logout')
         # Log out success
         self.assert_redirects(response, '/')
 
         # looking for non-existing user without login
-        id = 10
-        self.client.get('/users/' + str(id))
+        id = 100
+        self.client.get('/users/{}'.format(id), follow_redirects=True)
         self.assert_template_used('wall.html')
-        self.assertEqual(self.get_context_variable('exists'), False)
-
+        self.assertEqual(self.get_context_variable('not_found'), True)
+        
         # looking for existing user without login
         id = 1
-        self.client.get('/users/' + str(id))
+        self.client.get('/users/{}'.format(id), follow_redirects=True)
         self.assert_template_used('wall.html')
-        self.assertEqual(self.get_context_variable('exists'), True)
-        user_info = User.query.filter_by(id=id).first()
-        self.assertEqual(self.get_context_variable('user_info'), user_info)
-
-    def test_wall_login(self):
-        # looking for non-existing user after login
-        id = 10
-        self.client.get('/users/' + str(id))
-        self.assert_template_used('wall.html')
-        self.assertEqual(self.get_context_variable('exists'), False)
-
-        # looking for existing user after login
-        id = 2
-        self.client.get('/users/' + str(id))
-        self.assert_template_used('wall.html')
-        self.assertEqual(self.get_context_variable('exists'), True)
-        user_info = User.query.filter_by(id=id).first()
-        self.assertEqual(self.get_context_variable('user_info'), user_info)
-
-        # looking for personal wall after login
-        id = 1
-        self.client.get('/users/' + str(id))
-        self.assert_template_used('wall.html')
-        self.assertEqual(self.get_context_variable('exists'), True)
-        user_info = User.query.filter_by(id=id).first()
-        self.assertEqual(self.get_context_variable('user_info'), user_info)
+        self.assertEqual(self.get_context_variable('not_found'), False)
+        self.assertEqual(self.get_context_variable('my_wall'), False)
 
     # test method not allowed
     def test_methods_wall(self):
