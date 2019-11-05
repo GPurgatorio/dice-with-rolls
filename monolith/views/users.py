@@ -23,7 +23,6 @@ def _users():
 @users.route('/users/create', methods=['GET', 'POST'])
 def _create_user():
     form = UserForm()
-    message = ""
     if request.method == 'POST':
 
         if form.validate_on_submit():
@@ -41,11 +40,11 @@ def _create_user():
                     db.session.commit()
                     return redirect('/users')
                 else:
-                    message = "Wrong date of birth."
+                    flash("Wrong date of birth.", 'error')
             else:
-                message = "The email address is already being used."
+                flash("The email address is already being used.", 'error')
 
-    return render_template('create_user.html', form=form, message=message)
+    return render_template('create_user.html', form=form)
 
 
 @users.route('/users/<int:userid>', methods=['GET'])
