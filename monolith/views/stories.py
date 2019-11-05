@@ -192,7 +192,9 @@ def _write_story(id_story=None, message='', status=200):
         if story is not None and story.author_id == current_user.id and story.is_draft:
             form.text.data = story.text
             rolled_dice = story.figures.split('#')
-            session['figures'] = rolled_dice[1:-1]
+            if '' in rolled_dice:
+                rolled_dice.remove('')
+            session['figures'] = rolled_dice
             session['id_story'] = story.id
         else:
             flash('Request is invalid, check if you are the author of the story and it is still a draft')
