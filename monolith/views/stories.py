@@ -5,14 +5,13 @@ import string
 from random import randint
 
 from flask import Blueprint, redirect, render_template, request, make_response, url_for, flash
-
 from flask import session
 from flask_login import (current_user, login_required)
 from sqlalchemy import and_
-from sqlalchemy.exc import IntegrityError
+
 from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter
 from monolith.forms import StoryForm
-from monolith.urls import REACTION_URL, LATEST_URL, RANGE_URL, RANDOM_URL
+from monolith.urls import *
 
 stories = Blueprint('stories', __name__)
 
@@ -183,7 +182,7 @@ def _open_story(id_story):
 @stories.route('/stories/new/write', defaults={'id_story': None}, methods=['GET', 'POST'])
 @stories.route('/stories/new/write/<int:id_story>', methods=['GET'])
 @login_required
-def _write_story(as_draft=None, id_story=None, message='', status=200):
+def _write_story(id_story=None, message='', status=200):
     form = StoryForm()
     submit_url = WRITE_URL
 
@@ -196,7 +195,7 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
             session['id_story'] = story.id
         else:
             flash('Request is invalid, check if you are the author of the story and it is still a draft')
-            return redirect(url_for('stories._user_drafts', id_user=current_user.id))
+            return redirect(url_for('users._user_drafts', id_user=current_user.id))
     else:
         if 'figures' not in session:
             # redirect to home
@@ -213,25 +212,21 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
             if draft:
                 if 'id_story' in session:
                     # Update a draft
-                    try:
-                        db.session.query(Story).filter_by(id=session['id_story']).update(
-                            {'text': form.text.data, 'date': datetime.datetime.now()})
-                    except IntegrityError as e:
-                        flash("Error")
-                        return redirect(HOME_URL, code=302)
+                    db.session.query(Story).filter_by(id=session['id_story']).update({'text': form.text.data,
+                                                                                      'date': datetime.datetime.now()})
                     db.session.commit()
                     session.pop('id_story')
                 else:
                     # Save new story as draft
                     new_story = Story()
                     new_story.author_id = current_user.id
-                    new_story.figures = '#'+'#'.join(session['figures'])+'#'
+                    new_story.figures = '#' + '#'.join(session['figures']) + '#'
                     new_story.is_draft = True
                     form.populate_obj(new_story)
                     db.session.add(new_story)
                     db.session.commit()
                 session.pop('figures')
-                return redirect(HOME_URL+'users/'+str(current_user.id)+'/drafts')
+                return redirect(url_for('users._user_drafts', id_user=current_user.id))
             else:
                 # Check validity
                 dice_figures = session['figures'].copy()
@@ -244,19 +239,15 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
                         if not dice_figures:
                             break
                 if len(dice_figures) > 0:
-                    message = 'Your story doesn\'t contain all the words. Missing: '
                     status = 400
+                    message = 'Your story doesn\'t contain all the words. Missing: '
                     for w in dice_figures:
                         message += w + ' '
                 else:
                     if 'id_story' in session:
                         # Publish a draft
-                        try:
-                            db.session.query(Story).filter_by(id=session['id_story']).update(
-                                {'text': form.text.data, 'date': datetime.datetime.now(), 'is_draft': False})
-                        except IntegrityError as e:
-                            flash("Error")
-                            return redirect(HOME_URL, code=302)
+                        db.session.query(Story).filter_by(id=session['id_story']).update(
+                            {'text': form.text.data, 'date': datetime.datetime.now(), 'is_draft': False})
                         db.session.commit()
                         session.pop('id_story')
                     else:
@@ -270,9 +261,8 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
                         db.session.commit()
                     session.pop('figures')
                     flash('Your story is a valid one! It has been published')
-                    return redirect(HOME_URL+'users/'+str(current_user.id)+'/stories')
-                flash(message)
-                return redirect(url_for('stories._stories'))
+                    return redirect(url_for('users._user_stories', id_user=current_user.id, _external=True))
+                    # return redirect(HOME_URL+'users/{}/stories'.format(current_user.id))
     return make_response(
         render_template("write_story.html", submit_url=submit_url, form=form,
                         words=session['figures'], message=message), status)
@@ -298,8 +288,6 @@ def _random_story():
     recent_stories = db.session.query(Story).filter(Story.date >= begin).all()
     # pick a random story from them
     if len(recent_stories) == 0:
-        """context_vars = {"message": message, "reaction_url": REACTION_URL, "latest_url": LATEST_URL, 
-                        "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}"""
         flash("Oops, there are no recent stories!")
         return redirect(url_for('stories._stories'))
     else:

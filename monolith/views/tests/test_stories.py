@@ -2,11 +2,10 @@ import datetime
 
 import flask_testing
 
-from monolith.app import app as my_app, create_app
+from monolith.app import create_app
 from monolith.database import Story, User, db, ReactionCatalogue
 from monolith.forms import LoginForm, StoryForm
-from monolith.urls import RANGE_URL, LATEST_URL, TEST_DB
-
+from monolith.urls import *
 
 
 class TestTemplateStories(flask_testing.TestCase):
@@ -203,27 +202,7 @@ class TestStories(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = Flask(__name__, template_folder='../../templates')
-        app.config['TESTING'] = True
-        app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
-        app.config['SECRET_KEY'] = 'ANOTHER ONE'
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        app.config['WTF_CSRF_ENABLED'] = False
-
-        # app.config['LOGIN_DISABLED'] = True
-        # cache config
-        app.config['CACHE_TYPE'] = 'simple'
-        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
-
-        for bp in blueprints:
-            app.register_blueprint(bp)
-            bp.app = app
-
-        db.init_app(app)
-        login_manager.init_app(app)
-        db.create_all(app=app)
-
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here
@@ -306,8 +285,7 @@ class TestStories(flask_testing.TestCase):
                 db.session.add(example)
                 db.session.commit()
 
-            payload = {'email': 'example@example.com',
-                   'password': 'admin'}
+            payload = {'email': 'example@example.com', 'password': 'admin'}
 
             form = LoginForm(data=payload)
 
@@ -349,7 +327,7 @@ class TestStories(flask_testing.TestCase):
         self.assert_context('words', ['beer', 'cat', 'dog'])
 
         # Testing publishing invalid story
-        payload = {'text': 'my cat is drinking a gin tonic with my neighbour\'s dog', 'as_draft':'0'}
+        payload = {'text': 'my cat is drinking a gin tonic with my neighbour\'s dog', 'as_draft': '0'}
         form = StoryForm(data=payload)
         response = self.client.post('/stories/new/write', data=form.data)
         self.assert400(response)
@@ -361,7 +339,7 @@ class TestStories(flask_testing.TestCase):
         form1 = StoryForm(data=payload1)
         response = self.client.post('/stories/new/write', data=form1.data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/stories')
+        self.assert_redirects(response, '/users/1/stories')
 
         # Testing saving a new story as draft
         with self.client.session_transaction() as session:
@@ -370,7 +348,7 @@ class TestStories(flask_testing.TestCase):
         form2 = StoryForm(data=payload2)
         response = self.client.post('/stories/new/write', data=form2.data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/drafts')
+        self.assert_redirects(response, '/users/1/drafts')
 
         # Testing saving a draft again
         with self.client.session_transaction() as session:
@@ -378,7 +356,7 @@ class TestStories(flask_testing.TestCase):
             session['id_story'] = 6
         response = self.client.post('/stories/new/write', data=form2.data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/drafts')
+        self.assert_redirects(response, '/users/1/drafts')
         q = db.session.query(Story).filter(Story.id == 7).first()
         self.assertEqual(q, None)
 
@@ -390,9 +368,8 @@ class TestStories(flask_testing.TestCase):
         form3 = StoryForm(data=payload3)
         response = self.client.post('/stories/new/write', data=form3.data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/stories')
+        self.assert_redirects(response, '/users/1/stories')
         q = db.session.query(Story).filter(Story.id == 7).first()
         self.assertEqual(q, None)
         q = db.session.query(Story).filter(Story.id == 6).first()
         self.assertEqual(q.is_draft, False)
-

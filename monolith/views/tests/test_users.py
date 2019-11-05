@@ -7,10 +7,7 @@ from monolith.forms import LoginForm
 from monolith.urls import TEST_DB
 
 
-
 class TestUsers(flask_testing.TestCase):
-    app = None
-
     app = None
 
     def create_app(self):
@@ -147,4 +144,3 @@ class TestUsers(flask_testing.TestCase):
         self.assertEqual(self.get_context_variable('stats')[1][1], num_stories)
         # There aren't statistics for this user (num_reactions) 
         self.assertEqual(self.get_context_variable('stats')[0][1], 0)
-
