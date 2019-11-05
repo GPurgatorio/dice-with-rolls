@@ -1,12 +1,10 @@
-import flask_testing
 import datetime
-from flask import Flask
-from monolith.views import blueprints
-from monolith.auth import login_manager
 
-from monolith.app import app as my_app
-from monolith.forms import LoginForm, StoryForm
+import flask_testing
+
+from monolith.app import app as my_app, create_test_app
 from monolith.database import Story, User, db, ReactionCatalogue
+from monolith.forms import LoginForm, StoryForm
 from monolith.urls import RANGE_URL, LATEST_URL
 
 
@@ -16,152 +14,105 @@ class TestTemplateStories(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = Flask(__name__, template_folder='../../templates')
-        app.config['TESTING'] = True
-        app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
-        app.config['SECRET_KEY'] = 'ANOTHER ONE'
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        app.config['WTF_CSRF_ENABLED'] = False
-
-        # app.config['LOGIN_DISABLED'] = True
-        # cache config
-        app.config['CACHE_TYPE'] = 'simple'
-        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
-
-        for bp in blueprints:
-            app.register_blueprint(bp)
-            bp.app = app
-
-        db.init_app(app)
-        login_manager.init_app(app)
-        db.create_all(app=app)
-
+        app = create_test_app()
         return app
 
     # Set up database for testing here
     def setUp(self) -> None:
         with app.app_context():
-            # Create admin user (if not present)
-            q = db.session.query(User).filter(User.email == 'example@example.com')
-            user = q.first()
-            if user is None:
-                example = User()
-                example.firstname = 'Admin'
-                example.lastname = 'Admin'
-                example.email = 'example@example.com'
-                example.dateofbirth = datetime.datetime(2020, 10, 5)
-                example.is_admin = True
-                example.set_password('admin')
-                db.session.add(example)
-                db.session.commit()
+            # Create admin user
+            example = User()
+            example.firstname = 'Admin'
+            example.lastname = 'Admin'
+            example.email = 'example@example.com'
+            example.dateofbirth = datetime.datetime(2020, 10, 5)
+            example.is_admin = True
+            example.set_password('admin')
+            db.session.add(example)
+            db.session.commit()
 
-            # Create non admin user (if not present)
-            q = db.session.query(User).filter(User.email == 'abc@abc.com')
-            user = q.first()
-            if user is None:
-                example = User()
-                example.firstname = 'Abc'
-                example.lastname = 'Abc'
-                example.email = 'abc@abc.com'
-                example.dateofbirth = datetime.datetime(2010, 10, 5)
-                example.is_admin = False
-                example.set_password('abc')
-                db.session.add(example)
-                db.session.commit()
+            # Create non admin user
+            example = User()
+            example.firstname = 'Abc'
+            example.lastname = 'Abc'
+            example.email = 'abc@abc.com'
+            example.dateofbirth = datetime.datetime(2010, 10, 5)
+            example.is_admin = False
+            example.set_password('abc')
+            db.session.add(example)
+            db.session.commit()
 
-            # Create another non admin user (if not present)
-            q = db.session.query(User).filter(User.email == 'nini@nini.com')
-            user = q.first()
-            if user is None:
-                example = User()
-                example.firstname = 'Nini'
-                example.lastname = 'Nini'
-                example.email = 'nini@nini.com'
-                example.dateofbirth = datetime.datetime(2010, 10, 7)
-                example.is_admin = False
-                example.set_password('nini')
-                db.session.add(example)
-                db.session.commit()
+            # Create another non admin user
+            example = User()
+            example.firstname = 'Nini'
+            example.lastname = 'Nini'
+            example.email = 'nini@nini.com'
+            example.dateofbirth = datetime.datetime(2010, 10, 7)
+            example.is_admin = False
+            example.set_password('nini')
+            db.session.add(example)
+            db.session.commit()
 
             # Create an account that will have 0 stories
-            q = db.session.query(User).filter(User.email == 'no@stories.com')
-            user = q.first()
-            if user is None:
-                example = User()
-                example.firstname = 'No'
-                example.lastname = 'Stories'
-                example.email = 'no@stories.com'
-                example.dateofbirth = datetime.datetime(2010, 10, 5)
-                example.is_admin = False
-                example.set_password('no')
-                db.session.add(example)
-                db.session.commit()
+            example = User()
+            example.firstname = 'No'
+            example.lastname = 'Stories'
+            example.email = 'no@stories.com'
+            example.dateofbirth = datetime.datetime(2010, 10, 5)
+            example.is_admin = False
+            example.set_password('no')
+            db.session.add(example)
+            db.session.commit()
 
             # Create the first story, default from teacher's code
-            q = db.session.query(Story).filter(Story.id == 1)
-            story = q.first()
-            if story is None:
-                example = Story()
-                example.text = 'Trial story of example admin user :)'
-                example.author_id = 1
-                example.figures = 'example#admin'
-                example.date = datetime.datetime.strptime('2019-10-20', '%Y-%m-%d')
-                db.session.add(example)
-                db.session.commit()
+            example = Story()
+            example.text = 'Trial story of example admin user :)'
+            example.author_id = 1
+            example.figures = 'example#admin'
+            example.date = datetime.datetime.strptime('2019-10-20', '%Y-%m-%d')
+            db.session.add(example)
+            db.session.commit()
 
             # Create a story that shouldn't be seen in /latest
-            q = db.session.query(Story).filter(Story.id == 2)
-            story = q.first()
-            if story is None:
-                example = Story()
-                example.text = 'Old story (dont see this in /latest)'
-                example.date = datetime.datetime.strptime('2019-10-10', '%Y-%m-%d')
-                example.likes = 420
-                example.author_id = 2
-                example.figures = 'example#abc'
-                db.session.add(example)
-                db.session.commit()
+            example = Story()
+            example.text = 'Old story (dont see this in /latest)'
+            example.date = datetime.datetime.strptime('2019-10-10', '%Y-%m-%d')
+            example.likes = 420
+            example.author_id = 2
+            example.figures = 'example#abc'
+            db.session.add(example)
+            db.session.commit()
 
             # Create a story that should be seen in /latest
-            q = db.session.query(Story).filter(Story.id == 3)
-            story = q.first()
-            if story is None:
-                example = Story()
-                example.text = 'You should see this one in /latest'
-                example.date = datetime.datetime.strptime('2019-10-13', '%Y-%m-%d')
-                example.likes = 3
-                example.author_id = 2
-                example.figures = 'example#abc'
-                db.session.add(example)
-                db.session.commit()
+            example = Story()
+            example.text = 'You should see this one in /latest'
+            example.date = datetime.datetime.strptime('2019-10-13', '%Y-%m-%d')
+            example.likes = 3
+            example.author_id = 2
+            example.figures = 'example#abc'
+            db.session.add(example)
+            db.session.commit()
 
             # Random story from a non-admin user
-            q = db.session.query(Story).filter(Story.id == 4)
-            story = q.first()
-            if story is None:
-                example = Story()
-                example.text = 'story from not admin'
-                example.date = datetime.datetime.strptime('2018-12-30', '%Y-%m-%d')
-                example.likes = 100
-                example.author_id = 3
-                example.figures = 'example#nini'
-                db.session.add(example)
-                db.session.commit()
+            example = Story()
+            example.text = 'story from not admin'
+            example.date = datetime.datetime.strptime('2018-12-30', '%Y-%m-%d')
+            example.likes = 100
+            example.author_id = 3
+            example.figures = 'example#nini'
+            db.session.add(example)
+            db.session.commit()
 
             # Create a very old story for range searches purpose
-            q = db.session.query(Story).filter(Story.id == 5)
-            story = q.first()
-            if story is None:
-                example = Story()
-                example.text = 'very old story (11 11 2011)'
-                example.date = datetime.datetime.strptime('2011-11-11', '%Y-%m-%d')
-                example.likes = 2
-                example.author_id = 3
-                example.figures = 'example#nini'
-                example.date = datetime.datetime(2011, 11, 11)
-                db.session.add(example)
-                db.session.commit()
+            example = Story()
+            example.text = 'very old story (11 11 2011)'
+            example.date = datetime.datetime.strptime('2011-11-11', '%Y-%m-%d')
+            example.likes = 2
+            example.author_id = 3
+            example.figures = 'example#nini'
+            example.date = datetime.datetime(2011, 11, 11)
+            db.session.add(example)
+            db.session.commit()
 
             # Add two reactions (Like and Dislike)
             like_reaction = ReactionCatalogue()
@@ -175,12 +126,13 @@ class TestTemplateStories(flask_testing.TestCase):
             db.session.add(love_reaction)
             db.session.commit()
 
-        payload = {'email': 'example@example.com',
-                   'password': 'admin'}
+            # login
+            payload = {'email': 'example@example.com',
+                       'password': 'admin'}
 
-        form = LoginForm(data=payload)
+            form = LoginForm(data=payload)
 
-        self.client.post('/users/login', data=form.data, follow_redirects=True)
+            self.client.post('/users/login', data=form.data, follow_redirects=True)
 
     # Executed at end of each test
     def tearDown(self) -> None:

@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_cors import CORS
-# from monolith.cache import cache
 from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
 from monolith.auth import login_manager
@@ -14,11 +13,6 @@ def create_app():
     flask_app.config['SECRET_KEY'] = 'ANOTHER ONE'
     flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
     flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # cache config
-    flask_app.config['CACHE_TYPE'] = 'simple'
-    flask_app.config['CACHE_DEFAULT_TIMEOUT'] = 300
-    # cache.init_app(app)
 
     for bp in blueprints:
         flask_app.register_blueprint(bp)
@@ -69,6 +63,27 @@ def create_app():
             db.session.commit()
 
     return flask_app
+
+
+def create_test_app(wtf=False, login_disabled=False):
+    test_app = Flask(__name__)
+    test_app.config['TESTING'] = True
+    test_app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
+    test_app.config['SECRET_KEY'] = 'ANOTHER ONE'
+    test_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    test_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    test_app.config['WTF_CSRF_ENABLED'] = wtf
+    test_app.config['LOGIN_DISABLED'] = login_disabled
+
+    for bp in blueprints:
+        test_app.register_blueprint(bp)
+        bp.app = test_app
+
+    db.init_app(test_app)
+    login_manager.init_app(test_app)
+    db.create_all(app=test_app)
+
+    return test_app
 
 
 app = create_app()

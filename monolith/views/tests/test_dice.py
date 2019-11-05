@@ -4,7 +4,7 @@ import unittest
 
 import flask_testing
 
-from monolith.app import app as my_app
+from monolith.app import app as my_app, create_test_app
 from monolith.classes.DiceSet import Die
 
 
@@ -35,10 +35,13 @@ class TestDice(unittest.TestCase):
 
 class TestTemplateDice(flask_testing.TestCase):
 
+    app = None
+
+    # First thing called
     def create_app(self):
-        my_app.config['LOGIN_DISABLED'] = True
-        my_app.login_manager.init_app(my_app)
-        return my_app
+        global app
+        app = create_test_app(login_disabled=True)
+        return app
 
     # Tests for POST, PUT and DEL requests ( /settings )
     def test_requests_settings(self):
@@ -57,19 +60,20 @@ class TestTemplateDice(flask_testing.TestCase):
 
     # 9 is out of range (2,7) -> redirect to settings
     def test_oob_roll(self):
-        self.assertRedirects(self.client.post('/stories/new/roll', data={'dice_number': 9}), '/stories/new/settings')
+        result = self.client.post('/stories/new/roll', data={'dice_number': 9})
+        self.assertRedirects(result, '/stories/new/settings')
 
     # Redirect from session (abc fails, throws ValueError, gets 8 from session, out of range -> redirect)
     def test_oob_roll_sess(self):
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 8
-            self.assertRedirects(self.client.post('/stories/new/roll', data={'dice_number': 'abc'}), '/stories/new/settings')
+            result = self.client.post('/stories/new/roll', data={'dice_number': 'abc'})
+            self.assertRedirects(result, '/stories/new/settings')
 
     # Correct execution's flow of roll
     def test_roll(self):
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 2
         rnd.seed(2)             # File die0.txt
-        # Riga 43: dice_list.append(Die('monolith/resources/die' + str(i) + '.txt')) -> File not Found -> fail del test
         self.client.post('/stories/new/roll')
         self.assert_template_used('roll_dice.html')

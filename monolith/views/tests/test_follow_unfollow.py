@@ -1,15 +1,12 @@
 import datetime
 import unittest
-from flask import Flask
-from sqlalchemy.exc import IntegrityError
-
-from monolith.forms import LoginForm
-from monolith.views import blueprints
-from monolith.auth import login_manager
 
 import flask_testing
+from sqlalchemy.exc import IntegrityError
 
 from monolith.database import User, db, Follower
+from monolith.forms import LoginForm
+from monolith.app import create_test_app
 
 
 class TestTemplateStories(flask_testing.TestCase):
@@ -18,27 +15,7 @@ class TestTemplateStories(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = Flask(__name__, template_folder='../../templates')
-        app.config['TESTING'] = True
-        app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
-        app.config['SECRET_KEY'] = 'ANOTHER ONE'
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        app.config['WTF_CSRF_ENABLED'] = False
-
-        # app.config['LOGIN_DISABLED'] = True
-        # cache config
-        app.config['CACHE_TYPE'] = 'simple'
-        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
-
-        for bp in blueprints:
-            app.register_blueprint(bp)
-            bp.app = app
-
-        db.init_app(app)
-        login_manager.init_app(app)
-        db.create_all(app=app)
-
+        app = create_test_app()
         return app
 
     # Set up database for testing here
