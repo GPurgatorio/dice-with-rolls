@@ -7,7 +7,9 @@ from monolith.forms import LoginForm
 from monolith.urls import TEST_DB
 
 
-class TestTemplateStories(flask_testing.TestCase):
+
+class TestUsers(flask_testing.TestCase):
+    app = None
 
     app = None
 
@@ -45,12 +47,14 @@ class TestTemplateStories(flask_testing.TestCase):
             example.text = 'Trial story of example admin user :)'
             example.author_id = 1
             example.figures = '#example#admin#'
+            example.is_draft = False
             db.session.add(example)
             db.session.commit()
 
             example = Story()
             example.text = 'Another story!'
             example.author_id = 1
+            example.is_draft = True
             example.figures = '#another#story#'
             db.session.add(example)
             db.session.commit()
@@ -92,6 +96,33 @@ class TestTemplateStories(flask_testing.TestCase):
         print("TEAR DOWN")
         db.session.remove()
         db.drop_all()
+        
+    def test_user_stories(self):
+        # Testing stories of not existing user
+        response = self.client.get('/users/100/stories')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/')
+
+        # Testing stories of existing user
+        response = self.client.get('/users/1/stories')
+        self.assert200(response)
+        self.assert_template_used('user_stories.html')
+
+    def test_user_drafts(self):
+        # Testing stories of not existing user
+        response = self.client.get('/users/100/drafts')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/')
+
+        # Testing stories of other user
+        response = self.client.get('/users/2/drafts')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/')
+
+        # Testing stories of existing user
+        response = self.client.get('/users/1/drafts')
+        self.assert200(response)
+        self.assert_template_used('drafts.html')
 
     def test_user_statistics(self):
         self.client.get('/users/1')
@@ -116,3 +147,4 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assertEqual(self.get_context_variable('stats')[1][1], num_stories)
         # There aren't statistics for this user (num_reactions) 
         self.assertEqual(self.get_context_variable('stats')[0][1], 0)
+
