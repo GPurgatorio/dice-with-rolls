@@ -1,35 +1,29 @@
-import os
 from flask import Flask
-# from monolith.cache import cache
+from flask_cors import CORS
 from monolith.database import db, User, Story, ReactionCatalogue
 from monolith.views import blueprints
 from monolith.auth import login_manager
-# from monolith.tasks import task_try
 import datetime
 
 
 def create_app():
-    app = Flask(__name__)
-    app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
-    app.config['SECRET_KEY'] = 'ANOTHER ONE'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # cache config
-    app.config['CACHE_TYPE'] = 'simple'
-    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
-    # cache.init_app(app)
+  
+    flask_app = Flask(__name__)
+    flask_app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
+    flask_app.config['SECRET_KEY'] = 'ANOTHER ONE'
+    flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
+    flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     for bp in blueprints:
-        app.register_blueprint(bp)
-        bp.app = app
+        flask_app.register_blueprint(bp)
+        bp.app = flask_app
 
-    db.init_app(app)
-    login_manager.init_app(app)
-    db.create_all(app=app)
+    db.init_app(flask_app)
+    login_manager.init_app(flask_app)
+    db.create_all(app=flask_app)
 
     # create a first admin user
-    with app.app_context():
+    with flask_app.app_context():
         q = db.session.query(User).filter(User.email == 'example@example.com')
         user = q.first()
         if user is None:
@@ -68,11 +62,31 @@ def create_app():
             db.session.add(dislike)
             db.session.commit()
 
-    return app
+    return flask_app
+
+
+def create_test_app(wtf=False, login_disabled=False):
+    test_app = Flask(__name__)
+    test_app.config['TESTING'] = True
+    test_app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
+    test_app.config['SECRET_KEY'] = 'ANOTHER ONE'
+    test_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    test_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    test_app.config['WTF_CSRF_ENABLED'] = wtf
+    test_app.config['LOGIN_DISABLED'] = login_disabled
+
+    for bp in blueprints:
+        test_app.register_blueprint(bp)
+        bp.app = test_app
+
+    db.init_app(test_app)
+    login_manager.init_app(test_app)
+    db.create_all(app=test_app)
+
+    return test_app
 
 
 app = create_app()
 
 if __name__ == '__main__':
-    # task_try.delay()
     app.run()

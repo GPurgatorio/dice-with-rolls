@@ -1,11 +1,18 @@
 <html>
+<head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
     <body>
-        <a href="/"><a href="/stories"><button><</button> Come back to the home page</a>
         {% if not_found %}
+        <div style="text-align: center; margin-top: 100px;">
+            <h1 style="text-align: center;">:(</h1>
             <h3 style="text-align: center;">Sorry! The user you're looking for doesn't exist!</h3>
+            <br />
+            <a href="/stories" style="text-align: center;"><button type="button" class="btn btn-primary">Come back</button></a>
+        </div>
         {% else %}
         {% if my_wall %}
-        		<h2> {{user_info.firstname}}'s wall </h2>
+        	<h2>{{user_info.firstname}}'s wall</h2>
             First Name: {{user_info.firstname}} <br>
             Last Name: {{user_info.lastname}} <br>
             Date of birth: {{user_info.dateofbirth}} <br> <br>
@@ -26,7 +33,9 @@
                     <td><b>Avg dice per story</b></td>
                 </tr>
             </table>
-        {% else: %}
+            <a class="pure-button" href="{{user_info.id}}/stories"><span class="book-open">My stories</span></a>
+            <a class="pure-button" href="{{user_info.id}}/drafts"><span class="firstdraft">My drafts</span></a>
+        {% else %}
             <h2> {{user_info.firstname}}'s wall </h2>
             First Name: {{user_info.firstname}} <br>
             Last Name: {{user_info.lastname}} <br>
@@ -44,6 +53,9 @@
                     <td><b># Reactions</b></td>
                 </tr>
             </table>
+            <form action="{{user_info.id}}/stories" method="get">
+                <input type="submit" value="Show {{user_info.firstname}}'s stories" />
+            </form>
         {% endif %}
         {% endif %}
     </body>

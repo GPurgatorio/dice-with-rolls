@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Story Tellers</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        .block {
+            height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">
+            Story Tellers
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+            {% if current_user.is_authenticated %}
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Cose</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Cose</a>
+                </li>
+            </ul>
+            {% else %}
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home<span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        {% if current_user.is_authenticated %}
+        <div class="row">
+            <div class="col-xs-12 col-sm-12">
+                <h3>Hi {{ current_user.firstname }}!</h3>
+            </div>
+        </div>
+        <div class="row mb-5">
+            <div class="col-xs-12 col-6">
+                <div class="card text-white bg-info text-center">
+                    <div class="card-header"><h4>Stories</h4></div>
+                    <div class="card-body">
+                        <p class="card-text">Here you could read stories of other users!</p>
+                        <button class="btn btn-outline-light" type="button" onclick="window.location='{{ read_url }}'">Read Stories</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-6">
+                <div class="card text-white bg-success text-center">
+                    <div class="card-header"><h4>My Wall</h4></div>
+                    <div class="card-body">
+                        <p class="card-text">Here you could see your personal wall!</p>
+                        <form action="{{ users_url }}/{{ current_user.id }}" method="GET">
+                            <input class="btn btn-outline-light" type="submit" value="My wall" >
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-5">
+            <div class="col-xs-12 col-6">
+                <div class="card text-white bg-danger text-center">
+                    <div class="card-header"><h4>New story</h4></div>
+                    <div class="card-body">
+                        <p class="card-text">Here you could write a new story!</p>
+                        <form action="{{ settings_url }}" method="GET">
+                            <input class="btn btn-outline-light" type="submit" value="New Story" >
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-6">
+                    <div class="card text-white bg-secondary text-center">
+                        <div class="card-header"><h4>Logout</h4></div>
+                        <div class="card-body">
+                            <p class="card-text">Here you could logout and say "Ciao ciao"!</p>
+                            <form action={{ logout_url }} method="POST">
+                                <input class="btn btn-outline-light" type="submit" value="Logout">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+        </div>
+        {% else %}
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 h-10">
+                <h3>Hi Anonymous!</h3>
+            </div>
+        </div>
+        <div class="row mb-5">
+            <div class="col-xs-12 col-6">
+                <div class="card text-white bg-info text-center">
+                    <div class="card-header"><h4>Login</h4></div>
+                    <div class="card-body">
+                        <p class="card-text">Here you could login the system!</p>
+                        <button class="btn btn-outline-light" type="button" onclick="window.location='{{ login_url }}'">Login</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-6">
+                <div class="card text-white bg-success text-center">
+                    <div class="card-header"><h4>Register</h4></div>
+                    <div class="card-body">
+                        <p class="card-text">Here you could register yourself and start to write stories!</p>
+                        <button class="btn btn-outline-light" type="button" onclick="window.location='{{ register_url }}'">Register</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        </div>
+</body>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+</html>

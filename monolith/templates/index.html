@@ -1,5 +1,13 @@
 <h1>Storytellers</h1>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <h5 class="{{ category }}">{{ message }}</h5>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
 {% if current_user.is_authenticated %}
   Hi {{ current_user.firstname }}!
     <br><br>
@@ -19,7 +27,7 @@
     {% for story in stories %}
       <div>
         <li>
-          {{story.text}} --
+            {{story.text}} <form action="stories/delete/{{ story.id }}" method="POST"><button>DELETE</button></form>
         </li>
       </div>
     {% endfor %}
