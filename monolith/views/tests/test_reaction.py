@@ -99,3 +99,20 @@ class TestReaction(flask_testing.TestCase):
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(len(marked_reactions), 0)
         self.assertEqual(len(to_be_deleted_reactions), len_to_be_deleted_reactions + 1)
+
+        self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
+        self.client.post('http://127.0.0.1:5000/stories/react/1/Dislike')
+
+        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1',
+                                                   Reaction.reactor_id == 1,
+                                                   Reaction.marked == 0).all()
+
+        self.assertEqual(len(unmarked_reactions), 1)
+        self.assertEqual(unmarked_reactions[0].reaction_type_id, 2)
+
+
+
+
+
+
+

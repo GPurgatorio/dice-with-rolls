@@ -54,15 +54,12 @@ def _reaction(reaction_caption, story_id):
         new_reaction.reaction_type_id = reaction_type_id
         new_reaction.marked = 0
         db.session.add(new_reaction)
-        db.session.commit()
     else:
         if old_reaction.reaction_type_id == reaction_type_id:
             reaction = Reaction.query.filter_by(reactor_id=current_user.id, story_id=story_id).first()
 
             if reaction.marked == 0:
                 Reaction.query.filter_by(reactor_id=current_user.id, story_id=story_id).delete()
-            elif reaction.marked == 1:
-                reaction.marked = 2
 
             db.session.commit()
             flash('Reaction successfully deleted!')
@@ -79,7 +76,6 @@ def _reaction(reaction_caption, story_id):
                 new_reaction.marked = 0
                 new_reaction.reaction_type_id = reaction_type_id
                 db.session.add(new_reaction)
-                db.session.commit()
     db.session.commit()
 
     return redirect(url_for('stories._stories'))
