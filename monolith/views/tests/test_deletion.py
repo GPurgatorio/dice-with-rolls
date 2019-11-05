@@ -1,9 +1,5 @@
 import datetime
-import unittest
-import json
-from flask import request, jsonify, g, current_app
 import flask_testing
-from flask_login import login_user, current_user
 
 from monolith.app import app as my_app
 from monolith.database import db, Story, User

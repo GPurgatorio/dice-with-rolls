@@ -3,7 +3,7 @@ from sqlalchemy import or_
 
 from monolith.database import db, Story, Reaction, User
 from monolith.auth import current_user
-from monolith.urls import HOME_URL, LOGIN_URL, LOGOUT_URL, USERS_URL, READ_URL, REGISTER_URL, WRITE_URL, SEARCH_URL
+from monolith.urls import  LOGIN_URL, LOGOUT_URL, USERS_URL, READ_URL, SEARCH_URL
 
 search = Blueprint('search', __name__)
 
