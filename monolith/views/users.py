@@ -108,10 +108,11 @@ def _wall(userid):
         if user_info is not None:
             statistics.append(('num_reactions', tot_num_reactions))
             statistics.append(('num_stories', tot_num_stories))
+            my_wall = False
         else:
             return render_template('wall.html', not_found=True)
 
-    return render_template('wall.html', my_wall=my_wall, user_info=user_info, stats=statistics)
+    return render_template('wall.html', not_found=False, my_wall=my_wall, user_info=user_info, stats=statistics)
 
 
 @users.route('/users/<int:id_user>/follow', methods=['POST'])
