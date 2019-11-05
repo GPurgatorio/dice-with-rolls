@@ -148,6 +148,28 @@ class TestTemplateStories(flask_testing.TestCase):
         reactions = [('Dislike', 0), ('Like', 0), ('Love', 0)]
         self.assert_context('reactions', reactions)
 
+        # Add reactions for user 1
+        like = Counter()
+        like.reaction_type_id = 1
+        like.story_id = 1
+        like.counter = 23
+        dislike = Counter()
+        dislike.reaction_type_id = 2
+        dislike.story_id = 1
+        dislike.counter = 5
+        db.session.add(like)
+        db.session.add(dislike)
+        db.session.commit()
+
+        # Test new statistics
+        self.client.get('/stories/1')
+        self.assert_template_used('story.html')
+        test_story = Story.query.filter_by(id=1).first()
+        self.assertEqual(self.get_context_variable('story'), test_story)
+        # Ordered reactions
+        reactions = [('Dislike', 5), ('Like', 23), ('Love', 0)]
+        self.assert_context('reactions', reactions)
+
     def test_non_existing_story(self):
         self.client.get('/stories/50')
         self.assert_template_used('story.html')
