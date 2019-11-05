@@ -156,14 +156,12 @@ def _open_story(id_story):
 
 # Get the form to write a new story or continue a draft
 # Publish the story or save as draft
-@stories.route('/stories/new/write', defaults={'id_story': None}, methods=['GET'])
+@stories.route('/stories/new/write', defaults={'id_story': None}, methods=['GET', 'POST'])
 @stories.route('/stories/new/write/<int:id_story>', methods=['GET'])
-@stories.route('/stories/new/write/<int:as_draft>', methods=['POST'])
 @login_required
 def _write_story(as_draft=None, id_story=None, message='', status=200):
     form = StoryForm()
-    submit_url = WRITE_URL + '/0'
-    draft_url = WRITE_URL + '/1'
+    submit_url = WRITE_URL
 
     # Setting session to modify draft
     if 'GET' == request.method and id_story is not None:
@@ -182,8 +180,8 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
         return redirect(HOME_URL)
 
     elif 'POST' == request.method:
-        draft = bool(as_draft)
         if form.validate_on_submit():
+            draft = bool(int(form.as_draft.data))
             if draft:
                 if 'id_story' in session:
                     # Update a draft
@@ -199,7 +197,7 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
                     # Save new story as draft
                     new_story = Story()
                     new_story.author_id = current_user.id
-                    new_story.figures = '#'.join(session['figures'])
+                    new_story.figures = '#'+'#'.join(session['figures'])+'#'
                     new_story.is_draft = True
                     form.populate_obj(new_story)
                     db.session.add(new_story)
@@ -247,7 +245,7 @@ def _write_story(as_draft=None, id_story=None, message='', status=200):
                     return redirect(HOME_URL+'users/'+str(current_user.id)+'/stories')
 
     return make_response(
-        render_template("write_story.html", submit_url=submit_url, draft_url=draft_url, form=form,
+        render_template("write_story.html", submit_url=submit_url, form=form,
                         words=session['figures'], message=message), status)
 
 

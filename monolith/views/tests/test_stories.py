@@ -371,26 +371,26 @@ class TestStories(flask_testing.TestCase):
         self.assert_context('words', ['beer', 'cat', 'dog'])
 
         # Testing publishing invalid story
-        payload = {'text': 'my cat is drinking a gin tonic with my neighbour\'s dog'}
+        payload = {'text': 'my cat is drinking a gin tonic with my neighbour\'s dog', 'as_draft':'0'}
         form = StoryForm(data=payload)
-        response = self.client.post('/stories/new/write/0', data=form.data)
+        response = self.client.post('/stories/new/write', data=form.data)
         self.assert400(response)
         self.assert_template_used('write_story.html')
         self.assert_context('message', 'Your story doesn\'t contain all the words. Missing: beer ')
 
         # Testing publishing valid story
-        payload1 = {'text': 'my cat is drinking a beer with my neighbour\'s dog'}
+        payload1 = {'text': 'my cat is drinking a beer with my neighbour\'s dog', 'as_draft': '0'}
         form1 = StoryForm(data=payload1)
-        response = self.client.post('/stories/new/write/0', data=form1.data)
+        response = self.client.post('/stories/new/write', data=form1.data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/stories')
 
         # Testing saving a new story as draft
         with self.client.session_transaction() as session:
             session['figures'] = ['beer', 'cat', 'dog']
-        payload2 = {'text': 'my cat is drinking'}
+        payload2 = {'text': 'my cat is drinking', 'as_draft': '1'}
         form2 = StoryForm(data=payload2)
-        response = self.client.post('/stories/new/write/1', data=form2.data)
+        response = self.client.post('/stories/new/write', data=form2.data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/drafts')
 
@@ -398,7 +398,7 @@ class TestStories(flask_testing.TestCase):
         with self.client.session_transaction() as session:
             session['figures'] = ['beer', 'cat', 'dog']
             session['id_story'] = 6
-        response = self.client.post('/stories/new/write/1', data=form2.data)
+        response = self.client.post('/stories/new/write', data=form2.data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/drafts')
         q = db.session.query(Story).filter(Story.id == 7).first()
@@ -408,9 +408,9 @@ class TestStories(flask_testing.TestCase):
         with self.client.session_transaction() as session:
             session['figures'] = ['beer', 'cat', 'dog']
             session['id_story'] = 6
-        payload3 = {'text': 'my cat is drinking dog and beer'}
+        payload3 = {'text': 'my cat is drinking dog and beer', 'as_draft': '0'}
         form3 = StoryForm(data=payload3)
-        response = self.client.post('/stories/new/write/0', data=form3.data)
+        response = self.client.post('/stories/new/write', data=form3.data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.location, 'http://127.0.0.1:5000/users/1/stories')
         q = db.session.query(Story).filter(Story.id == 7).first()
