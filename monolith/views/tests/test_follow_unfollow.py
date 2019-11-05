@@ -125,7 +125,6 @@ class TestTemplateStories(flask_testing.TestCase):
     def test_only_positive_follower_counter(self):
         with self.assertRaises(IntegrityError):
             db.session.query(User).filter_by(id=1).update({'follower_counter': -1})
-            db.session.commit()
 
     def test_db_constraint_follow_yourself(self):
         with self.assertRaises(IntegrityError):
@@ -134,7 +133,3 @@ class TestTemplateStories(flask_testing.TestCase):
             follower.follower_id = 1
             db.session.add(follower)
             db.session.commit()
-
-
-if __name__ == '__main__':
-    unittest.main()

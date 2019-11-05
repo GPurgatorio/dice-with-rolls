@@ -1,7 +1,7 @@
 import os
 import random as rnd
 
-from flask import Blueprint, jsonify, session, abort, render_template, request, flash, redirect, url_for
+from flask import Blueprint, session, render_template, request, flash, redirect, url_for
 from flask_login import login_required
 from werkzeug.exceptions import BadRequestKeyError
 
@@ -21,7 +21,6 @@ def _settings():
 @dice.route('/stories/new/roll', methods=['POST'])
 @login_required
 def _roll_dice():
-
     # check dice_number
     try:
         # get number of dice from the form of previous page
@@ -84,4 +83,3 @@ def _roll_dice():
     context_vars = {'dice_number': dice_number, 'dice_set': dice_set,
                     'words': dice_set.pips, 'write_url': WRITE_URL, 'settings_url': SETTINGS_URL}
     return render_template('roll_dice.html', **context_vars)
-

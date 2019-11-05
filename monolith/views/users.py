@@ -1,10 +1,9 @@
 import re
 from datetime import date
 
-from flask import Blueprint, redirect, render_template, request
+from flask import Blueprint, redirect, render_template, request, make_response
 from flask import flash, url_for
 from flask_login import login_required
-from sqlalchemy.exc import IntegrityError
 
 from monolith.auth import current_user
 from monolith.database import Follower
@@ -51,7 +50,6 @@ def _create_user():
 @users.route('/users/<int:userid>', methods=['GET'])
 def _wall(userid):
     statistics = list()
-    my_wall = False
 
     # Get the list of all stories
     all_stories = Story.query.filter_by(author_id=userid)
@@ -132,15 +130,11 @@ def _follow_user(id_user):
     new_follower = Follower()
     new_follower.follower_id = current_user.id
     new_follower.followed_id = id_user
-    try:
-        db.session.add(new_follower)
-        # TODO This update could be done with celery
-        db.session.query(User).filter_by(id=id_user).update({'follower_counter': User.follower_counter + 1})
-        db.session.commit()
 
-    except IntegrityError:
-        flash("Error")
-        return redirect(url_for('users._wall', userid=id_user))
+    # add follower to database
+    db.session.add(new_follower)
+    db.session.query(User).filter_by(id=id_user).update({'follower_counter': User.follower_counter + 1})
+    db.session.commit()
 
     flash('Followed')
     return redirect(url_for('users._wall', userid=id_user))
@@ -167,6 +161,7 @@ def _unfollow_user(id_user):
     flash('Unfollowed')
     return redirect(url_for('users._wall', userid=id_user))
 
+
 # Get all the stories of specified user
 @users.route('/users/<int:id_user>/stories', methods=['GET'])
 def _user_stories(id_user):
@@ -186,7 +181,7 @@ def _user_drafts(id_user):
         flash("You can read only your draft")
         return redirect(HOME_URL)
     drafts = Story.query.filter_by(author_id=current_user.id, is_draft=True)
-    return make_response(render_template("drafts.html",  drafts=drafts, write_url=WRITE_URL), 200)
+    return make_response(render_template("drafts.html", drafts=drafts, write_url=WRITE_URL), 200)
 
 
 def _check_user_existence(id_user):

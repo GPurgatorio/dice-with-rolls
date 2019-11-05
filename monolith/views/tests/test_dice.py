@@ -1,4 +1,3 @@
-import json
 import os
 import random as rnd
 import unittest
@@ -6,7 +5,7 @@ import unittest
 import flask_testing
 
 from monolith.app import create_app
-from monolith.classes.DiceSet import Die, DiceSet
+from monolith.classes.DiceSet import Die
 from monolith.urls import TEST_DB
 
 path = os.path.dirname(os.path.abspath(__file__)) + "/../../resources/standard/"

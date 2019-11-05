@@ -1,6 +1,6 @@
 import datetime
 import flask_testing
-from monolith.app import app as my_app, create_app
+from monolith.app import create_app
 from monolith.database import db, Story, User
 from monolith.forms import LoginForm
 from monolith.urls import TEST_DB
