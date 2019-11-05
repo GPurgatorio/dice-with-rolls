@@ -29,5 +29,5 @@ def create_app(database=DEFAULT_DB, wtf=False, login_disabled=False):
 
 app = create_app()
 
-if __name__ == '__main__':
-    app.run()
+"""if __name__ == '__main__':
+    app.run()"""

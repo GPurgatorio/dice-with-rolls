@@ -1,36 +1,57 @@
-import unittest
-import json
-from flask import request, jsonify, g, current_app
-import flask_testing
-from flask_login import login_user, current_user
+import datetime
 
-from monolith.app import app as my_app
-from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, User
-from monolith.forms import LoginForm
+import flask_testing
+
+from monolith.app import create_app
+from monolith.database import User, db, Story
+from monolith.urls import TEST_DB
 
 
 class TestReaction(flask_testing.TestCase):
 
+    app = None
+
     def create_app(self):
-        my_app.config['WTF_CSRF_ENABLED'] = False
-        my_app.login_manager.init_app(my_app)
+        global app
+        app = create_app(TEST_DB)
+        return app
 
-        return my_app
+    def setUp(self) -> None:
+        with app.app_context():
+            # user for login
+            example = User()
+            example.firstname = 'Admin'
+            example.lastname = 'Admin'
+            example.email = 'example@example.com'
+            example.dateofbirth = datetime.datetime(2020, 10, 5)
+            example.is_admin = True
+            example.set_password('admin')
+            db.session.add(example)
+            db.session.commit()
 
-    def test1(self):
+            # reacted story
+            test_story = Story()
+            test_story.text = "Test story from admin user"
+            test_story.author_id = 1
+            test_story.is_draft = 0
+            test_story.figures = "#admin#cat#"
+            db.session.add(test_story)
+            db.session.commit()
+
+    def test_search(self):
         self.client.get('http://127.0.0.1:5000/search/query/cat')
 
         self.assert_template_used('search.html')
-        self.assertEqual(len(self.get_context_variable('list_of_stories')), 2)
+        self.assertEqual(len(self.get_context_variable('list_of_stories')), 1)
         self.assertEqual(len(self.get_context_variable('list_of_users')), 0)
 
         self.client.get('http://127.0.0.1:5000/search/query/admin')
 
         self.assert_template_used('search.html')
-        self.assertEqual(len(self.get_context_variable('list_of_stories')), 0)
+        self.assertEqual(len(self.get_context_variable('list_of_stories')), 1)
         self.assertEqual(len(self.get_context_variable('list_of_users')), 1)
 
-        self.client.get('http://127.0.0.1:5000/search/query/fgfdgfdhgdh')
+        self.client.get('http://127.0.0.1:5000/search/query/nowords')
 
         self.assert_template_used('search.html')
         self.assertEqual(len(self.get_context_variable('list_of_stories')), 0)

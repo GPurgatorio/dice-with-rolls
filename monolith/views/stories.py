@@ -253,7 +253,7 @@ def _write_story(id_story=None, message='', status=200):
                         # Publish a new story
                         new_story = Story()
                         new_story.author_id = current_user.id
-                        new_story.figures = '#'.join(session['figures'])
+                        new_story.figures = '#' + '#'.join(session['figures']) + '#'
                         new_story.is_draft = False
                         form.populate_obj(new_story)
                         db.session.add(new_story)

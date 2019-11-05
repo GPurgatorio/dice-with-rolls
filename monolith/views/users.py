@@ -86,6 +86,7 @@ def _wall(userid):
 
         for story in all_stories:
             rolled_dice = story.figures.split('#')
+            rolled_dice = rolled_dice[1:-1]
             tot_num_dice += len(rolled_dice)
 
         # Avg of reactions / num of stories
@@ -187,10 +188,6 @@ def _user_drafts(id_user):
 def _check_user_existence(id_user):
     followed_user = db.session.query(User).filter(User.id == id_user)
     print("CHECK_USER_QUERY" + str(followed_user))
-    """if followed_user.first() is None:
-        return False
-    else:
-        return True"""
     return followed_user.first() is not None
 
 
@@ -198,9 +195,4 @@ def _check_follower_existence(follower_id, followed_id):
     print("FOLLOWER_ID " + str(follower_id) + " FOLLOWED_ID " + str(followed_id))
     follower = db.session.query(Follower).filter_by(follower_id=follower_id, followed_id=followed_id)
     print("CHECK_FOLLOWER_QUERY" + str(follower))
-    """if follower.first() is None:
-        return False
-    else:
-        return True"""
-
     return follower.first() is not None

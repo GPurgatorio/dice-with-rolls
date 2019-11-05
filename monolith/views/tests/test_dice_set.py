@@ -89,27 +89,33 @@ class TestTemplateDiceSet(flask_testing.TestCase):
         self.assert_template_used('settings.html')
 
         # test set not exist
-        self.assertRedirects(self.client.post('/stories/new/roll', 
-                            data={'dice_number': 2, 'dice_img_set': 'notexist'}), '/stories/new/settings')
+        self.assertRedirects(
+            self.client.post('/stories/new/roll',
+                             data={'dice_number': 2, 'dice_img_set': 'notexist'}), '/stories/new/settings')
+
+        # test empty set
+        self.assertRedirects(
+            self.client.post('/stories/new/roll',
+                             data={'dice_number': 2, 'dice_img_set': 'emptyset'}), '/stories/new/settings')
 
         # test set not exist from same page with bad request key
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 2
             sess['dice_img_set'] = 'notexist'
-            self.assertRedirects(self.client.post('/stories/new/roll', 
-                            data={'dice_number': 2, 'dice_img_set': 'badrequestkey'}), '/stories/new/settings')
+            self.assertRedirects(self.client.post('/stories/new/roll',
+                                                  data={'dice_number': 2, 'dice_img_set': 'badrequestkey'}),
+                                 '/stories/new/settings')
 
         # test set exist 
-        self.client.post('/stories/new/roll', 
-                            data={'dice_number': 2, 'dice_img_set': 'halloween'})
+        self.client.post('/stories/new/roll',
+                         data={'dice_number': 2, 'dice_img_set': 'halloween'})
         self.assert_template_used('roll_dice.html')
 
-        # test set exist from same page with bad request key
+        # test set exist from same page with bad request key (BadRequestKeyError)
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 2
             sess['dice_img_set'] = 'animal'
-            self.client.post('/stories/new/roll', 
-                            data={'dice_img_set': 'badrequestkey'})
+            self.client.post('/stories/new/roll')
             self.assert_template_used('roll_dice.html')
 
     # Tests for POST, PUT and DEL requests ( /settings )

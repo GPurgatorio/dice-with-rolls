@@ -45,7 +45,7 @@ def _roll_dice():
         session['dice_img_set'] = dice_img_set
 
         # check retrieved data
-        if dice_img_set not in {'standard', 'animal', 'halloween'}:
+        if dice_img_set not in {'standard', 'animal', 'halloween', 'emptyset'}:
             raise ValueError
 
     except BadRequestKeyError:  # i'm here after re-rolling dice
@@ -63,21 +63,19 @@ def _roll_dice():
             dirname = os.path.dirname(os.path.abspath(__file__))
             path = dirname + "/../resources/" + dice_img_set + "/"
             dice_list.append(Die(path + 'die' + str(i) + '.txt'))
-        except FileNotFoundError:
-            print("File die" + str(i) + ".txt not found")
+        except (FileNotFoundError, IndexError):
             session.pop('dice_number', None)
             session.pop('dice_img_set', None)
             flash("Can't find dice on server", 'error')
-            return redirect(url_for('home.index'))
+            return redirect(url_for('dice._settings'))
 
     dice_set = DiceSet(dice_list)
-    try:
-        dice_set.throw_dice()
-    except IndexError:
+    dice_set.throw_dice()
+    """except IndexError:
         session.pop('dice_number', None)
         session.pop('dice_img_set', None)
         flash('Error in throwing dice', 'error')
-        return redirect(url_for('home.index'))
+        return redirect(url_for('home.index'))"""
     session['figures'] = dice_set.pips
 
     context_vars = {'dice_number': dice_number, 'dice_set': dice_set,
