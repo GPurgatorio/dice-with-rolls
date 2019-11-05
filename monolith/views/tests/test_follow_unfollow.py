@@ -9,7 +9,7 @@ from monolith.auth import login_manager
 
 import flask_testing
 
-from monolith.database import Story, User, db, Follower
+from monolith.database import User, db, Follower
 
 
 class TestTemplateStories(flask_testing.TestCase):
@@ -88,10 +88,10 @@ class TestTemplateStories(flask_testing.TestCase):
         response = self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
         self.assert401(response, 'You must login to unfollow')
 
+    # FOLLOW
 
-    ##### FOLLOW #####
     def test_follow(self):
-        response = self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
+        self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assert_message_flashed('Followed')
 
@@ -101,25 +101,25 @@ class TestTemplateStories(flask_testing.TestCase):
 
     def test_already_follow(self):
         self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
-        response = self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
+        self.client.post('/users/{}/follow'.format(2), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assert_message_flashed('You already follow this storyteller')
 
     def test_follow_yourself(self):
-        response = self.client.post('/users/{}/follow'.format(1), follow_redirects=True)
+        self.client.post('/users/{}/follow'.format(1), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assert_message_flashed("You can't follow yourself")
 
     def test_follow_storyteller_no_exit(self):
-        response = self.client.post('/users/{}/follow'.format(7), follow_redirects=True)
+        self.client.post('/users/{}/follow'.format(7), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assert_message_flashed("Storyteller doesn't exist")
 
-    ############# UNFOLLOW ######################
+    # UNFOLLOW
 
     def test_unfollow(self):
         self.client.post('/users/{}/follow'.format(2))
-        response = self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
+        self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assert_message_flashed('Unfollowed')
 
@@ -128,27 +128,26 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assert_redirects(response, '/users/{}'.format(2))
 
     def test_follow_first_to_unfollow(self):
-        response = self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
+        self.client.post('/users/{}/unfollow'.format(2), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assert_message_flashed('You should follow him first')
 
-    def test_unfollow_youself(self):
-        response = self.client.post('/users/{}/unfollow'.format(1), follow_redirects=True)
+    def test_unfollow_yourself(self):
+        self.client.post('/users/{}/unfollow'.format(1), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assert_message_flashed("You can't unfollow yourself")
 
     def test_unfollow_storyteller_no_exist(self):
-        response = self.client.post('/users/{}/unfollow'.format(7), follow_redirects=True)
+        self.client.post('/users/{}/unfollow'.format(7), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assert_message_flashed("Storyteller doesn't exist")
 
-    ######## DB CONSTRAINTS ##########
+    # DB CONSTRAINTS
 
     def test_only_positive_follower_counter(self):
         with self.assertRaises(IntegrityError):
             db.session.query(User).filter_by(id=1).update({'follower_counter': -1})
             db.session.commit()
-        # self.assertRaises(IntegrityError)
 
     def test_db_constraint_follow_yourself(self):
         with self.assertRaises(IntegrityError):

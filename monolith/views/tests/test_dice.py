@@ -1,17 +1,16 @@
-import json
 import os
 import random as rnd
 import unittest
 
 import flask_testing
-from flask import url_for
 
-from monolith.classes.DiceSet import Die
 from monolith.app import app as my_app
-from monolith.urls import WRITE_URL
+from monolith.classes.DiceSet import Die
 
 
 class TestDice(unittest.TestCase):
+
+    path = os.path.dirname(os.path.abspath(__file__)) + "/../../resources/"
 
     def test_die_init(self):
         # non-existing file to build a die
@@ -20,16 +19,16 @@ class TestDice(unittest.TestCase):
 
         # empty die
         with self.assertRaises(IndexError):
-            die = Die("monolith/resources/dieEmpty.txt")
+            die = Die(self.path+"dieEmpty.txt")
 
         # die check
-        die = Die("monolith/resources/die0.txt")
+        die = Die(self.path+"die0.txt")
         expected_faced = ['bike', 'moonandstars', 'bag', 'bird', 'crying', 'angry']
         self.assertEqual(die.faces, expected_faced)
 
     def test_throw_die(self):
         rnd.seed(666)
-        die = Die("monolith/resources/die0.txt")
+        die = Die(self.path + "die0.txt")
         res = die.throw_die()
         self.assertEqual(res, 'bird')
 
@@ -66,7 +65,6 @@ class TestTemplateDice(flask_testing.TestCase):
             sess['dice_number'] = 8
             self.assertRedirects(self.client.post('/stories/new/roll', data={'dice_number': 'abc'}), '/stories/new/settings')
 
-"""
     # Correct execution's flow of roll
     def test_roll(self):
         with self.client.session_transaction() as sess:
@@ -74,5 +72,4 @@ class TestTemplateDice(flask_testing.TestCase):
         rnd.seed(2)             # File die0.txt
         # Riga 43: dice_list.append(Die('monolith/resources/die' + str(i) + '.txt')) -> File not Found -> fail del test
         self.client.post('/stories/new/roll')
-        self.assert_template_used('stories.html')
-"""
+        self.assert_template_used('roll_dice.html')

@@ -1,38 +1,62 @@
 <html>
-<body>
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <ul class=flashes>
-            {% for  message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-{% endwith %}
-{% if current_user.is_authenticated %}
-    <h2> {{ user_info.firstname }}'s wall </h2>
-    First Name: {{ user_info.firstname }} <br>
-    Last Name: {{ user_info.lastname }} <br>
-    Date of birth: {{ user_info.dateofbirth }} <br> <br>
+<head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+    <body>
+        {% if not_found %}
+        <div style="text-align: center; margin-top: 100px;">
+            <h1 style="text-align: center;">:(</h1>
+            <h3 style="text-align: center;">Sorry! The user you're looking for doesn't exist!</h3>
+            <br />
+            <a href="/stories" style="text-align: center;"><button type="button" class="btn btn-primary">Come back</button></a>
+        </div>
+        {% else %}
+        {% if my_wall %}
+        	<h2>{{user_info.firstname}}'s wall</h2>
+            First Name: {{user_info.firstname}} <br>
+            Last Name: {{user_info.lastname}} <br>
+            Date of birth: {{user_info.dateofbirth}} <br> <br>
 
-    Email: {{ user_info.email }}
-    <h3>Statistics</h3>
-    <table style="text-align: center; border-spacing: 7px">
-        <tr>
-            <td>{{ stats[2][1] }}</td>
-            <td>{{ stats[1][1] }}</td>
-            <td>{{ stats[0][1] }}</td>
-            <td>{{ stats[3][1] }}</td>
-        </tr>
-        <tr>
-            <td><b># Stories</b></td>
-            <td><b># Reactions</b></td>
-            <td><b>Avg reactions per story</b></td>
-            <td><b>Avg dice per story</b></td>
-        </tr>
-    </table>
-{% else %}
-    <a href="http://127.0.0.1:5000/login" )>Log in</a> to see the wall
-{% endif %}
-</body>
+            Email: {{user_info.email}}
+            <h3>Statistics</h3>
+            <table style="text-align: center; border-spacing: 7px">
+                <tr>
+                    <td>{{stats[2][1]}}</td>
+                    <td>{{stats[1][1]}}</td>
+                    <td>{{stats[0][1]}}</td>
+                    <td>{{stats[3][1]}}</td>
+                </tr>
+                <tr>
+                    <td><b># Stories</b></td>
+                    <td><b># Reactions</b></td>
+                    <td><b>Avg reactions per story</b></td>
+                    <td><b>Avg dice per story</b></td>
+                </tr>
+            </table>
+            <a class="pure-button" href="{{user_info.id}}/stories"><span class="book-open">My stories</span></a>
+            <a class="pure-button" href="{{user_info.id}}/drafts"><span class="firstdraft">My drafts</span></a>
+        {% else %}
+            <h2> {{user_info.firstname}}'s wall </h2>
+            First Name: {{user_info.firstname}} <br>
+            Last Name: {{user_info.lastname}} <br>
+            Date of birth: {{user_info.dateofbirth}} <br> <br>
+
+            Email: {{user_info.email}}
+            <h3>Statistics</h3>
+            <table style="text-align: center; border-spacing: 7px">
+                <tr>
+                    <td>{{stats[1][1]}}</td>
+                    <td>{{stats[0][1]}}</td>
+                </tr>
+                <tr>
+                    <td><b># Stories</b></td>
+                    <td><b># Reactions</b></td>
+                </tr>
+            </table>
+            <form action="{{user_info.id}}/stories" method="get">
+                <input type="submit" value="Show {{user_info.firstname}}'s stories" />
+            </form>
+        {% endif %}
+        {% endif %}
+    </body>
 </html>
