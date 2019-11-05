@@ -1,15 +1,12 @@
 import datetime
 import unittest
-from flask import Flask
-from sqlalchemy.exc import IntegrityError
-
-from monolith.forms import LoginForm
-from monolith.views import blueprints
-from monolith.auth import login_manager
 
 import flask_testing
+from sqlalchemy.exc import IntegrityError
 
-from monolith.database import Story, User, db, Follower
+from monolith.database import User, db, Follower
+from monolith.forms import LoginForm
+from monolith.app import create_test_app
 
 
 class TestDiceSet(flask_testing.TestCase):
@@ -18,39 +15,12 @@ class TestDiceSet(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = Flask(__name__, template_folder='../../templates')
-        app.config['TESTING'] = True
-        app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
-        app.config['SECRET_KEY'] = 'ANOTHER ONE'
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        app.config['WTF_CSRF_ENABLED'] = False
-
-        app.config['LOGIN_DISABLED'] = False
-        # cache config
-        app.config['CACHE_TYPE'] = 'simple'
-        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
-
-        for bp in blueprints:
-            app.register_blueprint(bp)
-            bp.app = app
-
-        db.init_app(app)
-        login_manager.init_app(app)
-        db.create_all(app=app)
-
+        app = create_test_app()
         return app
 
-    def test_authorization(self):
-        response = self.client.post('/users/logout')
-
-        self.assert_redirects(response, '/')
-
-        self.assert401(self.client.get('stories/new/settings'))
-        self.assert401(self.client.post('stories/new/roll'))
-
-
-    def test_dice_set(self):
+    # Set up database for testing here
+    def setUp(self) -> None:
+        print("SET UP")
         with app.app_context():
             example = User()
             example.firstname = 'Admin'
@@ -68,10 +38,25 @@ class TestDiceSet(flask_testing.TestCase):
 
         form = LoginForm(data=payload)
 
-        self.assert200(self.client.post('/users/login', data=form.data, follow_redirects=True))
+        self.client.post('/users/login', data=form.data, follow_redirects=True)
 
+    # Executed at end of each test
+    def tearDown(self) -> None:
+        print("TEAR DOWN")
+        db.session.remove()
+        db.drop_all()
+
+    def test_authorization(self):
+        response = self.client.post('/users/logout')
+
+        self.assert_redirects(response, '/')
+
+        self.assert401(self.client.get('stories/new/settings'))
+        self.assert401(self.client.post('stories/new/roll'))
+
+
+    def test_dice_set(self):
         # test settings template
-        
         self.assert200(self.client.get('/stories/new/settings'))
         self.assert_template_used('settings.html')
 
