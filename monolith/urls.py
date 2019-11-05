@@ -13,6 +13,7 @@ REACTION_URL = HOME_URL + "stories/react"
 LATEST_URL = HOME_URL + "stories/latest"
 RANGE_URL = HOME_URL + "stories/range"
 RANDOM_URL = HOME_URL + "stories/random"
+SEARCH_URL = HOME_URL + "search"
 TEST_DB = 'sqlite:///:memory:'
 DEFAULT_DB = 'sqlite:///storytellers.db'
 

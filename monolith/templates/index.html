@@ -14,6 +14,7 @@
     <form action={{ logout_url }} method="POST">
         <input type="submit" value="Logout">
     </form>
+    <button type="button" onclick="window.location='{{ search_url }}'">Search</button>
     <button type="button" onclick="window.location='{{ read_url }}'">Read Stories</button>
     <form action="{{ settings_url }}" method="GET">
         <input type="submit" value="New Story" >
