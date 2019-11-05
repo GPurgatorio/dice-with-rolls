@@ -1,5 +1,12 @@
 <html>
  <body>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <h5 class="{{ category }}">{{ message }}</h5>
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
   <form action="" method="POST">
     {{ form.hidden_tag() }}
     <dl>

@@ -1,42 +1,78 @@
-import unittest
-import json
-from flask import request, jsonify, g, current_app
-import flask_testing
-from flask_login import login_user, current_user
+import datetime
 
-from monolith.app import app as my_app
-from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, User
+import flask_testing
+
+from monolith.app import app as my_app, create_app
+from monolith.database import db, Reaction, User, Story, ReactionCatalogue
 from monolith.forms import LoginForm
+from monolith.urls import TEST_DB
 
 
 class TestReaction(flask_testing.TestCase):
 
+    app = None
+
     def create_app(self):
-        my_app.config['WTF_CSRF_ENABLED'] = False
-        my_app.login_manager.init_app(my_app)
+        global app
+        app = create_app(database=TEST_DB)
+        return app
 
-        return my_app
+    def setUp(self) -> None:
+        with app.app_context():
+            # user for login
+            example = User()
+            example.firstname = 'Admin'
+            example.lastname = 'Admin'
+            example.email = 'example@example.com'
+            example.dateofbirth = datetime.datetime(2020, 10, 5)
+            example.is_admin = True
+            example.set_password('admin')
+            db.session.add(example)
 
-    def test1(self):
-        len_to_be_deleted_reactions = len(Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1, Reaction.marked == 2).all())
+            # possible reactions
+            like = ReactionCatalogue()
+            like.reaction_id = 1
+            like.reaction_caption = 'Like'
+            dislike = ReactionCatalogue()
+            dislike.reaction_id = 2
+            dislike.reaction_caption = 'Dislike'
+            db.session.add(like)
+            db.session.add(dislike)
+            db.session.commit()
 
-        payload = {'email': 'example@example.com',
-                            'password': 'admin'}
+            # reacted story
+            test_story = Story()
+            test_story.text = "Test story from admin user"
+            test_story.author_id = 1
+            test_story.is_draft = 0
+            test_story.figures = "#Test#admin#"
 
-        form = LoginForm(data=payload)
+            # login
+            payload = {'email': 'example@example.com',
+                       'password': 'admin'}
 
-        self.client.post('/users/login', data=form.data, follow_redirects=True)
+            form = LoginForm(data=payload)
 
-        self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
+            self.client.post('/users/login', data=form.data, follow_redirects=True)
+
+    def test_reaction(self):
+        len_to_be_deleted_reactions = len(Reaction.query.filter(Reaction.story_id == '1',
+                                                                Reaction.reactor_id == 1,
+                                                                Reaction.marked == 2).all())
+
+        self.client.post('http://127.0.0.1:5000/stories/react/1/Like', follow_redirects=True)
 
         self.assert_template_used('stories.html')
-        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1,  Reaction.marked == 0).all()
+        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1',
+                                                   Reaction.reactor_id == 1,
+                                                   Reaction.marked == 0).all()
+
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(unmarked_reactions[0].reaction_type_id, 1)
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
         self.assert_template_used('stories.html')
-        self.assert_context('message', 'You have already reacted to this story!')
+        self.assert_message_flashed('Reaction successfully deleted!')
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Dislike')
         self.assert_template_used('stories.html')
@@ -48,9 +84,17 @@ class TestReaction(flask_testing.TestCase):
         db.session.commit()
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
-        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1, Reaction.marked == 0).all()
-        marked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1,Reaction.marked == 1).all()
-        to_be_deleted_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1, Reaction.marked == 2).all()
+        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1',
+                                                   Reaction.reactor_id == 1,
+                                                   Reaction.marked == 0).all()
+
+        marked_reactions = Reaction.query.filter(Reaction.story_id == '1',
+                                                 Reaction.reactor_id == 1,
+                                                 Reaction.marked == 1).all()
+
+        to_be_deleted_reactions = Reaction.query.filter(Reaction.story_id == '1',
+                                                        Reaction.reactor_id == 1,
+                                                        Reaction.marked == 2).all()
 
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(len(marked_reactions), 0)
