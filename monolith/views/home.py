@@ -17,5 +17,5 @@ def index():
                     "login_url": LOGIN_URL, "logout_url": LOGOUT_URL,
                     "read_url": READ_URL, "settings_url": SETTINGS_URL,
                     "search_url": SEARCH_URL,
-                    "users_url": USERS_URL, "message" : message}
+                    "users_url": USERS_URL}
     return render_template("index.html", **context_vars)
