@@ -2,9 +2,10 @@ import datetime
 
 import flask_testing
 
-from monolith.app import app as my_app, create_test_app
+from monolith.app import app as my_app, create_app
 from monolith.database import db, Reaction, User, Story, ReactionCatalogue
 from monolith.forms import LoginForm
+from monolith.urls import TEST_DB
 
 
 class TestReaction(flask_testing.TestCase):
@@ -13,7 +14,7 @@ class TestReaction(flask_testing.TestCase):
 
     def create_app(self):
         global app
-        app = create_test_app()
+        app = create_app(database=TEST_DB)
         return app
 
     def setUp(self) -> None:
@@ -44,7 +45,7 @@ class TestReaction(flask_testing.TestCase):
             test_story.text = "Test story from admin user"
             test_story.author_id = 1
             test_story.is_draft = 0
-            test_story.figures = "Test#admin"
+            test_story.figures = "#Test#admin#"
 
             # login
             payload = {'email': 'example@example.com',
@@ -62,7 +63,10 @@ class TestReaction(flask_testing.TestCase):
         self.client.post('http://127.0.0.1:5000/stories/react/1/Like', follow_redirects=True)
 
         self.assert_template_used('stories.html')
-        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1,  Reaction.marked == 0).all()
+        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1',
+                                                   Reaction.reactor_id == 1,
+                                                   Reaction.marked == 0).all()
+
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(unmarked_reactions[0].reaction_type_id, 1)
 
@@ -80,9 +84,17 @@ class TestReaction(flask_testing.TestCase):
         db.session.commit()
 
         self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
-        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1, Reaction.marked == 0).all()
-        marked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1,Reaction.marked == 1).all()
-        to_be_deleted_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1, Reaction.marked == 2).all()
+        unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1',
+                                                   Reaction.reactor_id == 1,
+                                                   Reaction.marked == 0).all()
+
+        marked_reactions = Reaction.query.filter(Reaction.story_id == '1',
+                                                 Reaction.reactor_id == 1,
+                                                 Reaction.marked == 1).all()
+
+        to_be_deleted_reactions = Reaction.query.filter(Reaction.story_id == '1',
+                                                        Reaction.reactor_id == 1,
+                                                        Reaction.marked == 2).all()
 
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(len(marked_reactions), 0)

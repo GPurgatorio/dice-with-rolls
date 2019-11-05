@@ -16,15 +16,9 @@ from monolith.urls import REACTION_URL, LATEST_URL, RANGE_URL, RANDOM_URL
 stories = Blueprint('stories', __name__)
 
 
-class StoryWithReaction:
-    def __init__(self, _story):
-        self.story = _story
-        self.reactions = {}
-
-
 @stories.route('/stories')
 def _stories():
-    allstories = db.session.query(Story).all()
+    all_stories = db.session.query(Story).all()
     # TODO check this commented code
     """for story in allstories:
         new_story_with_reaction = StoryWithReaction(story)
@@ -34,7 +28,7 @@ def _stories():
             new_story_with_reaction.reactions[item.caption] = item.counter
         listed_stories.append(new_story_with_reaction)"""
 
-    context_vars = {"stories": allstories,
+    context_vars = {"stories": all_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
                     "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
 
@@ -48,8 +42,10 @@ def _reaction(reaction_caption, story_id):
     old_reaction = Reaction.query.filter(and_(Reaction.reactor_id == current_user.id,
                                               Reaction.story_id == story_id,
                                               Reaction.marked != 2)).first()
+
     # Retrieve the id of the reaction
     reaction_type_id = ReactionCatalogue.query.filter_by(reaction_caption=reaction_caption).first().reaction_id
+
     # Retrieve if present the user's last reaction about the same story
     if old_reaction is None:
         new_reaction = Reaction()
@@ -276,4 +272,3 @@ def _random_story():
     else:
         pos = randint(0, len(recent_stories) - 1)
         return redirect(url_for("stories._open_story", id_story=recent_stories[pos].id))
-        # return _open_story(recent_stories[pos].id)

@@ -2,10 +2,10 @@ import datetime
 
 import flask_testing
 
-from monolith.app import app as my_app, create_test_app
+from monolith.app import app as my_app, create_app
 from monolith.database import Story, User, db, ReactionCatalogue
 from monolith.forms import LoginForm, StoryForm
-from monolith.urls import RANGE_URL, LATEST_URL
+from monolith.urls import RANGE_URL, LATEST_URL, TEST_DB
 
 
 class TestTemplateStories(flask_testing.TestCase):
@@ -14,7 +14,7 @@ class TestTemplateStories(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = create_test_app()
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here
@@ -68,7 +68,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example = Story()
             example.text = 'Trial story of example admin user :)'
             example.author_id = 1
-            example.figures = 'example#admin'
+            example.figures = '#example#admin#'
             example.date = datetime.datetime.strptime('2019-10-20', '%Y-%m-%d')
             db.session.add(example)
             db.session.commit()
@@ -79,7 +79,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2019-10-10', '%Y-%m-%d')
             example.likes = 420
             example.author_id = 2
-            example.figures = 'example#abc'
+            example.figures = '#example#abc#'
             db.session.add(example)
             db.session.commit()
 
@@ -89,7 +89,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2019-10-13', '%Y-%m-%d')
             example.likes = 3
             example.author_id = 2
-            example.figures = 'example#abc'
+            example.figures = '#example#abc#'
             db.session.add(example)
             db.session.commit()
 
@@ -99,7 +99,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2018-12-30', '%Y-%m-%d')
             example.likes = 100
             example.author_id = 3
-            example.figures = 'example#nini'
+            example.figures = '#example#nini#'
             db.session.add(example)
             db.session.commit()
 
@@ -109,7 +109,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2011-11-11', '%Y-%m-%d')
             example.likes = 2
             example.author_id = 3
-            example.figures = 'example#nini'
+            example.figures = '#example#nini#'
             example.date = datetime.datetime(2011, 11, 11)
             db.session.add(example)
             db.session.commit()
@@ -182,8 +182,11 @@ class TestTemplateStories(flask_testing.TestCase):
 
         # Testing range with begin date > end date
         self.client.get(RANGE_URL + '?begin=2012-12-12&end=2011-10-10')
-        # self.assertEqual(self.get_context_variable('message'), 'Begin date cannot be higher than End date')
         self.assert_message_flashed('Begin date cannot be higher than End date', 'error')
+
+        # Testing wrong url parameters
+        self.client.get(RANGE_URL + '?begin=abc&end=abc')
+        self.assert_message_flashed('Wrong URL parameters.', 'error')
 
         # Testing range (valid request)
         d = datetime.datetime.strptime('2012-10-15', '%Y-%m-%d')

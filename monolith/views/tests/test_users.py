@@ -1,10 +1,10 @@
 import datetime
-
 import flask_testing
 
-from monolith.app import create_test_app
+from monolith.app import create_app
 from monolith.database import Story, User, db, ReactionCatalogue, Counter
 from monolith.forms import LoginForm
+from monolith.urls import TEST_DB
 
 
 class TestTemplateStories(flask_testing.TestCase):
@@ -13,7 +13,7 @@ class TestTemplateStories(flask_testing.TestCase):
 
     def create_app(self):
         global app
-        app = create_test_app()
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here
@@ -44,14 +44,14 @@ class TestTemplateStories(flask_testing.TestCase):
             example = Story()
             example.text = 'Trial story of example admin user :)'
             example.author_id = 1
-            example.figures = 'example#admin'
+            example.figures = '#example#admin#'
             db.session.add(example)
             db.session.commit()
 
             example = Story()
             example.text = 'Another story!'
             example.author_id = 1
-            example.figures = 'another#story'
+            example.figures = '#another#story#'
             db.session.add(example)
             db.session.commit()
 

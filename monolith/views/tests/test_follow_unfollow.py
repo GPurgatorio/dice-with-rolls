@@ -6,7 +6,8 @@ from sqlalchemy.exc import IntegrityError
 
 from monolith.database import User, db, Follower
 from monolith.forms import LoginForm
-from monolith.app import create_test_app
+from monolith.app import create_app
+from monolith.urls import TEST_DB
 
 
 class TestTemplateStories(flask_testing.TestCase):
@@ -15,7 +16,7 @@ class TestTemplateStories(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = create_test_app()
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here

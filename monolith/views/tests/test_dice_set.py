@@ -1,21 +1,50 @@
 import datetime
+import json
+import os
 import unittest
-
+import random as rnd
 import flask_testing
-from sqlalchemy.exc import IntegrityError
 
-from monolith.database import User, db, Follower
+from monolith.app import create_app
+from monolith.classes.DiceSet import DiceSet, Die
+from monolith.database import User, db
 from monolith.forms import LoginForm
-from monolith.app import create_test_app
+from monolith.urls import TEST_DB
+
+path = os.path.dirname(os.path.abspath(__file__)) + "/../../resources/standard/"
 
 
-class TestDiceSet(flask_testing.TestCase):
+class TestDiceSet(unittest.TestCase):
+
+    def test_empty_dice_set(self):
+        with self.assertRaises(TypeError):
+            DiceSet()
+
+    def test_throw_and_serialize_dice_set(self):
+        rnd.seed(574891)
+        die1 = Die(path+"die0.txt")
+        die2 = Die(path+"die1.txt")
+        die3 = Die(path+"die2.txt")
+        dice = [die1, die2, die3]
+        dice_set = DiceSet(dice)
+
+        # throw dice
+        expected_res = ['bag', 'clock', 'bus']
+        self.assertEqual(dice_set.throw_dice(), expected_res)
+
+        # serialize set
+        serialized_set = dice_set.serialize()
+        expected_serialized_set = json.dumps(dice_set.pips)
+        self.assertEqual(serialized_set, expected_serialized_set)
+
+
+class TestTemplateDiceSet(flask_testing.TestCase):
     app = None
 
     # First thing called
     def create_app(self):
         global app
-        app = create_test_app()
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here
@@ -53,7 +82,6 @@ class TestDiceSet(flask_testing.TestCase):
 
         self.assert401(self.client.get('stories/new/settings'))
         self.assert401(self.client.post('stories/new/roll'))
-
 
     def test_dice_set(self):
         # test settings template

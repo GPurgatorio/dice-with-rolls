@@ -1,12 +1,10 @@
 import datetime
-import unittest
-
 import flask_testing
-from sqlalchemy.exc import IntegrityError
 
-from monolith.database import User, db, Follower
+from monolith.app import create_app
+from monolith.database import User, db
 from monolith.forms import LoginForm
-from monolith.app import create_test_app
+from monolith.urls import TEST_DB
 
 
 class TestOtherWall(flask_testing.TestCase):
@@ -15,7 +13,7 @@ class TestOtherWall(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = create_test_app()
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here
@@ -57,21 +55,21 @@ class TestOtherWall(flask_testing.TestCase):
 
     def test_wall_login(self):
         # looking for non-existing user after login
-        id = 100
-        self.client.get('/users/{}'.format(id), follow_redirects=True)
+        user_id = 100
+        self.client.get('/users/{}'.format(user_id), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('not_found'), True)
 
         # looking for existing user after login
-        id = 2
-        self.client.get('/users/{}'.format(id), follow_redirects=True)
+        user_id = 2
+        self.client.get('/users/{}'.format(user_id), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('not_found'), False)
         self.assertEqual(self.get_context_variable('my_wall'), False)
 
         # looking for personal wall after login
-        id = 1
-        self.client.get('/users/{}'.format(id), follow_redirects=True)
+        user_id = 1
+        self.client.get('/users/{}'.format(user_id), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('not_found'), False)
         self.assertEqual(self.get_context_variable('my_wall'), True)
@@ -82,14 +80,14 @@ class TestOtherWall(flask_testing.TestCase):
         self.assert_redirects(response, '/')
 
         # looking for non-existing user without login
-        id = 100
-        self.client.get('/users/{}'.format(id), follow_redirects=True)
+        user_id = 100
+        self.client.get('/users/{}'.format(user_id), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('not_found'), True)
         
         # looking for existing user without login
-        id = 1
-        self.client.get('/users/{}'.format(id), follow_redirects=True)
+        user_id = 1
+        self.client.get('/users/{}'.format(user_id), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('not_found'), False)
         self.assertEqual(self.get_context_variable('my_wall'), False)
@@ -99,7 +97,3 @@ class TestOtherWall(flask_testing.TestCase):
         self.assert405(self.client.post('/users/1'))
         self.assert405(self.client.put('/users/1'))
         self.assert405(self.client.delete('/users/1'))
-
-
-if __name__ == '__main__':
-    unittest.main()
