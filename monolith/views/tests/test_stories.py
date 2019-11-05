@@ -395,3 +395,71 @@ class TestStories(flask_testing.TestCase):
         self.assertEqual(q, None)
         q = db.session.query(Story).filter(Story.id == 6).first()
         self.assertEqual(q.is_draft, False)
+
+
+class TestRandomRecentStory(flask_testing.TestCase):
+    app = None
+
+    # First thing called
+    def create_app(self):
+        global app
+        app = create_app(database=TEST_DB)
+        return app
+
+    # Set up database for testing here
+    def setUp(self) -> None:
+        with app.app_context():
+
+            # Create an user (if not present)
+            q = db.session.query(User).filter(User.email == 'example@example.com')
+            user = q.first()
+            if user is None:
+                example = User()
+                example.firstname = 'Admin'
+                example.lastname = 'Admin'
+                example.email = 'example@example.com'
+                example.dateofbirth = datetime.datetime(2020, 10, 5)
+                example.is_admin = True
+                example.set_password('admin')
+                db.session.add(example)
+                db.session.commit()
+
+            # Create a not recent story
+            example = Story()
+            example.text = 'This is a story about the end of the world'
+            example.date = datetime.datetime.strptime('2012-12-12', '%Y-%m-%d')
+            example.author_id = 1
+            example.figures = 'story#world'
+            example.is_draft = False
+            db.session.add(example)
+            db.session.commit() 
+
+            payload = {'email': 'example@example.com', 'password': 'admin'}
+
+            form = LoginForm(data=payload)
+
+            self.client.post('/users/login', data=form.data, follow_redirects=True)
+
+        def test_random_recent_story(self):
+
+            # No recent stories
+            self.client.get('/stories/random')
+            self.assert_template_used('stories.html')
+            self.assert_message_flashed('Oops, there are no recent stories!')
+
+            # Create a new recent story
+            example = Story()
+            example.text = 'This is a recent story'
+            example.date = datetime.datetime.now()
+            example.author_id = 1
+            example.figures = 'story#recent'
+            example.is_draft = False
+            db.session.add(example)
+            db.session.commit()
+
+            # Get the only recent story
+            response = self.client.get('/stories/random')
+            self.assert_template_used('story.html')
+            test_story = Story.query.filter_by(id=1).first()
+            self.assertEqual(self.get_context_variable('story'), test_story)
+

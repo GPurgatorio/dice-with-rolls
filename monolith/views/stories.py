@@ -280,6 +280,7 @@ def _manage_stories(id_story):
     return redirect(url_for("home.index"))
 
 
+# Get a random story written in the last three days
 @stories.route('/stories/random', methods=['GET'])
 def _random_story():
     # get all the stories written in the last three days 
