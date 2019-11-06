@@ -23,33 +23,58 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="#">
-            Story Tellers
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="" onclick="window.location='{{ read_url }}'">Read Stories</a>
-                </li>
-            </ul>
-            <form class="form-inline">
-                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='{{ register_url }}'">Register</button>
-            </form>
-        </div>
-    </nav>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+                <a class="navbar-brand" href="/">
+                    Story Tellers
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+                    {% if current_user.is_authenticated %}
+                    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="window.location='{{ read_url }}'">Read Stories</a>
+                        </li>
+                        <li class="nav-item">
+                            <form action="../users/{{ current_user.id }}" method="GET">
+                                <a class="nav-link" href="#" onclick="$(this).parents('form:first').submit()">My Wall</a>
+                            </form>
+                        </li>
+                        <li class="nav-item">
+                            <form action="../stories/new/settings" method="GET">
+                                <a class="nav-link" href="#" onclick="$(this).parents('form:first').submit()">New Story</a>
+                            </form>
+                        </li>
+                    </ul>
+                    <form class="form-inline" action="../users/logout" method="POST">
+                        <button class="btn btn-danger my-2 my-sm-0" type="submit">Logout</button>
+                    </form>
+                    {% else %}
+                    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="window.location='{{ read_url }}'">Read Stories</a>
+                        </li>
+                    </ul>
+                    <form class="form-inline">
+                        <button class="btn btn-success mr-2" type="button" onclick="window.location='../users/login'">Login</button>
+                        <button class="btn btn-secondary mr-2" type="button" onclick="window.location='../users/create'">Register</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </nav>
     <div class="container my-3">
         <div class="row d-flex justify-content-center">
             <div class="col-xs-12 col-sm-8 bg-light cont rounded pb-3">
                 <h3 class="text-center">User List</h3>
                 <ul class="list-group">
-                    {% for user in users: %}
+                    {% for user in users %}
                     <li class="list-group-item">{{user.firstname}} {{user.lastname}}</li>
                     {% endfor %}
                 </ul>
