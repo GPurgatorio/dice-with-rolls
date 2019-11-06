@@ -72,7 +72,8 @@ class Story(db.Model):
 
     def __init__(self, *args, **kw):
         super(Story, self).__init__(*args, **kw)
-        self.date = dt.datetime.now()
+        date_format = "%Y %m %d %H:%M"
+        self.date = dt.datetime.strptime(dt.datetime.now().strftime(date_format), date_format)
 
 
 class ReactionCatalogue(db.Model):

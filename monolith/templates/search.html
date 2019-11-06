@@ -1,0 +1,51 @@
+<html>
+<script>
+    function submitSearch() {
+        let query = document.getElementById('query');
+
+        if(query.innerText === "")
+            alert("Insert a query!");
+        else
+            window.location='{{ search_url }}?query='
+    }
+</script>
+<body>
+<a href="/">
+    <button><</button>
+    Come back to the home page</a>
+<h1>Search a user or a story</h1>
+<form>
+    <input type="text" name="query" id="query">
+    <!--<button type="button" onclick="window.location='{{ search_url }}/query/' + query.value ">Search Period</button>-->
+    <button type="button" onclick="submitSearch()">Search Period</button>
+</form>
+
+<h2>Users</h2>
+<ul>
+    {% for item in list_of_users %}
+        <li>
+            <a href="{{ users_url }}/{{ item.id }}">{{ item.firstname }} {{ item.lastname }}</a><br/>
+        </li>
+    {% endfor %}
+</ul>
+
+
+<h2>Stories</h2>
+<ul>
+    {% for item in list_of_stories %}
+        <li>
+            "{{ item.text }}" <br/>
+            ({{ item.date }}) <br/>
+            {% if current_user.is_authenticated %}
+                <div style="display: flex; flex-direction: row;">
+                {% for r in list_of_reactions %}
+                    <a style= "margin-right: 1em;" href="{{ reaction_url.format(item.id) }}/{{ r.caption.lower() }}">{{ r.caption.title() }}</a>
+                {% endfor %}
+                </div>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

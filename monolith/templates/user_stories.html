@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h2>Stories</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class=flashes>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
+{% for story in stories %}
+    <div>
+        <li>
+            {{ story.text }} -- {{ story.figures }} --  <a href="{{ open_url+'/'+ story.id|string }}"> open </a>
+        </li>
+    </div>
+{% endfor %}
+<a href="{{ home_url }}">
+   <button>Home</button>
+</a>
+</body>
+</html>

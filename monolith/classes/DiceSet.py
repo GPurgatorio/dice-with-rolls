@@ -1,8 +1,5 @@
 import json
-import unittest
 import random as rnd
-
-from flask import jsonify
 
 
 class Die:
@@ -35,9 +32,8 @@ class DiceSet:
         return json.dumps(self.pips)
 
     def throw_dice(self):
-        if not self.pips: # check if list is empty, not assigned yet
+        if not self.pips:  # check if list is empty, not assigned yet
             self.pips = [None] * (len(self.dice))
         for i in range(len(self.dice)):
             self.pips[i] = self.dice[i].throw_die()
         return self.pips
-

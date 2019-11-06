@@ -1,19 +1,18 @@
 import datetime
-
 import flask_testing
 
-from monolith.app import create_test_app
+from monolith.app import create_app
 from monolith.database import Story, User, db, ReactionCatalogue, Counter
 from monolith.forms import LoginForm
+from monolith.urls import TEST_DB
 
 
-class TestTemplateStories(flask_testing.TestCase):
-
+class TestUsers(flask_testing.TestCase):
     app = None
 
     def create_app(self):
         global app
-        app = create_test_app()
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here
@@ -44,26 +43,17 @@ class TestTemplateStories(flask_testing.TestCase):
             example = Story()
             example.text = 'Trial story of example admin user :)'
             example.author_id = 1
-            example.figures = 'example#admin'
+            example.figures = '#example#admin#'
+            example.is_draft = False
             db.session.add(example)
             db.session.commit()
 
             example = Story()
             example.text = 'Another story!'
             example.author_id = 1
-            example.figures = 'another#story'
+            example.is_draft = True
+            example.figures = '#another#story#'
             db.session.add(example)
-            db.session.commit()
-
-            # Add some reactions
-            like = ReactionCatalogue()
-            like.reaction_id = 1
-            like.reaction_caption = 'Like'
-            dislike = ReactionCatalogue()
-            dislike.reaction_id = 2
-            dislike.reaction_caption = 'Dislike'
-            db.session.add(like)
-            db.session.add(dislike)
             db.session.commit()
 
             # Add reactions for user 1
@@ -92,6 +82,33 @@ class TestTemplateStories(flask_testing.TestCase):
         print("TEAR DOWN")
         db.session.remove()
         db.drop_all()
+        
+    def test_user_stories(self):
+        # Testing stories of not existing user
+        response = self.client.get('/users/100/stories')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/')
+
+        # Testing stories of existing user
+        response = self.client.get('/users/1/stories')
+        self.assert200(response)
+        self.assert_template_used('user_stories.html')
+
+    def test_user_drafts(self):
+        # Testing stories of not existing user
+        response = self.client.get('/users/100/drafts')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/')
+
+        # Testing stories of other user
+        response = self.client.get('/users/2/drafts')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://127.0.0.1:5000/')
+
+        # Testing stories of existing user
+        response = self.client.get('/users/1/drafts')
+        self.assert200(response)
+        self.assert_template_used('drafts.html')
 
     def test_user_statistics(self):
         self.client.get('/users/1')

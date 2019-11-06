@@ -1,18 +1,20 @@
 from flask import Flask
-from flask_cors import CORS
-from monolith.database import db, User, Story, ReactionCatalogue
-from monolith.views import blueprints
+
 from monolith.auth import login_manager
-import datetime
+from monolith.database import db, ReactionCatalogue
+from monolith.urls import DEFAULT_DB
+from monolith.views import blueprints
 
 
-def create_app():
-  
+def create_app(database=DEFAULT_DB, wtf=False, login_disabled=False):
     flask_app = Flask(__name__)
+    flask_app.config['TESTING'] = True
     flask_app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
     flask_app.config['SECRET_KEY'] = 'ANOTHER ONE'
-    flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storytellers.db'
     flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    flask_app.config['SQLALCHEMY_DATABASE_URI'] = database
+    flask_app.config['WTF_CSRF_ENABLED'] = wtf
+    flask_app.config['LOGIN_DISABLED'] = login_disabled
 
     for bp in blueprints:
         flask_app.register_blueprint(bp)
@@ -22,71 +24,26 @@ def create_app():
     login_manager.init_app(flask_app)
     db.create_all(app=flask_app)
 
-    # create a first admin user
     with flask_app.app_context():
-        q = db.session.query(User).filter(User.email == 'example@example.com')
-        user = q.first()
-        if user is None:
-            example = User()
-            example.firstname = 'Admin'
-            example.lastname = 'Admin'
-            example.email = 'example@example.com'
-            example.dateofbirth = datetime.datetime(2020, 10, 5)
-            example.is_admin = True
-            example.set_password('admin')
-            db.session.add(example)
-            db.session.commit()
-
-        q = db.session.query(Story).filter(Story.id == 1)
-        story = q.first()
-        if story is None:
-            example = Story()
-            example.text = 'Trial story of example admin user :)'
-            example.author_id = 1
-            example.figures = 'example#admin'
-            example.date = datetime.datetime.strptime('2019-10-20', '%Y-%m-%d')
-            print(example)
-            db.session.add(example)
-            db.session.commit()
-
-        q = db.session.query(ReactionCatalogue)
-        catalogue = q.all()
-        if len(catalogue) == 0:
+        # possible reactions
+        if ReactionCatalogue.query.filter(ReactionCatalogue.reaction_caption == 'like').first() is None:
             like = ReactionCatalogue()
             like.reaction_id = 1
-            like.reaction_caption = 'Like'
+            like.reaction_caption = 'like'
+            db.session.add(like)
+            db.session.commit()
+
+        if ReactionCatalogue.query.filter(ReactionCatalogue.reaction_caption == 'dislike').first() is None:
             dislike = ReactionCatalogue()
             dislike.reaction_id = 2
-            dislike.reaction_caption = 'Dislike'
-            db.session.add(like)
+            dislike.reaction_caption = 'dislike'
             db.session.add(dislike)
             db.session.commit()
 
     return flask_app
 
 
-def create_test_app(wtf=False, login_disabled=False):
-    test_app = Flask(__name__)
-    test_app.config['TESTING'] = True
-    test_app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
-    test_app.config['SECRET_KEY'] = 'ANOTHER ONE'
-    test_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    test_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    test_app.config['WTF_CSRF_ENABLED'] = wtf
-    test_app.config['LOGIN_DISABLED'] = login_disabled
-
-    for bp in blueprints:
-        test_app.register_blueprint(bp)
-        bp.app = test_app
-
-    db.init_app(test_app)
-    login_manager.init_app(test_app)
-    db.create_all(app=test_app)
-
-    return test_app
-
-
 app = create_app()
 
-if __name__ == '__main__':
-    app.run()
+"""if __name__ == '__main__':
+    app.run()"""

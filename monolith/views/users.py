@@ -1,15 +1,15 @@
 import re
 from datetime import date
 
-from flask import Blueprint, redirect, render_template, request
+from flask import Blueprint, redirect, render_template, request, make_response
 from flask import flash, url_for
 from flask_login import login_required
-from sqlalchemy.exc import IntegrityError
 
 from monolith.auth import current_user
 from monolith.database import Follower
 from monolith.database import db, User, Story
 from monolith.forms import UserForm
+from monolith.urls import HOME_URL, WRITE_URL, USERS_URL, READ_URL
 
 users = Blueprint('users', __name__)
 
@@ -17,7 +17,7 @@ users = Blueprint('users', __name__)
 @users.route('/users')
 def _users():
     usrs = db.session.query(User)
-    return render_template("users.html", users=usrs)
+    return render_template("users.html", wall_url=USERS_URL, users=usrs)
 
 
 @users.route('/users/create', methods=['GET', 'POST'])
@@ -50,7 +50,6 @@ def _create_user():
 @users.route('/users/<int:userid>', methods=['GET'])
 def _wall(userid):
     statistics = list()
-    my_wall = False
 
     # Get the list of all stories
     all_stories = Story.query.filter_by(author_id=userid)
@@ -87,6 +86,7 @@ def _wall(userid):
 
         for story in all_stories:
             rolled_dice = story.figures.split('#')
+            rolled_dice = rolled_dice[1:-1]
             tot_num_dice += len(rolled_dice)
 
         # Avg of reactions / num of stories
@@ -108,10 +108,11 @@ def _wall(userid):
         if user_info is not None:
             statistics.append(('num_reactions', tot_num_reactions))
             statistics.append(('num_stories', tot_num_stories))
+            my_wall = False
         else:
             return render_template('wall.html', not_found=True)
 
-    return render_template('wall.html', my_wall=my_wall, user_info=user_info, stats=statistics)
+    return render_template('wall.html', not_found=False, my_wall=my_wall, user_info=user_info, stats=statistics)
 
 
 @users.route('/users/<int:id_user>/follow', methods=['POST'])
@@ -130,15 +131,11 @@ def _follow_user(id_user):
     new_follower = Follower()
     new_follower.follower_id = current_user.id
     new_follower.followed_id = id_user
-    try:
-        db.session.add(new_follower)
-        # TODO This update could be done with celery
-        db.session.query(User).filter_by(id=id_user).update({'follower_counter': User.follower_counter + 1})
-        db.session.commit()
 
-    except IntegrityError:
-        flash("Error")
-        return redirect(url_for('users._wall', userid=id_user))
+    # add follower to database
+    db.session.add(new_follower)
+    db.session.query(User).filter_by(id=id_user).update({'follower_counter': User.follower_counter + 1})
+    db.session.commit()
 
     flash('Followed')
     return redirect(url_for('users._wall', userid=id_user))
@@ -166,13 +163,31 @@ def _unfollow_user(id_user):
     return redirect(url_for('users._wall', userid=id_user))
 
 
+# Get all the stories of specified user
+@users.route('/users/<int:id_user>/stories', methods=['GET'])
+def _user_stories(id_user):
+    if not _check_user_existence(id_user):
+        flash("Storyteller doesn't exist")
+        return redirect(HOME_URL)
+    stories = Story.query.filter_by(author_id=id_user, is_draft=False)
+    return render_template("user_stories.html", stories=stories, open_url=READ_URL)
+
+
+# Get all the draft of specified user (only if it is the current user?)
+# TODO discuss if id_user parameter is needed
+@login_required
+@users.route('/users/<int:id_user>/drafts', methods=['GET'])
+def _user_drafts(id_user):
+    if not _check_user_existence(id_user) or id_user != current_user.id:
+        flash("You can read only your draft")
+        return redirect(HOME_URL)
+    drafts = Story.query.filter_by(author_id=current_user.id, is_draft=True)
+    return make_response(render_template("drafts.html", drafts=drafts, write_url=WRITE_URL), 200)
+
+
 def _check_user_existence(id_user):
     followed_user = db.session.query(User).filter(User.id == id_user)
     print("CHECK_USER_QUERY" + str(followed_user))
-    """if followed_user.first() is None:
-        return False
-    else:
-        return True"""
     return followed_user.first() is not None
 
 
@@ -180,9 +195,4 @@ def _check_follower_existence(follower_id, followed_id):
     print("FOLLOWER_ID " + str(follower_id) + " FOLLOWED_ID " + str(followed_id))
     follower = db.session.query(Follower).filter_by(follower_id=follower_id, followed_id=followed_id)
     print("CHECK_FOLLOWER_QUERY" + str(follower))
-    """if follower.first() is None:
-        return False
-    else:
-        return True"""
-
     return follower.first() is not None

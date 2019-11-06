@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h2>Your Drafts</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class=flashes>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
+{% for draft in drafts %}
+    <div>
+        <li>
+            {{ draft.text }} -- {{ draft.figures }} -- <a href="{{ write_url+'/'+ draft.id|string }}"> modify </a>
+        </li>
+    </div>
+{% endfor %}
+<a href="{{ home_url }}">
+    <button>Home</button>
+</a>
+</body>
+</html>
+<script>
+    document.addEventListener("click", function (event) {
+        {% for draft in drafts %}
+            console.log("{{write_url+'/'+ draft.id|string}}")
+        {% endfor %}
+    })
+</script>

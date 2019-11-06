@@ -1,20 +1,19 @@
-import json
 import os
 import random as rnd
 import unittest
 
 import flask_testing
 
-from monolith.app import create_test_app
-from monolith.classes.DiceSet import Die, DiceSet
+from monolith.app import create_app
+from monolith.classes.DiceSet import Die
+from monolith.urls import TEST_DB
 
-path = os.path.dirname(os.path.abspath(__file__)) + "/../../resources/standard"
+path = os.path.dirname(os.path.abspath(__file__)) + "/../../resources/standard/"
 
 
 class TestDice(unittest.TestCase):
 
     def test_die_init(self):
-        global path
         # non-existing file to build a die
         with self.assertRaises(FileNotFoundError):
             Die('imnotafile.txt')
@@ -35,30 +34,6 @@ class TestDice(unittest.TestCase):
         self.assertEqual(res, 'bird')
 
 
-class TestDiceSet(unittest.TestCase):
-
-    def test_empty_dice_set(self):
-        with self.assertRaises(TypeError):
-            DiceSet()
-
-    def test_throw_and_serialize_dice_set(self):
-        rnd.seed(574891)
-        die1 = Die(path+"die0.txt")
-        die2 = Die(path+"die1.txt")
-        die3 = Die(path+"die2.txt")
-        dice = [die1, die2, die3]
-        dice_set = DiceSet(dice)
-
-        # throw dice
-        expected_res = ['bag', 'clock', 'bus']
-        self.assertEqual(dice_set.throw_dice(), expected_res)
-
-        # serialize set
-        serialized_set = dice_set.serialize()
-        expected_serialized_set = json.dumps(dice_set.pips)
-        self.assertEqual(serialized_set, expected_serialized_set)
-
-
 class TestTemplateDice(flask_testing.TestCase):
 
     app = None
@@ -66,19 +41,8 @@ class TestTemplateDice(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = create_test_app(login_disabled=True)
+        app = create_app(login_disabled=True, database=TEST_DB)
         return app
-
-    # Tests for POST, PUT and DEL requests ( /settings )
-    def test_requests_settings(self):
-        self.assert405(self.client.post('stories/new/settings'))
-        self.assert405(self.client.put('stories/new/settings'))
-        self.assert405(self.client.delete('stories/new/settings'))
-
-    def test_requests_roll(self):
-        self.assert405(self.client.get('stories/new/roll'))
-        self.assert405(self.client.put('stories/new/roll'))
-        self.assert405(self.client.delete('stories/new/roll'))
 
     def test_settings(self):
         self.client.get('/stories/new/settings')
@@ -101,5 +65,5 @@ class TestTemplateDice(flask_testing.TestCase):
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 2
         rnd.seed(2)             # File die0.txt
-        self.client.post('/stories/new/roll')
+        self.client.post('/stories/new/roll', data={'dice_number': 4, 'dice_img_set': 'animal'})
         self.assert_template_used('roll_dice.html')

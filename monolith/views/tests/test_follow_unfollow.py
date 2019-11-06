@@ -6,7 +6,8 @@ from sqlalchemy.exc import IntegrityError
 
 from monolith.database import User, db, Follower
 from monolith.forms import LoginForm
-from monolith.app import create_test_app
+from monolith.app import create_app
+from monolith.urls import TEST_DB
 
 
 class TestTemplateStories(flask_testing.TestCase):
@@ -15,7 +16,7 @@ class TestTemplateStories(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = create_test_app()
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here
@@ -124,7 +125,6 @@ class TestTemplateStories(flask_testing.TestCase):
     def test_only_positive_follower_counter(self):
         with self.assertRaises(IntegrityError):
             db.session.query(User).filter_by(id=1).update({'follower_counter': -1})
-            db.session.commit()
 
     def test_db_constraint_follow_yourself(self):
         with self.assertRaises(IntegrityError):
@@ -133,7 +133,3 @@ class TestTemplateStories(flask_testing.TestCase):
             follower.follower_id = 1
             db.session.add(follower)
             db.session.commit()
-
-
-if __name__ == '__main__':
-    unittest.main()

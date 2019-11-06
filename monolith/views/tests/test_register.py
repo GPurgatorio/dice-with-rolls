@@ -1,9 +1,10 @@
 import datetime
 import flask_testing
 
-from monolith.app import create_test_app
+from monolith.app import create_app
 from monolith.database import db, User
 from monolith.forms import UserForm
+from monolith.urls import TEST_DB
 
 
 class TestRegister(flask_testing.TestCase):
@@ -12,7 +13,7 @@ class TestRegister(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = create_test_app()
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here
