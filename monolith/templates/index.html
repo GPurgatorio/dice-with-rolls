@@ -84,7 +84,7 @@
             <div class="row pb-3">
             {% endif %}
             <div class="col-xs-12 col-6">
-                <div class="card text-white {{ color|random }} text-center">
+                <div class="card text-white {{ color[loop.index0 % 4] }} text-center">
                     <div class="card-body">
                         <p class="card-text">{{story.text}}</p>
                     </div>

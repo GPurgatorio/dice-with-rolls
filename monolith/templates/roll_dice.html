@@ -9,11 +9,19 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style>
+        html {
+            height: 100%;
+        }
         body {
-            background-image: url('/../static/storytellers.jpg');
+            /* background-image: url('../../static/storytellers.jpg');
             background-repeat: no-repeat;
             background-attachment: fixed;
-            background-size: 100% 100%;
+            background-size: 100% 100%; */
+            height: 100%;
+            margin: 0;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background: linear-gradient(to top left, #33cccc 0%, #669999 100%);
         }
         .cont {
             opacity: 0.9;
@@ -52,7 +60,7 @@
             {% for word in words %}
             <div class="col-xs-12 col-sm-2">
                 <div class="card border-primary">
-                    <img src="/../static/angry.png" class="card-img-top" alt="{{ word }}">
+                    <img src="../../static/{{ dice_img_set }}/die{{ dice_indexes[loop.index0] }}/{{ word }}.png" class="card-img-top" alt="{{ word }}">
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ word }}</h5>
                     </div>
