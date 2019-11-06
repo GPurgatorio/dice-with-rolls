@@ -9,7 +9,7 @@ from flask import session
 from flask_login import (current_user, login_required)
 from sqlalchemy import and_
 
-from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter
+from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, User
 from monolith.forms import StoryForm
 from monolith.urls import *
 
@@ -22,7 +22,8 @@ def _stories():
 
     context_vars = {"stories": all_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
+                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL,
+                    "story_url": READ_URL}
 
     return render_template("stories.html", **context_vars)
 
@@ -58,8 +59,8 @@ def _reaction(reaction_caption, story_id):
                 reaction.marked = 2
 
             db.session.commit()
-            flash('Reaction successfully deleted!')
-            return redirect(url_for('stories._stories'))
+            flash('Reaction successfully deleted! (Updating ... )')
+            return redirect(url_for('stories._open_story', id_story=story_id))
         else:
 
             if old_reaction.marked == 0:
@@ -73,8 +74,9 @@ def _reaction(reaction_caption, story_id):
                 new_reaction.reaction_type_id = reaction_type_id
                 db.session.add(new_reaction)
     db.session.commit()
+    flash('Reaction successfully added! (Updating ... )')
 
-    return redirect(url_for('stories._stories'))
+    return redirect(url_for('stories._open_story', id_story=story_id))
 
 
 # Gets the last story for each registered user
@@ -83,7 +85,7 @@ def _latest():
     listed_stories = db.engine.execute(
         "SELECT * FROM story s1 "
         "WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id "
-        "AND s2.is_draft == FALSE) "
+        "AND s2.is_draft == 0) "
         "ORDER BY s1.author_id")
 
     context_vars = {"stories": listed_stories,
@@ -129,9 +131,11 @@ def _range():
 # Open a story functionality (1.8)
 @stories.route('/stories/<int:id_story>', methods=['GET'])
 def _open_story(id_story):
-    story = Story.query.filter_by(id=id_story).first()
+    q = db.session.query(Story, User).filter(Story.id == id_story).join(User).first()
 
-    if story is not None:
+    if q is not None:
+        story = q[0]
+        user = q[1]
         #  Splitting the names of figures
         rolled_dice = story.figures.split('#')
         rolled_dice = rolled_dice[1:-1]
@@ -167,8 +171,9 @@ def _open_story(id_story):
             for reaction in all_reactions:
                 reactions_counters.append((reaction.reaction_caption, 0))
 
-        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice,
-                               reactions=reactions_counters)
+        print(reactions_counters)
+        return render_template('story.html', exists=True, story=story, user=user, rolled_dice=rolled_dice,
+                               reactions=reactions_counters, react_url=REACTION_URL)
     else:
         return render_template('story.html', exists=False)
 

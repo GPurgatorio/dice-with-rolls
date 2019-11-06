@@ -34,13 +34,13 @@
 <ul>
     {% for item in list_of_stories %}
         <li>
-            "{{ item.text }}" <br/>
-            ({{ item.date }}) <br/>
+            "{{ item.text }}" ({{ item.date }})
+            <button onclick="window.location='{{ story_url }}/{{ item.id }}'" >VIEW</button>
             {% if current_user.is_authenticated %}
                 <div style="display: flex; flex-direction: row;">
-                {% for r in list_of_reactions %}
+                <!--{% for r in list_of_reactions %}
                     <a style= "margin-right: 1em;" href="{{ reaction_url.format(item.id) }}/{{ r.caption.lower() }}">{{ r.caption.title() }}</a>
-                {% endfor %}
+                {% endfor %}-->
                 </div>
             {% endif %}
         </li>

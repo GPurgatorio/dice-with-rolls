@@ -26,13 +26,7 @@
     <ul>
       {% for item in stories %}
       <li>
-      "{{item.text}}"  <br/>
-          ({{item.date}})  <br/>
-      Likes:
-      {% if current_user.is_authenticated %}
-      <a href="{{ reaction_url.format(item.id) }}/like">Like it!</a>
-      <a href="{{ reaction_url.format(item.id) }}/dislike">Dislike it!</a>
-      {% endif %}
+      "{{item.text}}" ({{item.date}}) <button onclick="window.location='{{ story_url }}/{{ item.id }}'" >VIEW</button><br/>
       </li>
       {% endfor %}
     </ul>

@@ -36,6 +36,8 @@ class TestReaction(flask_testing.TestCase):
             test_story.author_id = 1
             test_story.is_draft = 0
             test_story.figures = "#Test#admin#"
+            db.session.add(test_story)
+            db.session.commit()
 
             # login
             payload = {'email': 'example@example.com',
@@ -52,7 +54,7 @@ class TestReaction(flask_testing.TestCase):
 
         self.client.post('http://127.0.0.1:5000/stories/1/react/like', follow_redirects=True)
 
-        self.assert_template_used('stories.html')
+        self.assert_template_used('story.html')
         unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1',
                                                    Reaction.reactor_id == 1,
                                                    Reaction.marked == 0).all()
@@ -61,11 +63,11 @@ class TestReaction(flask_testing.TestCase):
         self.assertEqual(unmarked_reactions[0].reaction_type_id, 1)
 
         self.client.post('http://127.0.0.1:5000/stories/1/react/like')
-        self.assert_template_used('stories.html')
-        self.assert_message_flashed('Reaction successfully deleted!')
+        self.assert_template_used('story.html')
+        self.assert_message_flashed('Reaction successfully deleted! (Updating ... )')
 
         self.client.post('http://127.0.0.1:5000/stories/1/react/dislike')
-        self.assert_template_used('stories.html')
+        self.assert_template_used('story.html')
         unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.marked == 0).all()
         self.assertEqual(unmarked_reactions[0].reaction_type_id, 2)
         self.assertEqual(len(unmarked_reactions), 1)

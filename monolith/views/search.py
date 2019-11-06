@@ -9,7 +9,7 @@ search = Blueprint('search', __name__)
 
 
 @search.route('/search')
-def _search(message=''):
+def _search():
     list_of_users = list_of_stories = []
     query = request.args.get('query')
     if query is not None:
@@ -17,13 +17,11 @@ def _search(message=''):
 
     context_vars = {"list_of_stories": list_of_stories, "list_of_users": list_of_users,
                     "reaction_url": REACTION_URL, "search_url": SEARCH_URL,
-                    "users_url": USERS_URL}
+                    "users_url": USERS_URL, "story_url": READ_URL}
     return render_template("search.html", **context_vars)
 
 
 def _search_query(query):
     list_of_users = User.query.filter(or_(User.firstname.like('%' + query + '%'), User.lastname.like('%' + query + '%'))).all()
     list_of_stories = Story.query.filter(Story.figures.like('%#' + query + '#%')).all()
-    print(list_of_stories)
-    print(list_of_users)
     return list_of_users, list_of_stories
