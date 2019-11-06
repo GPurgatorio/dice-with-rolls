@@ -1,43 +1,49 @@
 <html>
-  <body>
-    <a href="/"><button><</button> Come back to the home page</a>
-    <h1>Search a user or a story</h1>
-    <form>
-        <!--
-        https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date
-        At the moment, the best way to deal with dates in forms in a cross-browser
-        way is to have the user enter the day, month, and year in separate controls, or
-        to use a JavaScript library such as jQuery date picker.-->
-        <input type= "text" name="query" id="begin">
-        <button type="button" onclick="window.location='{{ search_url }}/query/' + query.value ">Search Period</button>
-    </form>
+<script>
+    function submitSearch() {
+        let query = document.getElementById('query');
 
-    <h2>Users</h2>
-    <ul>
-      {% for item in list_of_users %}
-      <li>
-      "{{item.firstname}}"
-          ({{item.lastname}})  <br/>
-        <button type="button" onclick="window.location='/users/{{ item.id }}'">Visit Profile</button>
-      </li>
-      {% endfor %}
-    </ul>
+        if(query.innerText === "")
+            alert("Insert a query!");
+        else
+            window.location='{{ search_url }}?query='
+    }
+</script>
+<body>
+<a href="/">
+    <button><</button>
+    Come back to the home page</a>
+<h1>Search a user or a story</h1>
+<form>
+    <input type="text" name="query" id="query">
+    <!--<button type="button" onclick="window.location='{{ search_url }}/query/' + query.value ">Search Period</button>-->
+    <button type="button" onclick="submitSearch()">Search Period</button>
+</form>
+
+<h2>Users</h2>
+<ul>
+    {% for item in list_of_users %}
+        <li>
+            <a href="{{ users_url }}/{{ item.id }}">{{ item.firstname }} {{ item.lastname }}</a><br/>
+        </li>
+    {% endfor %}
+</ul>
 
 
-    <h2>Stories</h2>
-    <ul>
-      {% for item in list_of_stories %}
-      <li>
-      "{{item.text}}"  <br/>
-          ({{item.date}})  <br/>
-      Likes:
-      {% if current_user.is_authenticated %}
-      <a href="{{reaction_url}}/{{item.id}}/Like">Like it!</a>
-      <a href="{{reaction_url}}/{{item.id}}/Dislike">Unliike it!</a>
-      {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
+<h2>Stories</h2>
+<ul>
+    {% for item in list_of_stories %}
+        <li>
+            "{{ item.text }}" <br/>
+            ({{ item.date }}) <br/>
+            Likes:
+            {% if current_user.is_authenticated %}
+                <a href="{{ reaction_url.format(item.id) }}/like">Like it!</a>
+                <a href="{{ reaction_url.format(item.id) }}/dislike">Dislike it!</a>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
 
-  </body>
+</body>
 </html>

@@ -15,7 +15,6 @@ class Die:
         f.close()
 
     def throw_die(self):
-        print("FACES:" + str(self.faces))
         if self.faces:  # pythonic for list is not empty
             self.pip = rnd.choice(self.faces)
             return self.pip

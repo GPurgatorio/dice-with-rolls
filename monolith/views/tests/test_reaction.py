@@ -3,7 +3,7 @@ import datetime
 import flask_testing
 
 from monolith.app import create_app
-from monolith.database import db, Reaction, User, Story, ReactionCatalogue
+from monolith.database import db, Reaction, User, Story
 from monolith.forms import LoginForm
 from monolith.urls import TEST_DB
 
@@ -28,16 +28,6 @@ class TestReaction(flask_testing.TestCase):
             example.is_admin = True
             example.set_password('admin')
             db.session.add(example)
-
-            # possible reactions
-            like = ReactionCatalogue()
-            like.reaction_id = 1
-            like.reaction_caption = 'Like'
-            dislike = ReactionCatalogue()
-            dislike.reaction_id = 2
-            dislike.reaction_caption = 'Dislike'
-            db.session.add(like)
-            db.session.add(dislike)
             db.session.commit()
 
             # reacted story
@@ -60,7 +50,7 @@ class TestReaction(flask_testing.TestCase):
                                                                 Reaction.reactor_id == 1,
                                                                 Reaction.marked == 2).all())
 
-        self.client.post('http://127.0.0.1:5000/stories/react/1/Like', follow_redirects=True)
+        self.client.post('http://127.0.0.1:5000/stories/1/react/like', follow_redirects=True)
 
         self.assert_template_used('stories.html')
         unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1',
@@ -70,11 +60,11 @@ class TestReaction(flask_testing.TestCase):
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(unmarked_reactions[0].reaction_type_id, 1)
 
-        self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
+        self.client.post('http://127.0.0.1:5000/stories/1/react/like')
         self.assert_template_used('stories.html')
         self.assert_message_flashed('Reaction successfully deleted!')
 
-        self.client.post('http://127.0.0.1:5000/stories/react/1/Dislike')
+        self.client.post('http://127.0.0.1:5000/stories/1/react/dislike')
         self.assert_template_used('stories.html')
         unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1', Reaction.marked == 0).all()
         self.assertEqual(unmarked_reactions[0].reaction_type_id, 2)
@@ -83,7 +73,7 @@ class TestReaction(flask_testing.TestCase):
         Reaction.query.filter(Reaction.story_id == '1', Reaction.marked == 0).first().marked = 1
         db.session.commit()
 
-        self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
+        self.client.post('http://127.0.0.1:5000/stories/1/react/like')
         unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1',
                                                    Reaction.reactor_id == 1,
                                                    Reaction.marked == 0).all()
@@ -100,8 +90,8 @@ class TestReaction(flask_testing.TestCase):
         self.assertEqual(len(marked_reactions), 0)
         self.assertEqual(len(to_be_deleted_reactions), len_to_be_deleted_reactions + 1)
 
-        self.client.post('http://127.0.0.1:5000/stories/react/1/Like')
-        self.client.post('http://127.0.0.1:5000/stories/react/1/Dislike')
+        self.client.post('http://127.0.0.1:5000/stories/1/react/like')
+        self.client.post('http://127.0.0.1:5000/stories/1/react/dislike')
 
         unmarked_reactions = Reaction.query.filter(Reaction.story_id == '1',
                                                    Reaction.reactor_id == 1,

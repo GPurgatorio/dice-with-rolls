@@ -30,8 +30,9 @@
           ({{item.date}})  <br/>
       Likes:
       {% if current_user.is_authenticated %}
-      <a href="{{reaction_url}}/{{item.id}}/Like">Like it!</a>
-      <a href="{{reaction_url}}/{{item.id}}/Dislike">Unliike it!</a>
+          "{{ reaction_url.format(item.id) }}/Like"
+      <a href="{{ reaction_url.format(item.id) }}/like">Like it!</a>
+      <a href="{{ reaction_url.format(item.id) }}/dislike">Dislike it!</a>
       {% endif %}
       </li>
       {% endfor %}

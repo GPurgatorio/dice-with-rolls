@@ -9,7 +9,7 @@ from monolith.auth import current_user
 from monolith.database import Follower
 from monolith.database import db, User, Story
 from monolith.forms import UserForm
-from monolith.urls import HOME_URL, WRITE_URL
+from monolith.urls import HOME_URL, WRITE_URL, USERS_URL
 
 users = Blueprint('users', __name__)
 
@@ -17,7 +17,7 @@ users = Blueprint('users', __name__)
 @users.route('/users')
 def _users():
     usrs = db.session.query(User)
-    return render_template("users.html", users=usrs)
+    return render_template("users.html", wall_url=USERS_URL, users=usrs)
 
 
 @users.route('/users/create', methods=['GET', 'POST'])

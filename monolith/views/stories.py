@@ -19,14 +19,6 @@ stories = Blueprint('stories', __name__)
 @stories.route('/stories')
 def _stories():
     all_stories = db.session.query(Story).all()
-    # TODO check this commented code
-    """for story in allstories:
-        new_story_with_reaction = StoryWithReaction(story)
-        list_of_reactions = db.session.query(Counter.reaction_type_id).join(ReactionCatalogue).all()
-
-        for item in list_of_reactions:
-            new_story_with_reaction.reactions[item.caption] = item.counter
-        listed_stories.append(new_story_with_reaction)"""
 
     context_vars = {"stories": all_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
@@ -35,7 +27,7 @@ def _stories():
     return render_template("stories.html", **context_vars)
 
 
-@stories.route('/stories/react/<story_id>/<reaction_caption>', methods=['GET', 'POST'])
+@stories.route('/stories/<story_id>/react/<reaction_caption>', methods=['GET', 'POST'])
 @login_required
 def _reaction(reaction_caption, story_id):
     # Retrieve all reactions with a specific user_id ad story_id
@@ -193,17 +185,19 @@ def _write_story(id_story=None, message='', status=200):
             session['figures'] = story.figures.split('#')
             session['id_story'] = story.id
         else:
-            flash('Request is invalid, check if you are the author of the story and it is still a draft')
+            flash('Request is invalid, check if you are the author of the story and it is still a draft', 'error')
             return redirect(url_for('users._user_drafts', id_user=current_user.id))
-    else:
+    """else:
         if 'figures' not in session:
+            print("LALALA")
             # redirect to home
-            return redirect('/', code=302)
+            flash('Request is invalid, you need to set a story before', 'error')
+            return redirect(url_for('home.index'))"""
 
     # Check if there are the words to write the story
     if 'figures' not in session:
-        flash('Request is invalid, you need to set a story before')
-        return redirect(HOME_URL)
+        flash('Request is invalid, you need to set a story before', 'error')
+        return redirect(url_for('home.index'))
 
     elif 'POST' == request.method:
         if form.validate_on_submit():

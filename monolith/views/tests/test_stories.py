@@ -114,16 +114,11 @@ class TestTemplateStories(flask_testing.TestCase):
             db.session.add(example)
             db.session.commit()
 
-            # Add two reactions (Like and Dislike)
-            like_reaction = ReactionCatalogue()
-            like_reaction.reaction_caption = 'Like'
-            dislike_reaction = ReactionCatalogue()
-            dislike_reaction.reaction_caption = 'Dislike'
-            love_reaction = ReactionCatalogue()
-            love_reaction.reaction_caption = 'Love'
-            db.session.add(like_reaction)
-            db.session.add(dislike_reaction)
-            db.session.add(love_reaction)
+            # Add third reaction (love)
+            love = ReactionCatalogue()
+            love.reaction_id = 3
+            love.reaction_caption = "love"
+            db.session.add(love)
             db.session.commit()
 
             # login
@@ -145,7 +140,7 @@ class TestTemplateStories(flask_testing.TestCase):
         test_story = Story.query.filter_by(id=1).first()
         self.assertEqual(self.get_context_variable('story'), test_story)
         # Ordered reactions
-        reactions = [('Dislike', 0), ('Like', 0), ('Love', 0)]
+        reactions = [('dislike', 0), ('like', 0), ('love', 0)]
         self.assert_context('reactions', reactions)
 
         # Add reactions for user 1
@@ -167,7 +162,7 @@ class TestTemplateStories(flask_testing.TestCase):
         test_story = Story.query.filter_by(id=1).first()
         self.assertEqual(self.get_context_variable('story'), test_story)
         # Ordered reactions
-        reactions = [('Dislike', 5), ('Like', 23), ('Love', 0)]
+        reactions = [('dislike', 5), ('like', 23), ('love', 0)]
         self.assert_context('reactions', reactions)
 
     def test_non_existing_story(self):
@@ -348,6 +343,9 @@ class TestStories(flask_testing.TestCase):
         self.assert_template_used('write_story.html')
         self.assert_context('words', ['beer', 'cat', 'dog'])
 
+        # Testing empty session
+        response = self.client.get
+
         # Testing publishing invalid story
         payload = {'text': 'my cat is drinking a gin tonic with my neighbour\'s dog', 'as_draft': '0'}
         form = StoryForm(data=payload)
@@ -424,42 +422,32 @@ class TestRandomRecentStory(flask_testing.TestCase):
                 db.session.add(example)
                 db.session.commit()
 
-            # Create a not recent story
-            example = Story()
-            example.text = 'This is a story about the end of the world'
-            example.date = datetime.datetime.strptime('2012-12-12', '%Y-%m-%d')
-            example.author_id = 1
-            example.figures = 'story#world'
-            example.is_draft = False
-            db.session.add(example)
-            db.session.commit() 
-
             payload = {'email': 'example@example.com', 'password': 'admin'}
 
             form = LoginForm(data=payload)
 
             self.client.post('/users/login', data=form.data, follow_redirects=True)
 
-        def test_random_recent_story(self):
+    def test_random_recent_story(self):
 
-            # No recent stories
-            self.client.get('/stories/random')
-            self.assert_template_used('stories.html')
-            self.assert_message_flashed('Oops, there are no recent stories!')
+        # No recent stories
+        self.client.get('/stories/random', follow_redirects=True)
+        self.assert_template_used('stories.html')
+        self.assert_message_flashed('Oops, there are no recent stories!')
 
-            # Create a new recent story
-            example = Story()
-            example.text = 'This is a recent story'
-            example.date = datetime.datetime.now()
-            example.author_id = 1
-            example.figures = 'story#recent'
-            example.is_draft = False
-            db.session.add(example)
-            db.session.commit()
+        # Create a new recent story
+        example = Story()
+        example.text = 'This is a recent story'
+        example.date = datetime.datetime.now()
+        example.author_id = 1
+        example.figures = 'story#recent'
+        example.is_draft = False
+        db.session.add(example)
+        db.session.commit()
 
-            # Get the only recent story
-            response = self.client.get('/stories/random')
-            self.assert_template_used('story.html')
-            test_story = Story.query.filter_by(id=1).first()
-            self.assertEqual(self.get_context_variable('story'), test_story)
+        # Get the only recent story
+        self.client.get('/stories/random', follow_redirects=True)
+        self.assert_template_used('story.html')
+        test_story = Story.query.filter_by(id=1).first()
+        self.assertEqual(self.get_context_variable('story'), test_story)
 
