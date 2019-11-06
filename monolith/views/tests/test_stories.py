@@ -265,7 +265,7 @@ class TestStories(flask_testing.TestCase):
                 example = Story()
                 example.text = 'Trial story of example admin user :)'
                 example.author_id = 1
-                example.figures = 'example#admin'
+                example.figures = '#example#admin#'
                 example.is_draft = False
                 db.session.add(example)
                 db.session.commit()
@@ -277,7 +277,7 @@ class TestStories(flask_testing.TestCase):
                 example = Story()
                 example.text = 'You won\'t modify this story'
                 example.author_id = 2
-                example.figures = 'modify#story'
+                example.figures = '#modify#story#'
                 example.is_draft = False
                 db.session.add(example)
                 db.session.commit()
@@ -289,7 +289,7 @@ class TestStories(flask_testing.TestCase):
                 example = Story()
                 example.text = 'This is an example of draft'
                 example.author_id = 1
-                example.figures = 'example#draft'
+                example.figures = '#example#draft#'
                 example.is_draft = True
                 db.session.add(example)
                 db.session.commit()
@@ -302,7 +302,7 @@ class TestStories(flask_testing.TestCase):
                 example.text = 'This is an example of draft that you can\'t modify'
                 example.date = datetime.datetime.strptime('2018-12-30', '%Y-%m-%d')
                 example.author_id = 2
-                example.figures = 'example#draft'
+                example.figures = '#example#draft#'
                 example.is_draft = True
                 db.session.add(example)
                 db.session.commit()
