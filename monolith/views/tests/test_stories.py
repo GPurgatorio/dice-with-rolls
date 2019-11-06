@@ -440,7 +440,7 @@ class TestRandomRecentStory(flask_testing.TestCase):
         example.text = 'This is a recent story'
         example.date = datetime.datetime.now()
         example.author_id = 1
-        example.figures = 'story#recent'
+        example.figures = '#story#recent#'
         example.is_draft = False
         db.session.add(example)
         db.session.commit()

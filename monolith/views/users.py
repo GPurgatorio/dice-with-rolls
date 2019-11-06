@@ -9,7 +9,7 @@ from monolith.auth import current_user
 from monolith.database import Follower
 from monolith.database import db, User, Story
 from monolith.forms import UserForm
-from monolith.urls import HOME_URL, WRITE_URL, USERS_URL
+from monolith.urls import HOME_URL, WRITE_URL, USERS_URL, READ_URL
 
 users = Blueprint('users', __name__)
 
@@ -170,7 +170,7 @@ def _user_stories(id_user):
         flash("Storyteller doesn't exist")
         return redirect(HOME_URL)
     stories = Story.query.filter_by(author_id=id_user, is_draft=False)
-    return make_response(render_template("user_stories.html", stories=stories), 200)
+    return render_template("user_stories.html", stories=stories, open_url=READ_URL)
 
 
 # Get all the draft of specified user (only if it is the current user?)

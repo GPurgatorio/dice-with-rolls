@@ -183,16 +183,11 @@ def _write_story(id_story=None, message='', status=200):
         if story is not None and story.author_id == current_user.id and story.is_draft:
             form.text.data = story.text
             session['figures'] = story.figures.split('#')
+            session['figures'] = session['figures'][1:-1]
             session['id_story'] = story.id
         else:
             flash('Request is invalid, check if you are the author of the story and it is still a draft', 'error')
             return redirect(url_for('users._user_drafts', id_user=current_user.id))
-    """else:
-        if 'figures' not in session:
-            print("LALALA")
-            # redirect to home
-            flash('Request is invalid, you need to set a story before', 'error')
-            return redirect(url_for('home.index'))"""
 
     # Check if there are the words to write the story
     if 'figures' not in session:
