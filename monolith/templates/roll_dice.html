@@ -73,7 +73,7 @@
                 <form action="" method="POST">
                     <div class="btn-group" role="group">
                         <button type="button" class="btn btn-outline-secondary" onclick="window.location='{{ settings_url }}'">Return to settings</button>
-                        <button type="button" class="btn btn-outline-info" onclick="$(this).parents('form:first').submit()">Re-roll dice</button>
+                        <input type="submit" class="btn btn-outline-info" value="Re-roll dice">
                     </div>
                 </form>
             </div>
@@ -81,7 +81,7 @@
         <div class="row mt-3">
             <div class="col-xs-12 col-sm-12 d-flex justify-content-center">
                 <form action="{{ write_url }}" method="GET">
-                    <button type="button" class="btn btn-outline-success" onclick="$(this).parents('form:first').submit()">Write story</button>
+                    <input type="submit" class="btn btn-outline-success" value="Write story">
                 </form> 
             </div>
         </div>
