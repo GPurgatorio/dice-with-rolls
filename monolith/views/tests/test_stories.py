@@ -410,7 +410,7 @@ class TestRandomRecentStory(flask_testing.TestCase):
     def setUp(self) -> None:
         with app.app_context():
 
-            # Create an user (if not present)
+            # Create an user with no stories
             q = db.session.query(User).filter(User.email == 'example@example.com')
             user = q.first()
             if user is None:
@@ -424,15 +424,49 @@ class TestRandomRecentStory(flask_testing.TestCase):
                 db.session.add(example)
                 db.session.commit()
 
-            # Create a not recent story
+            # Create another user
+            q = db.session.query(User).filter(User.email == 'example2@example.com')
+            user = q.first()
+            if user is None:
+                example = User()
+                example.firstname = 'Admin2'
+                example.lastname = 'Admin2'
+                example.email = 'example2@example.com'
+                example.dateofbirth = datetime.datetime(2020, 10, 5)
+                example.is_admin = True
+                example.set_password('admin')
+                db.session.add(example)
+                db.session.commit()
+
+            # Create a not recent story by Admin2
             example = Story()
             example.text = 'This is a story about the end of the world'
             example.date = datetime.datetime.strptime('2012-12-12', '%Y-%m-%d')
-            example.author_id = 1
+            example.author_id = 2
             example.figures = 'story#world'
             example.is_draft = False
             db.session.add(example)
-            db.session.commit() 
+            db.session.commit()
+
+            # Create a recent story saved as draft by Admin2
+            example = Story()
+            example.text = 'This story is just a draft'
+            example.date = datetime.datetime.now()
+            example.author_id = 2
+            example.figures = 'story#draft'
+            example.is_draft = True
+            db.session.add(example)
+            db.session.commit()
+
+            # Create a recent story by Admin
+            example = Story()
+            example.text = 'Just another story'
+            example.date = datetime.datetime.now()
+            example.author_id = 1
+            example.figures = 'dice#example'
+            example.is_draft = False
+            db.session.add(example)
+            db.session.commit()
 
             payload = {'email': 'example@example.com', 'password': 'admin'}
 
@@ -447,19 +481,18 @@ class TestRandomRecentStory(flask_testing.TestCase):
             self.assert_template_used('stories.html')
             self.assert_message_flashed('Oops, there are no recent stories!')
 
-            # Create a new recent story
+            # Create a new recent story by Admin2
             example = Story()
-            example.text = 'This is a recent story'
+            example.text = 'This is a valid recent story'
             example.date = datetime.datetime.now()
-            example.author_id = 1
+            example.author_id = 2
             example.figures = 'story#recent'
             example.is_draft = False
             db.session.add(example)
             db.session.commit()
 
-            # Get the only recent story
+            # Get the only recent story not written by Admin
             response = self.client.get('/stories/random')
             self.assert_template_used('story.html')
-            test_story = Story.query.filter_by(id=1).first()
-            self.assertEqual(self.get_context_variable('story'), test_story)
+            self.assertEqual(self.get_context_variable('story').text, 'This is a valid recent story')
 
