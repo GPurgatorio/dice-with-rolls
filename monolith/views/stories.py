@@ -48,10 +48,14 @@ def _reaction(reaction_caption, story_id):
         db.session.add(new_reaction)
     else:
         if old_reaction.reaction_type_id == reaction_type_id:
-            reaction = Reaction.query.filter_by(reactor_id=current_user.id, story_id=story_id).first()
-
+            reaction = Reaction.query.filter(Reaction.reactor_id == current_user.id,
+                                             Reaction.story_id == story_id,
+                                             Reaction.marked != 2).first()
             if reaction.marked == 0:
                 Reaction.query.filter_by(reactor_id=current_user.id, story_id=story_id).delete()
+
+            if reaction.marked == 1:
+                reaction.marked = 2
 
             db.session.commit()
             flash('Reaction successfully deleted!')

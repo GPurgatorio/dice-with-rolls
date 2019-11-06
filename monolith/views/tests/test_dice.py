@@ -44,17 +44,6 @@ class TestTemplateDice(flask_testing.TestCase):
         app = create_app(login_disabled=True, database=TEST_DB)
         return app
 
-    # Tests for POST, PUT and DEL requests ( /settings )
-    def test_requests_settings(self):
-        self.assert405(self.client.post('stories/new/settings'))
-        self.assert405(self.client.put('stories/new/settings'))
-        self.assert405(self.client.delete('stories/new/settings'))
-
-    def test_requests_roll(self):
-        self.assert405(self.client.get('stories/new/roll'))
-        self.assert405(self.client.put('stories/new/roll'))
-        self.assert405(self.client.delete('stories/new/roll'))
-
     def test_settings(self):
         self.client.get('/stories/new/settings')
         self.assert_template_used('settings.html')

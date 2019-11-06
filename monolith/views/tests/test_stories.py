@@ -343,9 +343,6 @@ class TestStories(flask_testing.TestCase):
         self.assert_template_used('write_story.html')
         self.assert_context('words', ['beer', 'cat', 'dog'])
 
-        # Testing empty session
-        response = self.client.get
-
         # Testing publishing invalid story
         payload = {'text': 'my cat is drinking a gin tonic with my neighbour\'s dog', 'as_draft': '0'}
         form = StoryForm(data=payload)

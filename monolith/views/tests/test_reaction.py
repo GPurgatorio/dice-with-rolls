@@ -90,6 +90,7 @@ class TestReaction(flask_testing.TestCase):
         self.assertEqual(len(marked_reactions), 0)
         self.assertEqual(len(to_be_deleted_reactions), len_to_be_deleted_reactions + 1)
 
+    def test_reaction_1(self):
         self.client.post('http://127.0.0.1:5000/stories/1/react/like')
         self.client.post('http://127.0.0.1:5000/stories/1/react/dislike')
 
@@ -100,9 +101,9 @@ class TestReaction(flask_testing.TestCase):
         self.assertEqual(len(unmarked_reactions), 1)
         self.assertEqual(unmarked_reactions[0].reaction_type_id, 2)
 
+        Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1,
+                              Reaction.marked == 0).first().marked = 1
+        db.session.commit()
 
-
-
-
-
-
+        self.client.post('http://127.0.0.1:5000/stories/1/react/dislike')
+        self.assertEqual(Reaction.query.filter(Reaction.story_id == '1', Reaction.reactor_id == 1).first().marked, 2)
