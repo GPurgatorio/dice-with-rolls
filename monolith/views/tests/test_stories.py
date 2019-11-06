@@ -69,6 +69,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example.text = 'Trial story of example admin user :)'
             example.author_id = 1
             example.figures = '#example#admin#'
+            example.is_draft = False
             example.date = datetime.datetime.strptime('2019-10-20', '%Y-%m-%d')
             db.session.add(example)
             db.session.commit()
@@ -79,6 +80,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2019-10-10', '%Y-%m-%d')
             example.likes = 420
             example.author_id = 2
+            example.is_draft = False
             example.figures = '#example#abc#'
             db.session.add(example)
             db.session.commit()
@@ -89,16 +91,18 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2019-10-13', '%Y-%m-%d')
             example.likes = 3
             example.author_id = 2
+            example.is_draft = False
             example.figures = '#example#abc#'
             db.session.add(example)
             db.session.commit()
 
-            # Random story from a non-admin user
+            # Random draft from a non-admin user
             example = Story()
-            example.text = 'story from not admin'
+            example.text = 'DRAFT from not admin'
             example.date = datetime.datetime.strptime('2018-12-30', '%Y-%m-%d')
             example.likes = 100
             example.author_id = 3
+            example.is_draft = True
             example.figures = '#example#nini#'
             db.session.add(example)
             db.session.commit()
@@ -109,6 +113,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2011-11-11', '%Y-%m-%d')
             example.likes = 2
             example.author_id = 3
+            example.is_draft = False
             example.figures = '#example#nini#'
             example.date = datetime.datetime(2011, 11, 11)
             db.session.add(example)
@@ -182,19 +187,19 @@ class TestTemplateStories(flask_testing.TestCase):
         # Testing range without parameters
         self.client.get(RANGE_URL)
         self.assert_template_used('stories.html')
-        all_stories = db.session.query(Story).all()
+        all_stories = db.session.query(Story).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), all_stories)
 
         # Testing range with only one parameter (begin)
         self.client.get(RANGE_URL + '?begin=2013-10-10')
         d = datetime.datetime.strptime('2013-10-10', '%Y-%m-%d')
-        req_stories = Story.query.filter(Story.date >= d).all()
+        req_stories = Story.query.filter(Story.date >= d).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
 
         # Testing range with only one parameter (end)
         self.client.get(RANGE_URL + '?end=2013-10-10')
         e = datetime.datetime.strptime('2013-10-10', '%Y-%m-%d')
-        req_stories = Story.query.filter(Story.date <= e).all()
+        req_stories = Story.query.filter(Story.date <= e).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
 
         # Testing range with begin date > end date
@@ -209,7 +214,7 @@ class TestTemplateStories(flask_testing.TestCase):
         d = datetime.datetime.strptime('2012-10-15', '%Y-%m-%d')
         e = datetime.datetime.strptime('2020-10-10', '%Y-%m-%d')
         self.client.get(RANGE_URL + '?begin=2012-10-15&end=2020-10-10')
-        req_stories = Story.query.filter(Story.date >= d).filter(Story.date <= e).all()
+        req_stories = Story.query.filter(Story.date >= d).filter(Story.date <= e).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
 
 

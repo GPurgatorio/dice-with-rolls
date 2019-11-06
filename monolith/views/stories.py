@@ -18,7 +18,7 @@ stories = Blueprint('stories', __name__)
 
 @stories.route('/stories')
 def _stories():
-    all_stories = db.session.query(Story).all()
+    all_stories = db.session.query(Story).filter_by(is_draft=False).all()
 
     context_vars = {"stories": all_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
@@ -82,7 +82,8 @@ def _reaction(reaction_caption, story_id):
 def _latest():
     listed_stories = db.engine.execute(
         "SELECT * FROM story s1 "
-        "WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id) "
+        "WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id "
+        "AND s2.is_draft == FALSE) "
         "ORDER BY s1.author_id")
 
     context_vars = {"stories": listed_stories,
@@ -118,7 +119,7 @@ def _range():
         flash('Begin date cannot be higher than End date', 'error')
         return redirect(url_for('stories._stories'))
 
-    listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date)
+    listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date).filter(Story.is_draft == False)
     context_vars = {"stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
                     "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
@@ -224,7 +225,7 @@ def _write_story(id_story=None, message='', status=200):
                 dice_figures = session['figures'].copy()
                 trans = str.maketrans(string.punctuation, ' ' * len(string.punctuation))
                 new_s = form['text'].data.translate(trans).lower()
-                story_words = new_s.split(' ')
+                story_words = new_s.split()
                 for w in story_words:
                     if w in dice_figures:
                         dice_figures.remove(w)
@@ -254,7 +255,6 @@ def _write_story(id_story=None, message='', status=200):
                     session.pop('figures')
                     flash('Your story is a valid one! It has been published')
                     return redirect(url_for('users._user_stories', id_user=current_user.id, _external=True))
-                    # return redirect(HOME_URL+'users/{}/stories'.format(current_user.id))
     return make_response(
         render_template("write_story.html", submit_url=submit_url, form=form,
                         words=session['figures'], message=message), status)
