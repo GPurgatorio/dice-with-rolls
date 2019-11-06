@@ -86,7 +86,7 @@ def _latest():
         "SELECT * FROM story s1 "
         "WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id "
         "AND s2.is_draft == 0) "
-        "ORDER BY s1.author_id")
+        "ORDER BY s1.author_id").fetchall()
 
     context_vars = {"stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,

@@ -1,6 +1,7 @@
 import datetime
 
 import flask_testing
+from sqlalchemy import desc
 
 from monolith.app import create_app
 from monolith.database import Story, User, db, ReactionCatalogue, Counter
@@ -175,12 +176,28 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assert_template_used('story.html')
         self.assertEqual(self.get_context_variable('exists'), False)
 
-    def test_latest_story(self):
+    def test_simple_latest_story(self):
         # Testing that the total number of users is higher or equal than the number of latest stories per user
         self.client.get(LATEST_URL)
         self.assert_template_used('stories.html')
         num_users = len(db.session.query(User).all())
-        self.assertLessEqual(self.get_context_variable('stories').rowcount, num_users)
+        self.assertLessEqual(len(self.get_context_variable('stories')), num_users)
+
+    def test_latest_story(self):
+        self.client.get(LATEST_URL)
+        num_users = len(User.query.all())
+
+        # Testing that the oldest story per user is contained in the resulting stories
+        expected_stories = []
+        for i in range(num_users):
+            non_draft = Story.query.filter(Story.author_id == i).filter(Story.is_draft == 0).order_by(desc(Story.date)).first()
+            if non_draft:
+                expected_stories.append(non_draft)
+
+        stories_returned = self.get_context_variable('stories')
+        for i in range(len(expected_stories)):
+            self.assertEqual(stories_returned[i].id, expected_stories[i].id)
+
 
     def test_range_story(self):
       
