@@ -1,0 +1,36 @@
+<html>
+<head>
+    <title>Settings for new story</title>
+</head>
+<body>
+<h2>Settings for new story</h2>
+<form action="{{ roll_url }}" method="POST">
+    <label for="dice_img_set">Dice set: </label>
+    <select name="dice_img_set" id="dice_img_set" style="width: 160px">
+        <option value="standard">Standard</option>
+        <option value="animal">Animal</option>
+        <option value="halloween">Halloween</option>
+    </select>
+    <br/><br/>
+    <label for="dice_number">Number of dice: </label>
+    <select name="dice_number" id="dice_number" style="width: 80px">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+    </select>
+    <br/><br/>
+    <input type="submit" value="Go rolling dice!">
+</form>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class=flashes>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
+</body>
+</html>

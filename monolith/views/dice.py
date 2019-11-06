@@ -51,6 +51,7 @@ def _roll_dice():
     # random sampling dice and throw them
     dice_indexes = rnd.sample(range(0, 6), dice_number)
     dice_list = []
+    img_list = []
     for i in dice_indexes:
         try:
             dirname = os.path.dirname(os.path.abspath(__file__))
@@ -73,7 +74,7 @@ def _roll_dice():
         return redirect(url_for('home.index'))
     session['figures'] = dice_set.pips
 
-    context_vars = {'dice_number': dice_number, 'dice_set': dice_set,
+    context_vars = {'dice_number': dice_number, 'dice_img_set': dice_img_set,
                     'words': dice_set.pips, 'write_url': WRITE_URL, 'settings_url': SETTINGS_URL}
     return render_template('roll_dice.html', **context_vars)
 
