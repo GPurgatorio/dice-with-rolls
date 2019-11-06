@@ -17,7 +17,7 @@ users = Blueprint('users', __name__)
 @users.route('/users')
 def _users():
     usrs = db.session.query(User)
-    return render_template("users.html", users=usrs)
+    return render_template("users.html", users=usrs, home_url=HOME_URL)
 
 
 @users.route('/users/create', methods=['GET', 'POST'])
@@ -44,7 +44,7 @@ def _create_user():
             else:
                 flash("The email address is already being used.", 'error')
 
-    return render_template('create_user.html', form=form)
+    return render_template('create_user.html', form=form, home_url=HOME_URL)
 
 
 @users.route('/users/<int:userid>', methods=['GET'])
@@ -110,9 +110,9 @@ def _wall(userid):
             statistics.append(('num_stories', tot_num_stories))
             my_wall = False
         else:
-            return render_template('wall.html', not_found=True)
+            return render_template('wall.html', not_found=True, home_url=HOME_URL)
 
-    return render_template('wall.html', not_found=False, my_wall=my_wall, user_info=user_info, stats=statistics)
+    return render_template('wall.html', not_found=False, my_wall=my_wall, user_info=user_info, stats=statistics, home_url=HOME_URL)
 
 
 @users.route('/users/<int:id_user>/follow', methods=['POST'])
