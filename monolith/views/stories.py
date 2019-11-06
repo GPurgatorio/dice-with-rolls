@@ -224,7 +224,7 @@ def _write_story(id_story=None, message='', status=200):
                 dice_figures = session['figures'].copy()
                 trans = str.maketrans(string.punctuation, ' ' * len(string.punctuation))
                 new_s = form['text'].data.translate(trans).lower()
-                story_words = new_s.split(' ')
+                story_words = new_s.split()
                 for w in story_words:
                     if w in dice_figures:
                         dice_figures.remove(w)
