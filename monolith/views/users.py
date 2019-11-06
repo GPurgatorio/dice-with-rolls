@@ -44,7 +44,7 @@ def _create_user():
             else:
                 flash("The email address is already being used.", 'error')
 
-    return render_template('create_user.html', form=form)
+    return render_template('create_user.html', form=form, home_url=HOME_URL)
 
 
 @users.route('/users/<int:userid>', methods=['GET'])
