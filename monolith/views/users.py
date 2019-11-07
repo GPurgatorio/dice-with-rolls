@@ -88,6 +88,7 @@ def _wall(userid):
 
         for story in all_stories:
             rolled_dice = story.figures.split('#')
+            rolled_dice = rolled_dice[1:-1]
             tot_num_dice += len(rolled_dice)
 
         # Avg of reactions / num of stories

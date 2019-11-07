@@ -4,7 +4,12 @@ from flask import Flask
 from monolith.views import blueprints
 from monolith.auth import login_manager
 
+<<<<<<< Updated upstream
 from monolith.app import app as my_app
+=======
+from monolith.app import create_app
+from monolith.database import Story, User, db, ReactionCatalogue, Counter
+>>>>>>> Stashed changes
 from monolith.forms import LoginForm, StoryForm
 from monolith.database import Story, User, db, ReactionCatalogue
 from monolith.urls import RANGE_URL, LATEST_URL

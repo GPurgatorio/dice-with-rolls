@@ -146,10 +146,22 @@ def _open_story(id_story):
     if story is not None:
         # Splitting the names of figures
         rolled_dice = story.figures.split('#')
+<<<<<<< Updated upstream
         
         # Get all the reactions for that story
         all_reactions = list(db.engine.execute("SELECT reaction_caption FROM reaction_catalogue ORDER BY reaction_caption"))
         query = "SELECT reaction_caption, counter as num_story_reactions FROM counter c, reaction_catalogue r WHERE reaction_type_id = reaction_id AND story_id = " + str(id_story) + " ORDER BY reaction_caption"
+=======
+        rolled_dice = rolled_dice[1:-1]
+
+        # Get author name of that story
+        author = list(db.engine.execute("SELECT firstname, lastname FROM user join story on user.id = author_id WHERE story.id = " + str(id_story)))
+        
+        # Get all the reactions for that story
+        all_reactions = list(db.engine.execute("SELECT reaction_caption FROM reaction_catalogue ORDER BY reaction_caption"))
+        query = "SELECT reaction_caption, counter as num_story_reactions FROM counter c, reaction_catalogue r WHERE " \
+                "reaction_type_id = reaction_id AND story_id = " + str(id_story) + " ORDER BY reaction_caption "
+>>>>>>> Stashed changes
         story_reactions = list(db.engine.execute(query))
         num_story_reactions = Counter.query.filter_by(story_id=id_story).join(ReactionCatalogue).count()
         num_reactions = ReactionCatalogue.query.count()
@@ -174,7 +186,12 @@ def _open_story(id_story):
                 counter = 0
                 reactions_counters.append((reaction, counter))
 
+<<<<<<< Updated upstream
         return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice, reactions=reactions_counters)
+=======
+        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice,
+                               reactions=reactions_counters, author=author, react_url=REACTION_URL)
+>>>>>>> Stashed changes
     else:
         return render_template('story.html', exists=False)
 
@@ -238,10 +255,50 @@ def _write_story(id_story=None, message='', status=200):
                     db.session.add(new_story)
                     db.session.commit()
                 session.pop('figures')
+<<<<<<< Updated upstream
                 flash(message)
                 return redirect(url_for('stories._stories'))
                 # redirect(url_for('stories._stories', message=message, status=status), code=status)
 
+=======
+                return redirect(url_for('users._user_drafts', id_user=current_user.id))
+            else:
+                # Check validity
+                dice_figures = session['figures'].copy()
+                trans = str.maketrans(string.punctuation, ' ' * len(string.punctuation))
+                new_s = form['text'].data.translate(trans).lower()
+                story_words = new_s.split(' ')
+                for w in story_words:
+                    if w in dice_figures:
+                        dice_figures.remove(w)
+                        if not dice_figures:
+                            break
+                if len(dice_figures) > 0:
+                    status = 400
+                    message = 'Your story doesn\'t contain all the words. Missing: '
+                    for w in dice_figures:
+                        message += w + ' '
+                else:
+                    if 'id_story' in session:
+                        # Publish a draft
+                        db.session.query(Story).filter_by(id=session['id_story']).update(
+                            {'text': form.text.data, 'date': datetime.datetime.now(), 'is_draft': False})
+                        db.session.commit()
+                        session.pop('id_story')
+                    else:
+                        # Publish a new story
+                        new_story = Story()
+                        new_story.author_id = current_user.id
+                        new_story.figures = '#' + '#'.join(session['figures']) + '#'
+                        new_story.is_draft = False
+                        form.populate_obj(new_story)
+                        db.session.add(new_story)
+                        db.session.commit()
+                    session.pop('figures')
+                    flash('Your story is a valid one! It has been published')
+                    return redirect(url_for('users._user_stories', id_user=current_user.id, _external=True))
+                    # return redirect(HOME_URL+'users/{}/stories'.format(current_user.id))
+>>>>>>> Stashed changes
     return make_response(
         render_template("write_story.html", submit_url=submit_url, form=form,
                         words=figures, message=message), status)

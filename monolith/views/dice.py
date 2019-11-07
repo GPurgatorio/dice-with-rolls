@@ -57,7 +57,12 @@ def _roll_dice():
         return redirect(url_for('home.index'))
     session['figures'] = dice_set.pips
 
+<<<<<<< Updated upstream
     context_vars = {'dice_number': dice_number, 'words': dice_set.pips,
                     'write_url': WRITE_URL, 'settings_url': SETTINGS_URL}
+=======
+    context_vars = {'dice_number': dice_number, 'dice_img_set': dice_img_set, 'dice_indexes': dice_indexes,
+                    'words': dice_set.pips, 'write_url': WRITE_URL, 'settings_url': SETTINGS_URL}
+>>>>>>> Stashed changes
     return render_template('roll_dice.html', **context_vars)
 
