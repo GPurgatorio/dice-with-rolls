@@ -69,6 +69,14 @@
         <form action="{{ user_info.id }}/stories" method="get">
             <input type="submit" value="Show {{ user_info.firstname }}'s stories"/>
         </form>
+        {% if current_user.is_authenticated %}
+                <form action="{{ home_url }}users/{{ user_info.id }}/follow" method="POST">
+                    <input type="submit" value="Follow">
+                </form>
+                <form action="{{ home_url }}users/{{ user_info.id }}/unfollow" method="POST">
+                    <input type="submit" value="Unfollow">
+                </form>
+        {% endif %}
     {% endif %}
 {% endif %}
 </body>

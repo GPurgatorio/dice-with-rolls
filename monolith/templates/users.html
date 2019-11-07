@@ -17,12 +17,6 @@
     {% for user in users %}
         <li>
             <a href="{{ wall_url }}/{{ user.id }}">{{ user.firstname }} {{ user.lastname }}</a>
-            <form action="{{ wall_url }}/{{ user.id }}/follow" method="POST">
-                <input type="submit" value="Follow">
-            </form>
-            <form action="{{ wall_url }}/{{ user.id }}/unfollow" method="POST">
-                <input type="submit" value="Unfollow">
-            </form>
         </li>
     {% endfor %}
 </ul>
