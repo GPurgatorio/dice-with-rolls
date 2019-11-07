@@ -37,7 +37,6 @@ class TestLoginLogout(flask_testing.TestCase):
         db.drop_all()
 
     def test_login_logout(self):
-
         # Test login with an unexisting email
         payload = {'email': 'unexisting@example.com',
                    'password': 'admin'}

@@ -3,9 +3,8 @@ from datetime import date
 
 from flask import Blueprint, redirect, render_template, request, make_response
 from flask import flash, url_for
-from flask_login import login_required
+from flask_login import login_required, current_user
 
-from monolith.auth import current_user
 from monolith.database import Follower
 from monolith.database import db, User, Story
 from monolith.forms import UserForm
@@ -142,7 +141,6 @@ def _follow_user(id_user):
     return redirect(url_for('users._wall', userid=id_user))
 
 
-# TODO Check if user follows the user
 @users.route('/users/<int:id_user>/unfollow', methods=['POST'])
 @login_required
 def _unfollow_user(id_user):
@@ -157,7 +155,6 @@ def _unfollow_user(id_user):
         return redirect(url_for('users._wall', userid=id_user))
 
     Follower.query.filter_by(follower_id=current_user.id, followed_id=id_user).delete()
-    # TODO This update could be done with celery
     db.session.query(User).filter_by(id=id_user).update({'follower_counter': User.follower_counter - 1})
     db.session.commit()
     flash('Unfollowed')
@@ -185,7 +182,6 @@ def _user_stories(id_user):
 
 
 # Get all the draft of specified user (only if it is the current user?)
-# TODO discuss if id_user parameter is needed
 @login_required
 @users.route('/users/<int:id_user>/drafts', methods=['GET'])
 def _user_drafts(id_user):

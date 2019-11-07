@@ -1,9 +1,8 @@
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, render_template, request
 from sqlalchemy import or_
 
-from monolith.database import db, Story, Reaction, User
-from monolith.auth import current_user
-from monolith.urls import LOGIN_URL, LOGOUT_URL, USERS_URL, READ_URL, SEARCH_URL, REACTION_URL
+from monolith.database import Story, User
+from monolith.urls import USERS_URL, READ_URL, SEARCH_URL, REACTION_URL
 
 search = Blueprint('search', __name__)
 
@@ -22,6 +21,7 @@ def _search():
 
 
 def _search_query(query):
-    list_of_users = User.query.filter(or_(User.firstname.like('%' + query + '%'), User.lastname.like('%' + query + '%'))).all()
+    list_of_users = User.query.filter(
+        or_(User.firstname.like('%' + query + '%'), User.lastname.like('%' + query + '%'))).all()
     list_of_stories = Story.query.filter(Story.figures.like('%#' + query + '#%')).all()
     return list_of_users, list_of_stories

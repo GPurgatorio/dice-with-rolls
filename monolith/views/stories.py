@@ -124,7 +124,8 @@ def _range():
         return redirect(url_for('stories._stories'))
 
     # Returns all the NON-draft stories that are between the requested dates
-    listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date).filter(Story.is_draft == False)
+    listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date).filter(
+        Story.is_draft == False)
 
     context_vars = {"stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
@@ -164,12 +165,12 @@ def _open_story(id_story):
 
             for i in range(0, num_reactions):
                 reaction = str(list_tuples[i][0]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
-                counter = re.sub(r'\D', '', str(list_tuples[i][1])) 
+                counter = re.sub(r'\D', '', str(list_tuples[i][1]))
                 if not counter:
                     counter = 0
                 else:
                     counter = int(counter)
-                
+
                 reactions_counters.append((reaction, counter))
         else:
             for reaction in all_reactions:
@@ -288,9 +289,9 @@ def _random_story():
     # get all the stories written in the last three days by other users
     begin = (datetime.datetime.now() - datetime.timedelta(3)).date()
     if current_user is not None and hasattr(current_user, 'id'):
-        q = db.session.query(Story).filter(Story.date >= begin, 
-                                            Story.author_id != current_user.id, 
-                                            Story.is_draft == False)
+        q = db.session.query(Story).filter(Story.date >= begin,
+                                           Story.author_id != current_user.id,
+                                           Story.is_draft == False)
     else:
         q = db.session.query(Story).filter(Story.date >= begin, Story.is_draft == False)
     recent_stories = q.all()

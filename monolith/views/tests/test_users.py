@@ -1,8 +1,9 @@
 import datetime
+
 import flask_testing
 
 from monolith.app import create_app
-from monolith.database import Story, User, db, ReactionCatalogue, Counter
+from monolith.database import Story, User, db, Counter
 from monolith.forms import LoginForm
 from monolith.urls import TEST_DB
 
@@ -82,7 +83,7 @@ class TestUsers(flask_testing.TestCase):
         print("TEAR DOWN")
         db.session.remove()
         db.drop_all()
-        
+
     def test_user_stories(self):
         # Testing stories of not existing user
         response = self.client.get('/users/100/stories')

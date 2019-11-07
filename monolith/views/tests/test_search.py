@@ -8,7 +8,6 @@ from monolith.urls import TEST_DB
 
 
 class TestReaction(flask_testing.TestCase):
-
     app = None
 
     def create_app(self):

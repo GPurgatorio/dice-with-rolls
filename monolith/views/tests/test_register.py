@@ -1,4 +1,5 @@
 import datetime
+
 import flask_testing
 
 from monolith.app import create_app
@@ -40,7 +41,6 @@ class TestRegister(flask_testing.TestCase):
 
     # Test /users/create
     def test_register(self):
-
         # Register an user with an already used email
         payload = {'email': 'example@example.com',
                    'firstname': 'Admin',

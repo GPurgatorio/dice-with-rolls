@@ -11,5 +11,3 @@ python setup.py develop
 celery -A monolith.tasks worker -B --loglevel=info &
 
 python -m flask run
-
-

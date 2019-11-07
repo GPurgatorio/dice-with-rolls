@@ -1,12 +1,11 @@
 import datetime
-import unittest
 
 import flask_testing
 from sqlalchemy.exc import IntegrityError
 
+from monolith.app import create_app
 from monolith.database import User, db, Follower
 from monolith.forms import LoginForm
-from monolith.app import create_app
 from monolith.urls import TEST_DB
 
 
@@ -141,8 +140,7 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assert_template_used('wall.html')
         self.assert_message_flashed("Storyteller doesn't exist")
 
-    #Testing followers of existing user
+    # Testing followers of existing user
     def test_followers2(self):
         self.client.get('/users/{}/followers'.format(1), follow_redirects=True)
         self.assert_template_used('followers.html')
-

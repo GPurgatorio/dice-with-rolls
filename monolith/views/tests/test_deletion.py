@@ -1,5 +1,7 @@
 import datetime
+
 import flask_testing
+
 from monolith.app import create_app
 from monolith.database import db, Story, User
 from monolith.forms import LoginForm
@@ -7,7 +9,6 @@ from monolith.urls import TEST_DB
 
 
 class TestDeletion(flask_testing.TestCase):
-
     app = None
 
     def create_app(self):
@@ -17,7 +18,6 @@ class TestDeletion(flask_testing.TestCase):
 
     def setUp(self) -> None:
         with app.app_context():
-
             # user for login
             example = User()
             example.firstname = 'Admin'
@@ -72,7 +72,6 @@ class TestDeletion(flask_testing.TestCase):
         db.drop_all()
 
     def test_deletion(self):
-
         dummy_id = User.query.filter(User.email == 'dummy@example.com').first().id
 
         story_id = Story.query.filter(Story.text == "Test story from admin user").first().id

@@ -29,7 +29,7 @@
 <script>
     document.addEventListener("click", function (event) {
         {% for draft in drafts %}
-            console.log("{{write_url+'/'+ draft.id|string}}")
+            console.log("{{write_url+'/'+ draft.id|string}}");
         {% endfor %}
     })
 </script>

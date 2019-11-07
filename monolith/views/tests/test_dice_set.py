@@ -1,8 +1,9 @@
 import datetime
 import json
 import os
-import unittest
 import random as rnd
+import unittest
+
 import flask_testing
 
 from monolith.app import create_app
@@ -22,9 +23,9 @@ class TestDiceSet(unittest.TestCase):
 
     def test_throw_and_serialize_dice_set(self):
         rnd.seed(574891)
-        die1 = Die(path+"die0.txt")
-        die2 = Die(path+"die1.txt")
-        die3 = Die(path+"die2.txt")
+        die1 = Die(path + "die0.txt")
+        die2 = Die(path + "die1.txt")
+        die3 = Die(path + "die2.txt")
         dice = [die1, die2, die3]
         dice_set = DiceSet(dice)
 

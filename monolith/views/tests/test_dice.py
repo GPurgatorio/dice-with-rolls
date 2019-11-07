@@ -20,10 +20,10 @@ class TestDice(unittest.TestCase):
 
         # empty die
         with self.assertRaises(IndexError):
-            Die(path+"dieEmpty.txt")
+            Die(path + "dieEmpty.txt")
 
         # die check
-        die = Die(path+"die0.txt")
+        die = Die(path + "die0.txt")
         expected_faced = ['bike', 'moonandstars', 'bag', 'bird', 'crying', 'angry']
         self.assertEqual(die.faces, expected_faced)
 
@@ -35,7 +35,6 @@ class TestDice(unittest.TestCase):
 
 
 class TestTemplateDice(flask_testing.TestCase):
-
     app = None
 
     # First thing called
@@ -64,6 +63,6 @@ class TestTemplateDice(flask_testing.TestCase):
     def test_roll(self):
         with self.client.session_transaction() as sess:
             sess['dice_number'] = 2
-        rnd.seed(2)             # File die0.txt
+        rnd.seed(2)  # File die0.txt
         self.client.post('/stories/new/roll', data={'dice_number': 4, 'dice_img_set': 'animal'})
         self.assert_template_used('roll_dice.html')

@@ -1,4 +1,5 @@
 import datetime
+
 import flask_testing
 
 from monolith.app import create_app
@@ -84,7 +85,7 @@ class TestOtherWall(flask_testing.TestCase):
         self.client.get('/users/{}'.format(user_id), follow_redirects=True)
         self.assert_template_used('wall.html')
         self.assertEqual(self.get_context_variable('not_found'), True)
-        
+
         # looking for existing user without login
         user_id = 1
         self.client.get('/users/{}'.format(user_id), follow_redirects=True)

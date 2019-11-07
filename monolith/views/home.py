@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 
-from monolith.auth import current_user
+from flask_login import current_user
 from monolith.database import db, Story
 from monolith.urls import LOGIN_URL, LOGOUT_URL, USERS_URL, READ_URL, REGISTER_URL, SETTINGS_URL, SEARCH_URL
 

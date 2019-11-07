@@ -200,7 +200,8 @@ class TestTemplateStories(flask_testing.TestCase):
         for i in range(num_users):
             # Get all the NON-draft stories of the i-th user and order them (in a descending order)
             #     then get the first one
-            non_draft = Story.query.filter(Story.author_id == i).filter(Story.is_draft == 0).order_by(desc(Story.date)).first()
+            non_draft = Story.query.filter(Story.author_id == i).filter(Story.is_draft == 0).order_by(
+                desc(Story.date)).first()
 
             # If at least one story was retrieved (maybe a user has written 0 stories)
             if non_draft:
@@ -216,7 +217,7 @@ class TestTemplateStories(flask_testing.TestCase):
 
     # Testing range story with possible inputs
     def test_range_story(self):
-      
+
         # Testing range without parameters
         # Expected behaviour: it should return ALL the stories
         self.client.get(RANGE_URL)
@@ -364,7 +365,7 @@ class TestStories(flask_testing.TestCase):
         self.assert_template_used('index.html')
 
         # Testing writing of a valid draft story
-        response = self.client.get(WRITE_URL+'/3')
+        response = self.client.get(WRITE_URL + '/3')
         self.assert200(response)
         self.assert_template_used('write_story.html')
         self.assert_context('words', ['example', 'draft'])
@@ -507,34 +508,32 @@ class TestRandomRecentStory(flask_testing.TestCase):
 
     def test_random_recent_story(self):
 
-            # Random recent story as anonymous user
-            self.client.get('/stories/random', follow_redirects=True)
-            self.assert_template_used('story.html')
-            self.assertEqual(self.get_context_variable('story').text, 'Just another story')
+        # Random recent story as anonymous user
+        self.client.get('/stories/random', follow_redirects=True)
+        self.assert_template_used('story.html')
+        self.assertEqual(self.get_context_variable('story').text, 'Just another story')
 
-            # Login as Admin
-            payload = {'email': 'example@example.com', 'password': 'admin'}
-            form = LoginForm(data=payload)
-            self.client.post('/users/login', data=form.data, follow_redirects=True)
+        # Login as Admin
+        payload = {'email': 'example@example.com', 'password': 'admin'}
+        form = LoginForm(data=payload)
+        self.client.post('/users/login', data=form.data, follow_redirects=True)
 
-            # No recent stories
-            self.client.get('/stories/random', follow_redirects=True)
-            self.assert_template_used('stories.html')
-            self.assert_message_flashed('Oops, there are no recent stories by other users!')
+        # No recent stories
+        self.client.get('/stories/random', follow_redirects=True)
+        self.assert_template_used('stories.html')
+        self.assert_message_flashed('Oops, there are no recent stories by other users!')
 
-            # Create a new recent story by Admin2
-            example = Story()
-            example.text = 'This is a valid recent story'
-            example.date = datetime.datetime.now()
-            example.author_id = 2
-            example.figures = 'story#recent'
-            example.is_draft = False
-            db.session.add(example)
-            db.session.commit()
+        # Create a new recent story by Admin2
+        example = Story()
+        example.text = 'This is a valid recent story'
+        example.date = datetime.datetime.now()
+        example.author_id = 2
+        example.figures = 'story#recent'
+        example.is_draft = False
+        db.session.add(example)
+        db.session.commit()
 
-            # Get the only recent story not written by Admin
-            response = self.client.get('/stories/random', follow_redirects=True)
-            self.assert_template_used('story.html')
-            self.assertEqual(self.get_context_variable('story').text, 'This is a valid recent story')
-
-
+        # Get the only recent story not written by Admin
+        response = self.client.get('/stories/random', follow_redirects=True)
+        self.assert_template_used('story.html')
+        self.assertEqual(self.get_context_variable('story').text, 'This is a valid recent story')
