@@ -1,29 +1,3 @@
-<<<<<<< Updated upstream
-<html>
- <body>
- <h5>Le parole sono: {{ words }}</h5>
-  <form action={{ submit_url }} method="POST">
-    {{ form.hidden_tag() }}
-    <dl>
-     {% for field in form.display %}
-     <dt>{{ form[field].label }}</dt>
-     <dd>{{ form[field]() }}</dd>
-       {% if form[field].errors %}
-          {% for e in form[field].errors %}
-           <p class="help-block">{{ e }}</p>
-          {% endfor %}
-       {% endif %}
-     {% endfor %}
-    </dl>
-    <p>
-    <input type=submit value="Submit">
-    <input type=submit value="Save as draft">
-  </form>
- <h5> {{ message }} </h5>
- </body>
-</html>
-
-=======
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
@@ -136,4 +110,3 @@
     }
 </script>
 </html>
->>>>>>> Stashed changes

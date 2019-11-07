@@ -4,29 +4,6 @@
     <meta charset="utf-8">
     <title>Story Tellers</title>
 
-<<<<<<< Updated upstream
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <h5 class="{{ category }}">{{ message }}</h5>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-
-{% if current_user.is_authenticated %}
-  Hi {{ current_user.firstname }}!
-    <br><br>
-    <form action={{ logout_url }} method="POST">
-        <input type="submit" value="Logout">
-    </form>
-    <button type="button" onclick="window.location='{{ read_url }}'">Read Stories</button>
-    <form action="{{ settings_url }}" method="GET">
-        <input type="submit" value="New Story" >
-    </form>
-    <form action="{{ users_url }}/{{ current_user.id }}" method="GET">
-      <input type="submit" value="My wall" >
-  </form>
-=======
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
@@ -86,9 +63,21 @@
             {% endif %}
         </div>
     </nav>
->>>>>>> Stashed changes
 
     <div class="container bg-light cont my-3 rounded" style="padding: 30px;">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flashes" style="text-align: center;">
+                    {% for category, message in messages %}
+                        <span class="{{ category }}">{{ message }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
         {% if current_user.is_authenticated %}
         <div class="row">
             <div class="col-xs-12 col-sm-12">

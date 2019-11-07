@@ -1,6 +1,6 @@
-from flask_wtf import FlaskForm
 import wtforms as f
-from wtforms.validators import DataRequired, ValidationError, Length
+from flask_wtf import FlaskForm
+from wtforms.validators import DataRequired, Length, Email
 
 
 class LoginForm(FlaskForm):
@@ -10,7 +10,7 @@ class LoginForm(FlaskForm):
 
 
 class UserForm(FlaskForm):
-    email = f.StringField('email', validators=[DataRequired()])
+    email = f.StringField('email', validators=[DataRequired(), Email()])
     firstname = f.StringField('firstname', validators=[DataRequired()])
     lastname = f.StringField('lastname', validators=[DataRequired()])
     password = f.PasswordField('password', validators=[DataRequired()])
@@ -19,6 +19,9 @@ class UserForm(FlaskForm):
 
 
 class StoryForm(FlaskForm):
-    text = f.TextAreaField('text', validators=[DataRequired(), Length(min=1, max=1000, message='Your story is too long (max 1000 characters)')])  # TODO: Add check on length (1000 chrs)
+    text = f.TextAreaField('text',
+                           validators=[DataRequired(),
+                                       Length(min=1, max=1000, message='Your story is too long (max 1000 characters)')])
+    as_draft = f.HiddenField('is_draft')
     display = ['text']
-
+    hidden = ['is_draft']

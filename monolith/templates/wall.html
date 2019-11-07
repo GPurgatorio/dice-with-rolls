@@ -7,15 +7,6 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
-<<<<<<< Updated upstream
-    <body>
-        {% if not_found %}
-        <div style="text-align: center; margin-top: 100px;">
-            <h1 style="text-align: center;">:(</h1>
-            <h3 style="text-align: center;">Sorry! The user you're looking for doesn't exist!</h3>
-            <br />
-            <a href="/stories" style="text-align: center;"><button type="button" class="btn btn-primary">Come back</button></a>
-=======
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <a class="navbar-brand" href="#">
@@ -66,7 +57,6 @@
                 <button class="btn btn-secondary mr-2" type="button" onclick="window.location='/users/create'">Sign up</button>
             </form>
             {% endif %}
->>>>>>> Stashed changes
         </div>
     </nav>
     {% if not_found %}
@@ -107,19 +97,6 @@
                     <td><b>Avg dice per story</b></td>
                 </tr>
             </table>
-<<<<<<< Updated upstream
-            <a class="pure-button" href="users/{{user_info.id}}/stories"><span class="book-open">My stories</span></a>
-            <a class="pure-button" href="users/{{user_info.id}}/drafts"><span class="firstdraft">My drafts</span></a>
-        {% else %}
-            <h2> {{user_info.firstname}}'s wall </h2>
-            First Name: {{user_info.firstname}} <br>
-            Last Name: {{user_info.lastname}} <br>
-            Date of birth: {{user_info.dateofbirth}} <br> <br>
-
-            Email: {{user_info.email}}
-            <h3>Statistics</h3>
-            <table style="text-align: center; border-spacing: 7px">
-=======
           </div>
           <div class="row mb-3" style="margin: 0 auto; text-align: center;">
           <div class="col-xl-12 col-sm-12 justify-content-center" style="margin-top: 25px;">
@@ -183,7 +160,6 @@
           <div class="col-xl-12 col-sm-12 justify-content-center" style="text-align: center; margin-top: 20px;">
           <b>Statistics:</b>
             <table style="margin: 0 auto; text-align: center;">
->>>>>>> Stashed changes
                 <tr>
                     <td>{{stats[1][1]}}</td>
                     <td rowspan="2">&nbsp;</td>
@@ -194,16 +170,9 @@
                     <td><b># Reactions</b></td>
                 </tr>
             </table>
-<<<<<<< Updated upstream
             <form action="" method="get">
                 <input type="submit" value="Show {{user_info.firstname}}'s stories" />
             </form>
-        {% endif %}
-        {% endif %}
-        {% endif %}
-    </body>
-</html>
-=======
           </div>
           <div class="row mb-3" style="margin: 0 auto; text-align: center;">
           <div class="col-xl-12 col-sm-12 justify-content-center" style="margin-top: 25px;">
@@ -224,4 +193,3 @@
     integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
     crossorigin="anonymous"></script>
 </html>
->>>>>>> Stashed changes

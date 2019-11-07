@@ -1,9 +1,10 @@
 # encoding: utf8
-from sqlalchemy import CheckConstraint
-from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.orm import relationship
 import datetime as dt
+
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import CheckConstraint
+from sqlalchemy.orm import relationship
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
@@ -43,7 +44,7 @@ class User(db.Model):
     def get_id(self):
         return self.id
 
-    __table_args__ = (CheckConstraint(follower_counter >= 0, name='follower_counter_positive'),{})
+    __table_args__ = (CheckConstraint(follower_counter >= 0, name='follower_counter_positive'), {})
 
 
 class Follower(db.Model):
@@ -72,7 +73,8 @@ class Story(db.Model):
 
     def __init__(self, *args, **kw):
         super(Story, self).__init__(*args, **kw)
-        self.date = dt.datetime.now()
+        date_format = "%Y %m %d %H:%M"
+        self.date = dt.datetime.strptime(dt.datetime.now().strftime(date_format), date_format)
 
 
 class ReactionCatalogue(db.Model):
@@ -98,8 +100,6 @@ class Reaction(db.Model):
 
     marked = db.Column(db.Integer, default=0)  # True iff it has been counted in Story.likes
 
-#    __table_args__ = (CheckConstraint(marked == 0 or marked == 1 or marked == 2, name='check_marked_code'), {})
-
 
 class Counter(db.Model):
     __tablename__ = 'counter'
@@ -107,14 +107,7 @@ class Counter(db.Model):
     reaction_type_id = db.Column(db.Integer, db.ForeignKey('reaction_catalogue.reaction_id'), primary_key=True)
     reaction_type = relationship('ReactionCatalogue', foreign_keys='Counter.reaction_type_id')
 
-    story_id = db.Column(db.Integer , db.ForeignKey('story.id'), primary_key=True)
+    story_id = db.Column(db.Integer, db.ForeignKey('story.id'), primary_key=True)
     story = relationship('Story', foreign_keys='Counter.story_id')
 
     counter = db.Column(db.Integer, default=0)
-
-
-
-
-
-
-

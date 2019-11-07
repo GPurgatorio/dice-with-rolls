@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request
 from sqlalchemy import or_
 
-from monolith.database import db, Story, Reaction, User
-from monolith.auth import current_user
-from monolith.urls import  LOGIN_URL, LOGOUT_URL, USERS_URL, READ_URL, SEARCH_URL, REACTION_URL
+from monolith.database import Story, User
+from monolith.urls import USERS_URL, READ_URL, SEARCH_URL, REACTION_URL
 
 search = Blueprint('search', __name__)
+
 
 @search.route('/search')
 def _search():

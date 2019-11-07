@@ -9,6 +9,7 @@ _APP = None
 BACKEND = BROKER = 'redis://localhost:6379'
 celery = Celery(__name__, backend=BACKEND, broker=BROKER)
 
+# Schedule for the Celery task about reactions' update
 celery.conf.beat_schedule = {
     'react_task': {
         'task': 'monolith.tasks.like_task',
@@ -23,7 +24,7 @@ def like_task():
     global _APP
     # lazy init
     if _APP is None:
-        print("App not yet initalized")
+        print("App not yet initialized")
         _APP = create_app()
         db.init_app(_APP)
 

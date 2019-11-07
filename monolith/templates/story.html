@@ -71,14 +71,21 @@
         <div class="row mb-3">
             <div class="col-xs-12 col-sm-12 d-flex justify-content-center">
                 <h3>Story #{{story.id}}</h3>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <h5 class="{{ category }}">{{ message }}</h5>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
             </div>
         </div>
         <div class="row mb-3">
-          <div style="margin: 0 auto;">
-                <b>Author:</b> {{author[0][0]}} {{author[0][1]}}<br /><b>Date:</b> {{story.date}}
-          </div>
-          <div style="margin: 0 auto;">
-          <b>Reactions:</b><br />
+            <div style="margin: 0 auto;">
+                <b>Author:</b> {{ user.firstname }} {{ user.lastname }} <b>Date:</b> {{story.date}}
+            </div>
+            <div style="margin: 0 auto;">
+            <b>Reactions:</b><br />
           {% for r in reactions %}
               <b><a href="{{ react_url.format(story.id) }}/{{ r[0] }}">{{ r[0].title() }}</a></b>: {{ r[1] }}
           {% endfor %}

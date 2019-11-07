@@ -1,7 +1,13 @@
 <<<<<<< Updated upstream
 <html>
  <body>
-  <h5>{{ message }}</h5>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <h5 class="{{ category }}">{{ message }}</h5>
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
   <form action="" method="POST">
     {{ form.hidden_tag() }}
     <dl>
@@ -17,6 +23,9 @@
     </dl>
     <p>
     <input type=submit value="Publish">
+  </form>
+  <form action="{{ home_url }}" method="GET">
+    <input type="submit" value="Cancel">
   </form>
  </body>
 </html>

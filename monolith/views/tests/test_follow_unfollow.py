@@ -1,15 +1,12 @@
 import datetime
-import unittest
-from flask import Flask
-from sqlalchemy.exc import IntegrityError
-
-from monolith.forms import LoginForm
-from monolith.views import blueprints
-from monolith.auth import login_manager
 
 import flask_testing
+from sqlalchemy.exc import IntegrityError
 
+from monolith.app import create_app
 from monolith.database import User, db, Follower
+from monolith.forms import LoginForm
+from monolith.urls import TEST_DB
 
 
 class TestTemplateStories(flask_testing.TestCase):
@@ -18,27 +15,7 @@ class TestTemplateStories(flask_testing.TestCase):
     # First thing called
     def create_app(self):
         global app
-        app = Flask(__name__, template_folder='../../templates')
-        app.config['TESTING'] = True
-        app.config['WTF_CSRF_SECRET_KEY'] = 'A SECRET KEY'
-        app.config['SECRET_KEY'] = 'ANOTHER ONE'
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        app.config['WTF_CSRF_ENABLED'] = False
-
-        # app.config['LOGIN_DISABLED'] = True
-        # cache config
-        app.config['CACHE_TYPE'] = 'simple'
-        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
-
-        for bp in blueprints:
-            app.register_blueprint(bp)
-            bp.app = app
-
-        db.init_app(app)
-        login_manager.init_app(app)
-        db.create_all(app=app)
-
+        app = create_app(database=TEST_DB)
         return app
 
     # Set up database for testing here
@@ -147,7 +124,6 @@ class TestTemplateStories(flask_testing.TestCase):
     def test_only_positive_follower_counter(self):
         with self.assertRaises(IntegrityError):
             db.session.query(User).filter_by(id=1).update({'follower_counter': -1})
-            db.session.commit()
 
     def test_db_constraint_follow_yourself(self):
         with self.assertRaises(IntegrityError):
@@ -157,6 +133,14 @@ class TestTemplateStories(flask_testing.TestCase):
             db.session.add(follower)
             db.session.commit()
 
+    # TEST FOLLOWERS
+    # Testing followers of non existing user
+    def test_followers(self):
+        self.client.get('/users/{}/followers'.format(7), follow_redirects=True)
+        self.assert_template_used('wall.html')
+        self.assert_message_flashed("Storyteller doesn't exist")
 
-if __name__ == '__main__':
-    unittest.main()
+    # Testing followers of existing user
+    def test_followers2(self):
+        self.client.get('/users/{}/followers'.format(1), follow_redirects=True)
+        self.assert_template_used('followers.html')
