@@ -17,7 +17,7 @@ users = Blueprint('users', __name__)
 @users.route('/users')
 def _users():
     usrs = db.session.query(User)
-    return render_template("users.html", wall_url=USERS_URL, users=usrs)
+    return render_template("users.html", wall_url=USERS_URL, users=usrs, home_url=HOME_URL)
 
 
 @users.route('/users/create', methods=['GET', 'POST'])
@@ -110,9 +110,10 @@ def _wall(userid):
             statistics.append(('num_stories', tot_num_stories))
             my_wall = False
         else:
-            return render_template('wall.html', not_found=True)
+            return render_template('wall.html', not_found=True, home_url=HOME_URL)
 
-    return render_template('wall.html', not_found=False, my_wall=my_wall, user_info=user_info, stats=statistics)
+    return render_template('wall.html', not_found=False, home_url=HOME_URL, my_wall=my_wall, user_info=user_info,
+                           stats=statistics)
 
 
 @users.route('/users/<int:id_user>/follow', methods=['POST'])
@@ -163,14 +164,24 @@ def _unfollow_user(id_user):
     return redirect(url_for('users._wall', userid=id_user))
 
 
-# Get all the stories of specified user
+# Get all the followers of a specified user
+@users.route('/users/<int:id_user>/followers', methods=['GET'])
+def _followers(id_user):
+    if not _check_user_existence(id_user):
+        flash("Storyteller doesn't exist")
+        return redirect(url_for('users._wall', userid=current_user.id))
+    usrs = User.query.join(Follower, User.id == Follower.follower_id).filter_by(followed_id=id_user)
+    return render_template("followers.html", wall_url=USERS_URL, users=usrs, home_url=HOME_URL)
+
+
+# Get all the stories of a specified user
 @users.route('/users/<int:id_user>/stories', methods=['GET'])
 def _user_stories(id_user):
     if not _check_user_existence(id_user):
         flash("Storyteller doesn't exist")
         return redirect(HOME_URL)
     stories = Story.query.filter_by(author_id=id_user, is_draft=False)
-    return render_template("user_stories.html", stories=stories, open_url=READ_URL)
+    return render_template("user_stories.html", stories=stories, open_url=READ_URL, home_url=HOME_URL)
 
 
 # Get all the draft of specified user (only if it is the current user?)

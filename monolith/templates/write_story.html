@@ -1,4 +1,11 @@
 <h5> Your story must contain: {{ words }}</h5>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <h5 class="{{ category }}">{{ message }}</h5>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 <form id="write_story_form" action={{ submit_url }} method="POST">
     {{ form.hidden_tag() }}
     <dl>

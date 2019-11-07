@@ -133,3 +133,16 @@ class TestTemplateStories(flask_testing.TestCase):
             follower.follower_id = 1
             db.session.add(follower)
             db.session.commit()
+
+    # TEST FOLLOWERS
+    # Testing followers of non existing user
+    def test_followers(self):
+        self.client.get('/users/{}/followers'.format(7), follow_redirects=True)
+        self.assert_template_used('wall.html')
+        self.assert_message_flashed("Storyteller doesn't exist")
+
+    #Testing followers of existing user
+    def test_followers2(self):
+        self.client.get('/users/{}/followers'.format(1), follow_redirects=True)
+        self.assert_template_used('followers.html')
+

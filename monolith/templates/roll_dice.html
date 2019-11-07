@@ -3,18 +3,25 @@
     <title>Roll the dice</title>
 </head>
 <body>
-    <h2>{{ dice_number }} rolled words</h2>
-    <ul>
-      {% for word in words %}
-          <li>{{ word }}</li>
-      {% endfor %}
-    </ul>
-    <form action="" method="POST">
-        <button type="button" onclick="window.location='{{ settings_url }}'">Return to settings</button>
-        <input type="submit" value="Re-roll dice">
-    </form>
-    <form action="{{ write_url }}" method="GET">
-        <input type="submit" value="Write story">
-    </form>
+<h2>{{ dice_number }} rolled words</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <h5 class="{{ category }}">{{ message }}</h5>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+<ul>
+    {% for word in words %}
+        <li>{{ word }}</li>
+    {% endfor %}
+</ul>
+<form action="" method="POST">
+    <button type="button" onclick="window.location='{{ settings_url }}'">Return to settings</button>
+    <input type="submit" value="Re-roll dice">
+</form>
+<form action="{{ write_url }}" method="GET">
+    <input type="submit" value="Write story">
+</form>
 </body>
 </html>

@@ -4,6 +4,13 @@
 </head>
 <body>
 <h2>Settings for new story</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <h5 class="{{ category }}">{{ message }}</h5>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 <form action="{{ roll_url }}" method="POST">
     <label for="dice_img_set">Dice set: </label>
     <select name="dice_img_set" id="dice_img_set" style="width: 160px">
