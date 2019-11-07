@@ -71,11 +71,6 @@ def _roll_dice():
 
     dice_set = DiceSet(dice_list)
     dice_set.throw_dice()
-    """except IndexError:
-        session.pop('dice_number', None)
-        session.pop('dice_img_set', None)
-        flash('Error in throwing dice', 'error')
-        return redirect(url_for('home.index'))"""
     session['figures'] = dice_set.pips
 
     context_vars = {'dice_number': dice_number, 'dice_set': dice_set,

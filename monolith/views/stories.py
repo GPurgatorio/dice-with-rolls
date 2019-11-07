@@ -9,7 +9,7 @@ from flask import session
 from flask_login import (current_user, login_required)
 from sqlalchemy import and_
 
-from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter
+from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, User
 from monolith.forms import StoryForm
 from monolith.urls import *
 
@@ -18,24 +18,17 @@ stories = Blueprint('stories', __name__)
 
 @stories.route('/stories')
 def _stories():
-    all_stories = db.session.query(Story).all()
-    # TODO check this commented code
-    """for story in allstories:
-        new_story_with_reaction = StoryWithReaction(story)
-        list_of_reactions = db.session.query(Counter.reaction_type_id).join(ReactionCatalogue).all()
-
-        for item in list_of_reactions:
-            new_story_with_reaction.reactions[item.caption] = item.counter
-        listed_stories.append(new_story_with_reaction)"""
+    all_stories = db.session.query(Story).filter_by(is_draft=False).all()
 
     context_vars = {"stories": all_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
+                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL,
+                    "story_url": READ_URL}
 
     return render_template("stories.html", **context_vars)
 
 
-@stories.route('/stories/react/<story_id>/<reaction_caption>', methods=['GET', 'POST'])
+@stories.route('/stories/<story_id>/react/<reaction_caption>', methods=['GET', 'POST'])
 @login_required
 def _reaction(reaction_caption, story_id):
     # Retrieve all reactions with a specific user_id ad story_id
@@ -56,14 +49,18 @@ def _reaction(reaction_caption, story_id):
         db.session.add(new_reaction)
     else:
         if old_reaction.reaction_type_id == reaction_type_id:
-            reaction = Reaction.query.filter_by(reactor_id=current_user.id, story_id=story_id).first()
-
+            reaction = Reaction.query.filter(Reaction.reactor_id == current_user.id,
+                                             Reaction.story_id == story_id,
+                                             Reaction.marked != 2).first()
             if reaction.marked == 0:
                 Reaction.query.filter_by(reactor_id=current_user.id, story_id=story_id).delete()
 
+            if reaction.marked == 1:
+                reaction.marked = 2
+
             db.session.commit()
-            flash('Reaction successfully deleted!')
-            return redirect(url_for('stories._stories'))
+            flash('Reaction successfully deleted! (Updating ... )')
+            return redirect(url_for('stories._open_story', id_story=story_id))
         else:
 
             if old_reaction.marked == 0:
@@ -77,8 +74,9 @@ def _reaction(reaction_caption, story_id):
                 new_reaction.reaction_type_id = reaction_type_id
                 db.session.add(new_reaction)
     db.session.commit()
+    flash('Reaction successfully added! (Updating ... )')
 
-    return redirect(url_for('stories._stories'))
+    return redirect(url_for('stories._open_story', id_story=story_id))
 
 
 # Gets the last story for each registered user
@@ -86,8 +84,9 @@ def _reaction(reaction_caption, story_id):
 def _latest():
     listed_stories = db.engine.execute(
         "SELECT * FROM story s1 "
-        "WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id) "
-        "ORDER BY s1.author_id")
+        "WHERE s1.date = (SELECT MAX (s2.date) FROM story s2 WHERE s1.author_id == s2.author_id "
+        "AND s2.is_draft == 0) "
+        "ORDER BY s1.author_id").fetchall()
 
     context_vars = {"stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
@@ -122,7 +121,7 @@ def _range():
         flash('Begin date cannot be higher than End date', 'error')
         return redirect(url_for('stories._stories'))
 
-    listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date)
+    listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date).filter(Story.is_draft == False)
     context_vars = {"stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
                     "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
@@ -132,9 +131,11 @@ def _range():
 # Open a story functionality (1.8)
 @stories.route('/stories/<int:id_story>', methods=['GET'])
 def _open_story(id_story):
-    story = Story.query.filter_by(id=id_story).first()
+    q = db.session.query(Story, User).filter(Story.id == id_story).join(User).first()
 
-    if story is not None:
+    if q is not None:
+        story = q[0]
+        user = q[1]
         #  Splitting the names of figures
         rolled_dice = story.figures.split('#')
         rolled_dice = rolled_dice[1:-1]
@@ -170,8 +171,9 @@ def _open_story(id_story):
             for reaction in all_reactions:
                 reactions_counters.append((reaction.reaction_caption, 0))
 
-        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice,
-                               reactions=reactions_counters)
+        print(reactions_counters)
+        return render_template('story.html', exists=True, story=story, user=user, rolled_dice=rolled_dice,
+                               reactions=reactions_counters, react_url=REACTION_URL)
     else:
         return render_template('story.html', exists=False)
 
@@ -191,19 +193,16 @@ def _write_story(id_story=None, message='', status=200):
         if story is not None and story.author_id == current_user.id and story.is_draft:
             form.text.data = story.text
             session['figures'] = story.figures.split('#')
+            session['figures'] = session['figures'][1:-1]
             session['id_story'] = story.id
         else:
-            flash('Request is invalid, check if you are the author of the story and it is still a draft')
+            flash('Request is invalid, check if you are the author of the story and it is still a draft', 'error')
             return redirect(url_for('users._user_drafts', id_user=current_user.id))
-    else:
-        if 'figures' not in session:
-            # redirect to home
-            return redirect('/', code=302)
 
     # Check if there are the words to write the story
     if 'figures' not in session:
-        flash('Request is invalid, you need to set a story before')
-        return redirect(HOME_URL)
+        flash('Request is invalid, you need to set a story before', 'error')
+        return redirect(url_for('home.index'))
 
     elif 'POST' == request.method:
         if form.validate_on_submit():
@@ -231,7 +230,7 @@ def _write_story(id_story=None, message='', status=200):
                 dice_figures = session['figures'].copy()
                 trans = str.maketrans(string.punctuation, ' ' * len(string.punctuation))
                 new_s = form['text'].data.translate(trans).lower()
-                story_words = new_s.split(' ')
+                story_words = new_s.split()
                 for w in story_words:
                     if w in dice_figures:
                         dice_figures.remove(w)
@@ -261,7 +260,6 @@ def _write_story(id_story=None, message='', status=200):
                     session.pop('figures')
                     flash('Your story is a valid one! It has been published')
                     return redirect(url_for('users._user_stories', id_user=current_user.id, _external=True))
-                    # return redirect(HOME_URL+'users/{}/stories'.format(current_user.id))
     return make_response(
         render_template("write_story.html", submit_url=submit_url, form=form,
                         words=session['figures'], message=message), status)

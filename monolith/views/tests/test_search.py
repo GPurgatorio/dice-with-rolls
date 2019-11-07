@@ -39,19 +39,19 @@ class TestReaction(flask_testing.TestCase):
             db.session.commit()
 
     def test_search(self):
-        self.client.get('http://127.0.0.1:5000/search/query/cat')
+        self.client.get('http://127.0.0.1:5000/search?query=cat')
 
         self.assert_template_used('search.html')
         self.assertEqual(len(self.get_context_variable('list_of_stories')), 1)
         self.assertEqual(len(self.get_context_variable('list_of_users')), 0)
 
-        self.client.get('http://127.0.0.1:5000/search/query/admin')
+        self.client.get('http://127.0.0.1:5000/search?query=admin')
 
         self.assert_template_used('search.html')
         self.assertEqual(len(self.get_context_variable('list_of_stories')), 1)
         self.assertEqual(len(self.get_context_variable('list_of_users')), 1)
 
-        self.client.get('http://127.0.0.1:5000/search/query/nowords')
+        self.client.get('http://127.0.0.1:5000/search?query=nowords')
 
         self.assert_template_used('search.html')
         self.assertEqual(len(self.get_context_variable('list_of_stories')), 0)

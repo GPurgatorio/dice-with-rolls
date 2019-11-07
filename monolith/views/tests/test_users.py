@@ -56,17 +56,6 @@ class TestUsers(flask_testing.TestCase):
             db.session.add(example)
             db.session.commit()
 
-            # Add some reactions
-            like = ReactionCatalogue()
-            like.reaction_id = 1
-            like.reaction_caption = 'Like'
-            dislike = ReactionCatalogue()
-            dislike.reaction_id = 2
-            dislike.reaction_caption = 'Dislike'
-            db.session.add(like)
-            db.session.add(dislike)
-            db.session.commit()
-
             # Add reactions for user 1
             like = Counter()
             like.reaction_type_id = 1

@@ -9,7 +9,7 @@ from monolith.auth import current_user
 from monolith.database import Follower
 from monolith.database import db, User, Story
 from monolith.forms import UserForm
-from monolith.urls import HOME_URL, WRITE_URL
+from monolith.urls import HOME_URL, WRITE_URL, USERS_URL, READ_URL
 
 users = Blueprint('users', __name__)
 
@@ -17,7 +17,7 @@ users = Blueprint('users', __name__)
 @users.route('/users')
 def _users():
     usrs = db.session.query(User)
-    return render_template("users.html", users=usrs, home_url=HOME_URL)
+    return render_template("users.html", wall_url=USERS_URL, users=usrs)
 
 
 @users.route('/users/create', methods=['GET', 'POST'])
@@ -44,7 +44,7 @@ def _create_user():
             else:
                 flash("The email address is already being used.", 'error')
 
-    return render_template('create_user.html', form=form, home_url=HOME_URL)
+    return render_template('create_user.html', form=form)
 
 
 @users.route('/users/<int:userid>', methods=['GET'])
@@ -110,9 +110,9 @@ def _wall(userid):
             statistics.append(('num_stories', tot_num_stories))
             my_wall = False
         else:
-            return render_template('wall.html', not_found=True, home_url=HOME_URL)
+            return render_template('wall.html', not_found=True)
 
-    return render_template('wall.html', not_found=False, my_wall=my_wall, user_info=user_info, stats=statistics, home_url=HOME_URL)
+    return render_template('wall.html', not_found=False, my_wall=my_wall, user_info=user_info, stats=statistics)
 
 
 @users.route('/users/<int:id_user>/follow', methods=['POST'])
@@ -170,7 +170,7 @@ def _user_stories(id_user):
         flash("Storyteller doesn't exist")
         return redirect(HOME_URL)
     stories = Story.query.filter_by(author_id=id_user, is_draft=False)
-    return make_response(render_template("user_stories.html", stories=stories), 200)
+    return render_template("user_stories.html", stories=stories, open_url=READ_URL)
 
 
 # Get all the draft of specified user (only if it is the current user?)

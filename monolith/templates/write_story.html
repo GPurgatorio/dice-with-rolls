@@ -1,32 +1,31 @@
-<html>
- <body>
- <h5>Le parole sono: {{ words }}</h5>
-  <form id ="write_story_form"  action = {{ submit_url }} method="POST">
+<h5> Your story must contain: {{ words }}</h5>
+<form id="write_story_form" action={{ submit_url }} method="POST">
     {{ form.hidden_tag() }}
     <dl>
-     {% for field in form.display %}
-     <dt>{{ form[field].label }}</dt>
-     <dd>{{ form[field]() }}</dd>
-       {% if form[field].errors %}
-          {% for e in form[field].errors %}
-           <p class="help-block">{{ e }}</p>
-          {% endfor %}
-       {% endif %}
-     {% endfor %}
+        {% for field in form.display %}
+            <dt>{{ form[field].label }}</dt>
+            <dd>{{ form[field]() }}</dd>
+            {% if form[field].errors %}
+                {% for e in form[field].errors %}
+                    <p class="help-block">{{ e }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
     </dl>
-    <p>
-    <input type=submit onclick="submitForm('submit')" value="Submit"/>
-    <input type=submit onclick="submitForm('draft')" value="Save as draft"/>
-  </form>
- <h5> {{ message }} </h5>
- </body>
+    <h5> {{ message }} </h5>
+</form>
+
+<button onclick="submitForm('submit')" value="Submit"/>Submit</button>
+<button onclick="submitForm('draft')" value="Save as draft"/>Save as draft</button>
+
+</body>
 </html>
+
 <script>
-    function submitForm(action)
-    {
-        if (action == "submit"){
+    function submitForm(action) {
+        if (action == "submit") {
             document.getElementById('as_draft').value = 0
-        }else {
+        } else {
             document.getElementById('as_draft').value = 1
         }
         document.getElementById('write_story_form').submit();

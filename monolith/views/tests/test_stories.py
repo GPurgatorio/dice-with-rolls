@@ -1,6 +1,7 @@
 import datetime
 
 import flask_testing
+from sqlalchemy import desc
 
 from monolith.app import create_app
 from monolith.database import Story, User, db, ReactionCatalogue, Counter
@@ -69,6 +70,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example.text = 'Trial story of example admin user :)'
             example.author_id = 1
             example.figures = '#example#admin#'
+            example.is_draft = False
             example.date = datetime.datetime.strptime('2019-10-20', '%Y-%m-%d')
             db.session.add(example)
             db.session.commit()
@@ -79,6 +81,7 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2019-10-10', '%Y-%m-%d')
             example.likes = 420
             example.author_id = 2
+            example.is_draft = False
             example.figures = '#example#abc#'
             db.session.add(example)
             db.session.commit()
@@ -89,16 +92,18 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2019-10-13', '%Y-%m-%d')
             example.likes = 3
             example.author_id = 2
+            example.is_draft = False
             example.figures = '#example#abc#'
             db.session.add(example)
             db.session.commit()
 
-            # Random story from a non-admin user
+            # Random draft from a non-admin user
             example = Story()
-            example.text = 'story from not admin'
+            example.text = 'DRAFT from not admin'
             example.date = datetime.datetime.strptime('2018-12-30', '%Y-%m-%d')
             example.likes = 100
             example.author_id = 3
+            example.is_draft = True
             example.figures = '#example#nini#'
             db.session.add(example)
             db.session.commit()
@@ -109,21 +114,17 @@ class TestTemplateStories(flask_testing.TestCase):
             example.date = datetime.datetime.strptime('2011-11-11', '%Y-%m-%d')
             example.likes = 2
             example.author_id = 3
+            example.is_draft = False
             example.figures = '#example#nini#'
             example.date = datetime.datetime(2011, 11, 11)
             db.session.add(example)
             db.session.commit()
 
-            # Add two reactions (Like and Dislike)
-            like_reaction = ReactionCatalogue()
-            like_reaction.reaction_caption = 'Like'
-            dislike_reaction = ReactionCatalogue()
-            dislike_reaction.reaction_caption = 'Dislike'
-            love_reaction = ReactionCatalogue()
-            love_reaction.reaction_caption = 'Love'
-            db.session.add(like_reaction)
-            db.session.add(dislike_reaction)
-            db.session.add(love_reaction)
+            # Add third reaction (love)
+            love = ReactionCatalogue()
+            love.reaction_id = 3
+            love.reaction_caption = "love"
+            db.session.add(love)
             db.session.commit()
 
             # login
@@ -145,7 +146,7 @@ class TestTemplateStories(flask_testing.TestCase):
         test_story = Story.query.filter_by(id=1).first()
         self.assertEqual(self.get_context_variable('story'), test_story)
         # Ordered reactions
-        reactions = [('Dislike', 0), ('Like', 0), ('Love', 0)]
+        reactions = [('dislike', 0), ('like', 0), ('love', 0)]
         self.assert_context('reactions', reactions)
 
         # Add reactions for user 1
@@ -167,7 +168,7 @@ class TestTemplateStories(flask_testing.TestCase):
         test_story = Story.query.filter_by(id=1).first()
         self.assertEqual(self.get_context_variable('story'), test_story)
         # Ordered reactions
-        reactions = [('Dislike', 5), ('Like', 23), ('Love', 0)]
+        reactions = [('dislike', 5), ('like', 23), ('love', 0)]
         self.assert_context('reactions', reactions)
 
     def test_non_existing_story(self):
@@ -175,31 +176,47 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assert_template_used('story.html')
         self.assertEqual(self.get_context_variable('exists'), False)
 
-    def test_latest_story(self):
+    def test_simple_latest_story(self):
         # Testing that the total number of users is higher or equal than the number of latest stories per user
         self.client.get(LATEST_URL)
         self.assert_template_used('stories.html')
         num_users = len(db.session.query(User).all())
-        self.assertLessEqual(self.get_context_variable('stories').rowcount, num_users)
+        self.assertLessEqual(len(self.get_context_variable('stories')), num_users)
+
+    def test_latest_story(self):
+        self.client.get(LATEST_URL)
+        num_users = len(User.query.all())
+
+        # Testing that the oldest story per user is contained in the resulting stories
+        expected_stories = []
+        for i in range(num_users):
+            non_draft = Story.query.filter(Story.author_id == i).filter(Story.is_draft == 0).order_by(desc(Story.date)).first()
+            if non_draft:
+                expected_stories.append(non_draft)
+
+        stories_returned = self.get_context_variable('stories')
+        for i in range(len(expected_stories)):
+            self.assertEqual(stories_returned[i].id, expected_stories[i].id)
+
 
     def test_range_story(self):
       
         # Testing range without parameters
         self.client.get(RANGE_URL)
         self.assert_template_used('stories.html')
-        all_stories = db.session.query(Story).all()
+        all_stories = db.session.query(Story).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), all_stories)
 
         # Testing range with only one parameter (begin)
         self.client.get(RANGE_URL + '?begin=2013-10-10')
         d = datetime.datetime.strptime('2013-10-10', '%Y-%m-%d')
-        req_stories = Story.query.filter(Story.date >= d).all()
+        req_stories = Story.query.filter(Story.date >= d).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
 
         # Testing range with only one parameter (end)
         self.client.get(RANGE_URL + '?end=2013-10-10')
         e = datetime.datetime.strptime('2013-10-10', '%Y-%m-%d')
-        req_stories = Story.query.filter(Story.date <= e).all()
+        req_stories = Story.query.filter(Story.date <= e).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
 
         # Testing range with begin date > end date
@@ -214,7 +231,7 @@ class TestTemplateStories(flask_testing.TestCase):
         d = datetime.datetime.strptime('2012-10-15', '%Y-%m-%d')
         e = datetime.datetime.strptime('2020-10-10', '%Y-%m-%d')
         self.client.get(RANGE_URL + '?begin=2012-10-15&end=2020-10-10')
-        req_stories = Story.query.filter(Story.date >= d).filter(Story.date <= e).all()
+        req_stories = Story.query.filter(Story.date >= d).filter(Story.date <= e).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
 
 
@@ -265,7 +282,7 @@ class TestStories(flask_testing.TestCase):
                 example = Story()
                 example.text = 'Trial story of example admin user :)'
                 example.author_id = 1
-                example.figures = 'example#admin'
+                example.figures = '#example#admin#'
                 example.is_draft = False
                 db.session.add(example)
                 db.session.commit()
@@ -277,7 +294,7 @@ class TestStories(flask_testing.TestCase):
                 example = Story()
                 example.text = 'You won\'t modify this story'
                 example.author_id = 2
-                example.figures = 'modify#story'
+                example.figures = '#modify#story#'
                 example.is_draft = False
                 db.session.add(example)
                 db.session.commit()
@@ -289,7 +306,7 @@ class TestStories(flask_testing.TestCase):
                 example = Story()
                 example.text = 'This is an example of draft'
                 example.author_id = 1
-                example.figures = 'example#draft'
+                example.figures = '#example#draft#'
                 example.is_draft = True
                 db.session.add(example)
                 db.session.commit()
@@ -302,7 +319,7 @@ class TestStories(flask_testing.TestCase):
                 example.text = 'This is an example of draft that you can\'t modify'
                 example.date = datetime.datetime.strptime('2018-12-30', '%Y-%m-%d')
                 example.author_id = 2
-                example.figures = 'example#draft'
+                example.figures = '#example#draft#'
                 example.is_draft = True
                 db.session.add(example)
                 db.session.commit()
@@ -468,7 +485,7 @@ class TestRandomRecentStory(flask_testing.TestCase):
             db.session.add(example)
             db.session.commit()
 
-        def test_random_recent_story(self):
+    def test_random_recent_story(self):
 
             # Random recent story as anonymous user
             self.client.get('/stories/random')
@@ -499,4 +516,5 @@ class TestRandomRecentStory(flask_testing.TestCase):
             response = self.client.get('/stories/random')
             self.assert_template_used('story.html')
             self.assertEqual(self.get_context_variable('story').text, 'This is a valid recent story')
+
 
