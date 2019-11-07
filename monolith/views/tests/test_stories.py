@@ -468,18 +468,22 @@ class TestRandomRecentStory(flask_testing.TestCase):
             db.session.add(example)
             db.session.commit()
 
-            payload = {'email': 'example@example.com', 'password': 'admin'}
-
-            form = LoginForm(data=payload)
-
-            self.client.post('/users/login', data=form.data, follow_redirects=True)
-
         def test_random_recent_story(self):
+
+            # Random recent story as anonymous user
+            self.client.get('/stories/random')
+            self.assert_template_used('story.html')
+            self.assertEqual(self.get_context_variable('story').text, 'Just another story')
+
+            # Login as Admin
+            payload = {'email': 'example@example.com', 'password': 'admin'}
+            form = LoginForm(data=payload)
+            self.client.post('/users/login', data=form.data, follow_redirects=True)
 
             # No recent stories
             self.client.get('/stories/random')
             self.assert_template_used('stories.html')
-            self.assert_message_flashed('Oops, there are no recent stories!')
+            self.assert_message_flashed('Oops, there are no recent storiesby other users!')
 
             # Create a new recent story by Admin2
             example = Story()

@@ -285,13 +285,16 @@ def _manage_stories(id_story):
 def _random_story():
     # get all the stories written in the last three days by other users
     begin = (datetime.datetime.now() - datetime.timedelta(3)).date()
-    q = db.session.query(Story).filter(Story.date >= begin, 
-                                        Story.author_id != current_user.id, 
-                                        Story.is_draft == False)
+    if current_user is not None and hasattr(current_user, 'id'):
+        q = db.session.query(Story).filter(Story.date >= begin, 
+                                            Story.author_id != current_user.id, 
+                                            Story.is_draft == False)
+    else:
+        q = db.session.query(Story).filter(Story.date >= begin, Story.is_draft == False)
     recent_stories = q.all()
     # pick a random story from them
     if len(recent_stories) == 0:
-        flash("Oops, there are no recent stories!")
+        flash("Oops, there are no recent stories by other users!")
         return redirect(url_for('stories._stories'))
     else:
         pos = randint(0, len(recent_stories) - 1)
