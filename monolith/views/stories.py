@@ -281,6 +281,9 @@ def _manage_stories(id_story):
     if story_to_delete.first().author_id != current_user.id:
         flash("Cannot delete other user's story", 'error')
     else:
+
+        Reaction.query.filter(Reaction.story_id == id_story).delete()
+        Counter.query.filter(Counter.story_id == id_story).delete()
         story_to_delete.delete()
         db.session.commit()
 

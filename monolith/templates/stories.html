@@ -120,7 +120,7 @@
             <p style="text-align: center;">({{ story.date }})</p>
             <div class="card-footer">
                 <a class="btn btn-primary" style="margin-right: 20px;" href="stories/{{ story.id }}">OPEN STORY</a>
-                <a class="btn btn-secondary" href="users/{{ story.author_id }}">SHOW AUTHOR</a>
+                <a class="btn btn-secondary" href="{{ wall_url }}/{{ story.author_id }}">SHOW AUTHOR</a>
             </div>
         </div>
     </div>
