@@ -9,6 +9,7 @@ _APP = None
 BACKEND = BROKER = 'redis://localhost:6379'
 celery = Celery(__name__, backend=BACKEND, broker=BROKER)
 
+# Schedule for the Celery task about reactions' update
 celery.conf.beat_schedule = {
     'react_task': {
         'task': 'monolith.tasks.like_task',

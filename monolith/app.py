@@ -25,7 +25,7 @@ def create_app(database=DEFAULT_DB, wtf=False, login_disabled=False):
     db.create_all(app=flask_app)
 
     with flask_app.app_context():
-        # possible reactions
+        # Possible reactions
         if ReactionCatalogue.query.filter(ReactionCatalogue.reaction_caption == 'like').first() is None:
             like = ReactionCatalogue()
             like.reaction_id = 1
@@ -44,6 +44,3 @@ def create_app(database=DEFAULT_DB, wtf=False, login_disabled=False):
 
 
 app = create_app()
-
-"""if __name__ == '__main__':
-    app.run()"""

@@ -176,44 +176,63 @@ class TestTemplateStories(flask_testing.TestCase):
         self.assert_template_used('story.html')
         self.assertEqual(self.get_context_variable('exists'), False)
 
+    # Testing that the total number of users is >= than the number of latest stories per user (simple invariant)
     def test_simple_latest_story(self):
-        # Testing that the total number of users is higher or equal than the number of latest stories per user
+
         self.client.get(LATEST_URL)
+
+        # Simply assert that the template used is the expected one
         self.assert_template_used('stories.html')
+
+        # Check the invariant
         num_users = len(db.session.query(User).all())
         self.assertLessEqual(len(self.get_context_variable('stories')), num_users)
 
+    # Testing that the oldest story per user is contained in the resulting stories
     def test_latest_story(self):
+
         self.client.get(LATEST_URL)
+
+        # Get the number of users to iterate and filter per user
         num_users = len(User.query.all())
 
-        # Testing that the oldest story per user is contained in the resulting stories
         expected_stories = []
         for i in range(num_users):
+            # Get all the NON-draft stories of the i-th user and order them (in a descending order)
+            #     then get the first one
             non_draft = Story.query.filter(Story.author_id == i).filter(Story.is_draft == 0).order_by(desc(Story.date)).first()
+
+            # If at least one story was retrieved (maybe a user has written 0 stories)
             if non_draft:
+                # It's an expected story that must be returned by the service
                 expected_stories.append(non_draft)
 
+        # Get all the stories returned by the service
         stories_returned = self.get_context_variable('stories')
+
+        # Check that they're the same
         for i in range(len(expected_stories)):
             self.assertEqual(stories_returned[i].id, expected_stories[i].id)
 
-
+    # Testing range story with possible inputs
     def test_range_story(self):
       
         # Testing range without parameters
+        # Expected behaviour: it should return ALL the stories
         self.client.get(RANGE_URL)
         self.assert_template_used('stories.html')
         all_stories = db.session.query(Story).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), all_stories)
 
         # Testing range with only one parameter (begin)
+        # Expected behaviour: it should return the stories starting from specified date to TODAY
         self.client.get(RANGE_URL + '?begin=2013-10-10')
         d = datetime.datetime.strptime('2013-10-10', '%Y-%m-%d')
         req_stories = Story.query.filter(Story.date >= d).filter_by(is_draft=False).all()
         self.assertEqual(self.get_context_variable('stories').all(), req_stories)
 
         # Testing range with only one parameter (end)
+        # Expected behaviour: it should return all the stories BEFORE the specified date
         self.client.get(RANGE_URL + '?end=2013-10-10')
         e = datetime.datetime.strptime('2013-10-10', '%Y-%m-%d')
         req_stories = Story.query.filter(Story.date <= e).filter_by(is_draft=False).all()
@@ -221,13 +240,14 @@ class TestTemplateStories(flask_testing.TestCase):
 
         # Testing range with begin date > end date
         self.client.get(RANGE_URL + '?begin=2012-12-12&end=2011-10-10')
-        self.assert_message_flashed('Begin date cannot be higher than End date', 'error')
+        self.assert_message_flashed('Begin date cannot be higher than End date.', 'error')
 
-        # Testing wrong url parameters
+        # Testing range with wrong url parameters
         self.client.get(RANGE_URL + '?begin=abc&end=abc')
         self.assert_message_flashed('Wrong URL parameters.', 'error')
 
-        # Testing range (valid request)
+        # Testing range with a valid request
+        # Expected behaviour: return all the stories between the specified dates
         d = datetime.datetime.strptime('2012-10-15', '%Y-%m-%d')
         e = datetime.datetime.strptime('2020-10-10', '%Y-%m-%d')
         self.client.get(RANGE_URL + '?begin=2012-10-15&end=2020-10-10')

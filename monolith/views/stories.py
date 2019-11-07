@@ -79,7 +79,7 @@ def _reaction(reaction_caption, story_id):
     return redirect(url_for('stories._open_story', id_story=story_id))
 
 
-# Gets the last story for each registered user
+# Gets the last NON-draft story for each registered user
 @stories.route('/stories/latest', methods=['GET'])
 def _latest():
     listed_stories = db.engine.execute(
@@ -94,7 +94,7 @@ def _latest():
     return render_template('stories.html', **context_vars)
 
 
-# Searches for stories that were made in a specific range of time [begin_date, end_date]
+# Searches for stories that were made in a specific range of time
 @stories.route('/stories/range', methods=['GET'])
 def _range():
     # Get the two parameters
@@ -113,15 +113,19 @@ def _range():
             # Here .replace is needed because of solar/legal hour!
             # Stories are written at time X in db, and searched at time X-1
             end_date = datetime.datetime.utcnow().replace(hour=23, minute=59, second=59)
+    # If a strptime fails getting the date, it means at least one of the parameters was invalid
     except ValueError:
         flash('Wrong URL parameters.', 'error')
         return redirect(url_for('stories._stories'))
 
+    # If dates were valid, I still have to check if the request is a valid one
     if begin_date > end_date:
-        flash('Begin date cannot be higher than End date', 'error')
+        flash('Begin date cannot be higher than End date.', 'error')
         return redirect(url_for('stories._stories'))
 
+    # Returns all the NON-draft stories that are between the requested dates
     listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date).filter(Story.is_draft == False)
+
     context_vars = {"stories": listed_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
                     "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
