@@ -5,56 +5,20 @@
     <title>Settingf for new story</title>
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-<<<<<<< Updated upstream
-<h2>Settings for new story</h2>
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <h5 class="{{ category }}">{{ message }}</h5>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-<form action="{{ roll_url }}" method="POST">
-    <label for="dice_img_set">Dice set: </label>
-    <select name="dice_img_set" id="dice_img_set" style="width: 160px">
-        <option value="standard">Standard</option>
-        <option value="animal">Animal</option>
-        <option value="halloween">Halloween</option>
-    </select>
-    <br/><br/>
-    <label for="dice_number">Number of dice: </label>
-    <select name="dice_number" id="dice_number" style="width: 80px">
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-    </select>
-    <br/><br/>
-    <input type="submit" value="Go rolling dice!">
-</form>
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <ul class=flashes>
-            {% for category, message in messages %}
-                <li class="{{ category }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-{% endwith %}
-=======
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="#">
-            Story Tellers
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-            {% if current_user.is_authenticated %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="#">
+        Story Tellers
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01"
+            aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+        {% if current_user.is_authenticated %}
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item">
                     <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
@@ -75,7 +39,7 @@
                     <a class="nav-link" href="/search">Search</a>
                 </li>
             </ul>
-            {% else %}
+        {% else %}
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item active">
                     <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
@@ -88,69 +52,66 @@
                 </li>
             </ul>
             <form class="form-inline">
-                <button class="btn btn-success mr-2" type="button" onclick="window.location='/users/login'">Sign in</button>
-                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='/users/create'">Sign up</button>
+                <button class="btn btn-success mr-2" type="button" onclick="window.location='/users/login'">Sign in
+                </button>
+                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='/users/create'">Sign up
+                </button>
             </form>
-            {% endif %}
-        </div>
-    </nav>
-    <div class="container my-3">
-        <div class="row d-flex justify-content-center">
-            <div class="col-xs-12 col-sm-6 bg-light cont rounded pb-3" style="padding: 30px;">
-                <h3 class="text-center">Settings for new story</h3>
-                <form action="{{ roll_url }}" method="POST">
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text" for="dice_img_set">Dice set: </label>
-                        </div>
-                        <select class="custom-select" name="dice_img_set" id="dice_img_set">
-                            <option value="standard">Standard</option>
-                            <option value="animal">Animal</option>
-                            <option value="halloween">Halloween</option>
-                        </select>
+        {% endif %}
+    </div>
+</nav>
+<div class="container my-3">
+    <div class="row d-flex justify-content-center">
+        <div class="col-xs-12 col-sm-6 bg-light cont rounded pb-3" style="padding: 30px;">
+            <h3 class="text-center">Settings for new story</h3>
+            <form action="{{ roll_url }}" method="POST">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="dice_img_set">Dice set: </label>
                     </div>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text" for="dice_number">Number of dice: </label>
-                        </div>
-                        <select class="custom-select" name="dice_number" id="dice_number" >
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                        </select>
+                    <select class="custom-select" name="dice_img_set" id="dice_img_set">
+                        <option value="standard">Standard</option>
+                        <option value="animal">Animal</option>
+                        <option value="halloween">Halloween</option>
+                    </select>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="dice_number">Number of dice: </label>
                     </div>
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
+                    <select class="custom-select" name="dice_number" id="dice_number">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
                             <div class="input-group mb-3">
                                 <label class="text-danger {{ category }}">{{ message }}</label>
                             </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-                    <div class="input-group justify-content-center">
-                        <button type="button" class="btn btn-outline-success" onclick="$(this).parents('form:first').submit()">Go rolling dice!</button>
-                    </div>
-                </form>
-            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <div class="input-group justify-content-center">
+                    <button type="button" class="btn btn-outline-success"
+                            onclick="$(this).parents('form:first').submit()">Go rolling dice!
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-
->>>>>>> Stashed changes
+</div>
 </body>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
-    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-    crossorigin="anonymous"></script>
-
-<script>
-    window.onload = function() {
-        document.getElementById('email').className = 'form-control';
-        document.getElementById('password').className = 'form-control';
-    };
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous">
 </script>
+
 </html>

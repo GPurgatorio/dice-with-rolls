@@ -4,18 +4,20 @@
     <meta charset="utf-8">
     <title>StoryTellers - Roll the dice</title>
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="#">
-            Story Tellers
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-            {% if current_user.is_authenticated %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="#">
+        Story Tellers
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01"
+            aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+        {% if current_user.is_authenticated %}
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item">
                     <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
@@ -30,7 +32,7 @@
                     <a class="nav-link" href="/search">Search</a>
                 </li>
             </ul>
-            {% else %}
+        {% else %}
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item active">
                     <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
@@ -40,57 +42,66 @@
                 </li>
             </ul>
             <form class="form-inline">
-                <button class="btn btn-success mr-2" type="button" onclick="window.location='/users/login'">Sign in</button>
-                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='/users/create'">Sign up</button>
+                <button class="btn btn-success mr-2" type="button" onclick="window.location='/users/login'">Sign in
+                </button>
+                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='/users/create'">Sign up
+                </button>
             </form>
-            {% endif %}
-        </div>
-    </nav>
-    <div class="container my-3 bg-light cont my-3 rounded pb-3" style="padding: 30px;">
-        <div class="row d-flex justify-content-center">
-            <h3 class="text-center">{{ dice_number }} rolled words</h3>
-        </div>
-        <div class="row d-flex justify-content-center">
-            {% for word in words %}
+        {% endif %}
+    </div>
+</nav>
+<div class="container my-3 bg-light cont my-3 rounded pb-3" style="padding: 30px;">
+    <div class="row d-flex justify-content-center">
+        <h3 class="text-center">{{ dice_number }} rolled words</h3>
+    </div>
+    <div class="row d-flex justify-content-center">
+        {% for word in words %}
             <div class="col-xs-12 col-sm-2">
                 <div class="card border-primary">
-                    <img src="../../static/{{ dice_img_set }}/die{{ dice_indexes[loop.index0] }}/{{ word }}.png" class="card-img-top" alt="{{ word }}">
+                    <img src="../../static/{{ dice_img_set }}/die{{ dice_indexes[loop.index0] }}/{{ word }}.png"
+                         class="card-img-top" alt="{{ word }}">
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ word }}</h5>
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-        <div class="row mt-3">
-            <div class="col-xs-12 col-sm-12 d-flex justify-content-center">
-                <form action="" method="POST">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" onclick="window.location='{{ settings_url }}'">Return to settings</button>
-                        <button type="button" class="btn btn-outline-info" onclick="$(this).parents('form:first').submit()">Re-roll dice</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-xs-12 col-sm-12 d-flex justify-content-center">
-                <form action="{{ write_url }}" method="GET">
-                    <button type="button" class="btn btn-outline-success" onclick="$(this).parents('form:first').submit()">Write story</button>
-                </form> 
-            </div>
+        {% endfor %}
+    </div>
+    <div class="row mt-3">
+        <div class="col-xs-12 col-sm-12 d-flex justify-content-center">
+            <form action="" method="POST">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="window.location='{{ settings_url }}'">Return to settings
+                    </button>
+                    <button type="button" class="btn btn-outline-info" onclick="$(this).parents('form:first').submit()">
+                        Re-roll dice
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+    <div class="row mt-3">
+        <div class="col-xs-12 col-sm-12 d-flex justify-content-center">
+            <form action="{{ write_url }}" method="GET">
+                <button type="button" class="btn btn-outline-success" onclick="$(this).parents('form:first').submit()">
+                    Write story
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
 </body>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
-    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-    crossorigin="anonymous"></script>
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
 
 <script>
-    window.onload = function() {
+    window.onload = function () {
         document.getElementById('email').className = 'form-control';
         document.getElementById('password').className = 'form-control';
     };

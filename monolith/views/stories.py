@@ -179,7 +179,8 @@ def _open_story(id_story):
         else:
             for reaction in all_reactions:
                 reactions_counters.append((reaction.reaction_caption, 0))
-        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice, reactions=reactions_counters)
+        return render_template('story.html', exists=True, story=story, react_url=REACTION_URL,
+                               user=user, rolled_dice=rolled_dice, reactions=reactions_counters)
     else:
         return render_template('story.html', exists=False)
 
@@ -250,8 +251,10 @@ def _write_story(id_story=None, message='', status=200):
                 else:
                     if 'id_story' in session:
                         # Publish a draft
+                        date_format = "%Y %m %d %H:%M"
+                        date = datetime.datetime.strptime(datetime.datetime.now().strftime(date_format), date_format)
                         db.session.query(Story).filter_by(id=session['id_story']).update(
-                            {'text': form.text.data, 'date': datetime.datetime.now(), 'is_draft': False})
+                            {'text': form.text.data, 'date': date, 'is_draft': False})
                         db.session.commit()
                         session.pop('id_story')
                     else:
