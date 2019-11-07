@@ -189,7 +189,7 @@ def _user_drafts(id_user):
         flash("You can read only your draft")
         return redirect(HOME_URL)
     drafts = Story.query.filter_by(author_id=current_user.id, is_draft=True)
-    return make_response(render_template("drafts.html", drafts=drafts, write_url=WRITE_URL), 200)
+    return make_response(render_template("drafts.html", drafts=drafts, write_url=WRITE_URL, home_url=HOME_URL), 200)
 
 
 def _check_user_existence(id_user):
