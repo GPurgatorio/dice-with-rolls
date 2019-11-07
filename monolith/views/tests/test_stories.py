@@ -488,7 +488,7 @@ class TestRandomRecentStory(flask_testing.TestCase):
     def test_random_recent_story(self):
 
             # Random recent story as anonymous user
-            self.client.get('/stories/random')
+            self.client.get('/stories/random', follow_redirects=True)
             self.assert_template_used('story.html')
             self.assertEqual(self.get_context_variable('story').text, 'Just another story')
 
@@ -498,9 +498,9 @@ class TestRandomRecentStory(flask_testing.TestCase):
             self.client.post('/users/login', data=form.data, follow_redirects=True)
 
             # No recent stories
-            self.client.get('/stories/random')
+            self.client.get('/stories/random', follow_redirects=True)
             self.assert_template_used('stories.html')
-            self.assert_message_flashed('Oops, there are no recent storiesby other users!')
+            self.assert_message_flashed('Oops, there are no recent stories by other users!')
 
             # Create a new recent story by Admin2
             example = Story()
@@ -513,7 +513,7 @@ class TestRandomRecentStory(flask_testing.TestCase):
             db.session.commit()
 
             # Get the only recent story not written by Admin
-            response = self.client.get('/stories/random')
+            response = self.client.get('/stories/random', follow_redirects=True)
             self.assert_template_used('story.html')
             self.assertEqual(self.get_context_variable('story').text, 'This is a valid recent story')
 
