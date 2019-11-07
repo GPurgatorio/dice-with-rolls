@@ -143,13 +143,17 @@ def _open_story(id_story):
         user = q[1]
         #  Splitting the names of figures
         rolled_dice = story.figures.split('#')
+
         rolled_dice = rolled_dice[1:-1]
 
+        # Get author name of that story
+        author = list(db.engine.execute("SELECT firstname, lastname FROM user join story on user.id = author_id WHERE story.id = " + str(id_story)))
+        
         # Get all the reactions for that story
-        all_reactions = list(
-            db.engine.execute("SELECT reaction_caption FROM reaction_catalogue ORDER BY reaction_caption"))
+        all_reactions = list(db.engine.execute("SELECT reaction_caption FROM reaction_catalogue ORDER BY reaction_caption"))
         query = "SELECT reaction_caption, counter as num_story_reactions FROM counter c, reaction_catalogue r WHERE " \
                 "reaction_type_id = reaction_id AND story_id = " + str(id_story) + " ORDER BY reaction_caption "
+
         story_reactions = list(db.engine.execute(query))
         num_story_reactions = Counter.query.filter_by(story_id=id_story).join(ReactionCatalogue).count()
         num_reactions = ReactionCatalogue.query.count()
@@ -175,10 +179,7 @@ def _open_story(id_story):
         else:
             for reaction in all_reactions:
                 reactions_counters.append((reaction.reaction_caption, 0))
-
-        print(reactions_counters)
-        return render_template('story.html', exists=True, story=story, user=user, rolled_dice=rolled_dice,
-                               reactions=reactions_counters, react_url=REACTION_URL)
+        return render_template('story.html', exists=True, story=story, rolled_dice=rolled_dice, reactions=reactions_counters)
     else:
         return render_template('story.html', exists=False)
 

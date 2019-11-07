@@ -73,6 +73,6 @@ def _roll_dice():
     dice_set.throw_dice()
     session['figures'] = dice_set.pips
 
-    context_vars = {'dice_number': dice_number, 'dice_set': dice_set,
+    context_vars = {'dice_number': dice_number, 'dice_img_set': dice_img_set, 'dice_indexes': dice_indexes,
                     'words': dice_set.pips, 'write_url': WRITE_URL, 'settings_url': SETTINGS_URL}
     return render_template('roll_dice.html', **context_vars)

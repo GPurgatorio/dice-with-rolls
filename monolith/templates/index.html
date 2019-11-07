@@ -1,40 +1,133 @@
-<h1>Storytellers</h1>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Story Tellers</title>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <h5 class="{{ category }}">{{ message }}</h5>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">
+            Story Tellers
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+            {% if current_user.is_authenticated %}
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="window.location='{{ read_url }}'">Read Stories</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/users">Show Users</a>
+                </li>
+                <li class="nav-item">
+                    <form action="{{ users_url }}/{{ current_user.id }}" method="GET">
+                        <a class="nav-link" href="http://127.0.0.1:5000/users/{{ current_user.id }}">My Wall</a>
+                    </form>
+                </li>
+                <li class="nav-item">
+                    <form action="{{ settings_url }}" method="GET">
+                        <a class="nav-link" href="stories/new/settings">New Story</a>
+                    </form>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/search">Search</a>
+                </li>
+            </ul>
+            <form class="form-inline" action={{ logout_url }} method="POST">
+                <button class="btn btn-danger my-2 my-sm-0" type="submit">Logout</button>
+            </form>
+            {% else %}
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="window.location='{{ read_url }}'">Read Stories</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/users">Show Users</a>
+                </li>
+            </ul>
+            <form class="form-inline">
+                <button class="btn btn-success mr-2" type="button" onclick="window.location='{{ login_url }}'">Sign in</button>
+                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='{{ register_url }}'">Sign up</button>
+            </form>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container bg-light cont my-3 rounded" style="padding: 30px;">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flashes" style="text-align: center;">
+                    {% for category, message in messages %}
+                        <span class="{{ category }}">{{ message }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+        {% if current_user.is_authenticated %}
+        <div class="row">
+            <div class="col-xs-12 col-sm-12">
+                <h3>Hi {{ current_user.firstname }}!</h3>
+                <h4>These are your stories:</h4>
+            </div>
+        </div>
+        {% set color = ['bg-info', 'bg-success', 'bg-danger', 'bg-secondary'] %}
+        {% set card_count = [] %}
+        {% for story in stories %}
+            {% if card_count|length % 2 == 0 %}
+            <div class="row pb-3">
+            {% endif %}
+            <div class="col-xs-12 col-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <p class="card-text">{{story.text}}</p>
+                    </div>
+                    <div class="card-footer" style="width: 100%;">
+                        <form action="/stories/{{ story.id }}" style="text-align: center; display:inline-block; margin-right: 30px;" method="GET">
+                            <button class="btn btn-primary" type="submit">OPEN</button>
+                        </form>
+                        <form action="/stories/delete/{{ story.id }}" style="display:inline-block; text-align: center;" method="POST">
+                            <button class="btn btn-secondary" type="submit">DELETE</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% if card_count|length % 2 == 1 %}
+            </div>
+            {% endif %}
+            {% if card_count.append(1) %}{% endif %}
         {% endfor %}
-    {% endif %}
-{% endwith %}
-
-{% if current_user.is_authenticated %}
-  Hi {{ current_user.firstname }}!
-    <br><br>
-    <form action={{ logout_url }} method="POST">
-        <input type="submit" value="Logout">
-    </form>
-    <button type="button" onclick="window.location='{{ search_url }}'">Search</button>
-    <button type="button" onclick="window.location='{{ read_url }}'">Read Stories</button>
-    <form action="{{ settings_url }}" method="GET">
-        <input type="submit" value="New Story" >
-    </form>
-    <form action="{{ users_url }}/{{ current_user.id }}" method="GET">
-      <input type="submit" value="My wall" >
-    </form>
-  
-    <h2>Your Stories</h2>
-    {% for story in stories %}
-      <div>
-        <li>
-            {{story.text}} <form action="stories/delete/{{ story.id }}" method="POST"><button>DELETE</button></form>
-        </li>
-      </div>
-    {% endfor %}
-
-{% else %}
-  Hi Anonymous!
-    <br><br>
-    <button type="button" onclick="window.location='{{ login_url }}'">Login</button>
-    <button type="button" onclick="window.location='{{ register_url }}'">Register</button>
-{% endif %}
+        {% if card_count|length % 2 == 1 %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 h-10">
+                <h3 style="text-align: center;">Hi Anonymous!</h3>
+                <p class="text-center">Click on the two buttons at top right to sign in or sign up!</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+</html>

@@ -1,10 +1,10 @@
 import datetime
-
 import flask_testing
 from sqlalchemy import desc
 
 from monolith.app import create_app
 from monolith.database import Story, User, db, ReactionCatalogue, Counter
+
 from monolith.forms import LoginForm, StoryForm
 from monolith.urls import *
 
