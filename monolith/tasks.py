@@ -24,7 +24,7 @@ def like_task():
     global _APP
     # lazy init
     if _APP is None:
-        print("App not yet initalized")
+        print("App not yet initialized")
         _APP = create_app()
         db.init_app(_APP)
 
