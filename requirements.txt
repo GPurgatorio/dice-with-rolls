@@ -14,3 +14,5 @@ wtforms
 pytest
 pytest-cov
 blinker
+tox
+coverage
