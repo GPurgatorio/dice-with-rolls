@@ -23,7 +23,7 @@ def _stories():
     context_vars = {"stories": all_stories,
                     "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
                     "range_url": RANGE_URL, "random_recent_url": RANDOM_URL,
-                    "story_url": READ_URL}
+                    "story_url": READ_URL, "wall_url": USERS_URL}
 
     return render_template("stories.html", **context_vars)
 
