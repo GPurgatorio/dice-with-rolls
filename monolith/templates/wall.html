@@ -107,7 +107,13 @@
                         <div class="col-xl-12 col-sm-12 justify-content-center" style="margin-top: 25px;">
                             <a class="btn btn-primary" href="{{ user_info.id }}/stories"><span class="book-open">My stories</span></a>
                             <a class="btn btn-secondary" href="{{ user_info.id }}/drafts"><span class="firstdraft">My drafts</span></a>
+                            <br/><br/>
+                            <form action="{{ user_info.id }}/followers" method="get">
+                                <input type="submit" class="btn btn-primary"
+                                       value="Show {{ user_info.firstname }}'s followers"/>
+                            </form>
                         </div>
+
                     </div>
                 </div>
             </div>

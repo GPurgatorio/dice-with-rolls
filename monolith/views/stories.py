@@ -179,6 +179,8 @@ def _open_story(id_story):
         else:
             for reaction in all_reactions:
                 reactions_counters.append((reaction.reaction_caption, 0))
+
+        print(reactions_counters)
         return render_template('story.html', exists=True, story=story, react_url=REACTION_URL,
                                user=user, rolled_dice=rolled_dice, reactions=reactions_counters)
     else:
