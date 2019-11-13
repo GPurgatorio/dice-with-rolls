@@ -18,49 +18,29 @@
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-        {% if current_user.is_authenticated %}
-            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/stories">Read Stories</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/users">Show Users</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/users/{{ current_user.id }}">My Wall</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">New Story <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/search">Search</a>
-                </li>
-            </ul>
-            <form class="form-inline" action="/users/logout" method="POST">
-                <button class="btn btn-danger my-2 my-sm-0" type="submit">Logout</button>
-            </form>
-        {% else %}
-            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home<span class="sr-only"></span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/stories">Read Stories</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/users">Show Users</a>
-                </li>
-            </ul>
-            <form style="text-align: center;">
-                <button class="btn btn-success mr-2" type="button" onclick="window.location='/users/login'">Sign in
-                </button>
-                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='/users/create'">Sign up
-                </button>
-            </form>
-        {% endif %}
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ home_url }}">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ home_url }}stories">Read Stories</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ home_url }}users">Show Users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ home_url }}users/{{ current_user.id }}">My Wall</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ home_url }}stories/new/settings">New Story</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ home_url }}search">Search</a>
+            </li>
+        </ul>
+        <form class="form-inline" action="{{ home_url }}users/logout" method="POST">
+            <button class="btn btn-danger my-2 my-sm-0" type="submit">Logout</button>
+        </form>
     </div>
 </nav>
 <div class="container my-3">
@@ -68,7 +48,7 @@
         <div class="col-xs-12 col-sm-8 bg-light cont rounded pb-3" style="padding: 30px">
             <h3 class="text-center">Write your story!</h3><br/>
             <h5>The words are: {{ words }}</h5>
-            <form id="write_story_form" action="{{ submit_url }}" method="POST">
+            <form id="write_story_form" action="{{ home_url }}stories/new/write" method="POST">
                 {{ form.hidden_tag() }}
                 {% for field in form.display %}
                     <div class="form-group">

@@ -20,44 +20,45 @@
         {% if current_user.is_authenticated %}
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Home</a>
+                    <a class="nav-link" href="{{ home_url }}">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/stories">Read Stories</a>
+                    <a class="nav-link" href="{{ home_url }}stories">Read Stories</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="/users">Show Users </a>
+                    <a class="nav-link" href="{{ home_url }}users">Show Users</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/users/{{ current_user.id }}">My Wall</a>
+                    <a class="nav-link" href="{{ home_url }}users/{{ current_user.id }}">My Wall</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/stories/new/settings">New Story</a>
+                    <a class="nav-link" href="{{ home_url }}stories/new/settings">New Story</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/search">Search</a>
+                    <a class="nav-link" href="{{ home_url }}search">Search</a>
                 </li>
             </ul>
-            <form class="form-inline" action="/users/logout" method="POST">
+            <form class="form-inline" action="{{ home_url }}users/logout" method="POST">
                 <button class="btn btn-danger my-2 my-sm-0" type="submit">Logout</button>
             </form>
         {% else %}
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
+                    <a class="nav-link" href="{{ home_url }}">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/stories">Read Stories</a>
+                    <a class="nav-link" href="{{ home_url }}stories">Read Stories</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="/users">Show Users</a>
+                    <a class="nav-link" href="{{ home_url }}users">Show Users</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ home_url }}search">Search</a>
                 </li>
             </ul>
             <form class="form-inline">
-                <button class="btn btn-success mr-2" type="button" onclick="window.location='/users/login'">Sign in
-                </button>
-                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='/users/create'">Sign up
-                </button>
+                <button class="btn btn-success mr-2" type="button" onclick="window.location='{{ home_url }}users/login'">Sign in</button>
+                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='{{ home_url }}users/create'">Sign up</button>
             </form>
         {% endif %}
     </div>
@@ -79,7 +80,7 @@
                 {% for user in users %}
                     <li class="list-group-item align-items-center">
                         <b>{{ user.firstname }} {{ user.lastname }}</b>
-                        <a class="btn btn-secondary float-right" href="{{ wall_url }}/{{ user.id }}">SHOW WALL</a>
+                        <a class="btn btn-secondary float-right" href="{{ home_url }}users/{{ user.id }}">SHOW WALL</a>
                     </li>
                 {% endfor %}
             </ul>

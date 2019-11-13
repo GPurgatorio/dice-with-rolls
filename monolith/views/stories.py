@@ -11,7 +11,7 @@ from sqlalchemy import and_
 
 from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, User
 from monolith.forms import StoryForm
-from monolith.urls import *
+from monolith.urls import HOME_URL
 
 stories = Blueprint('stories', __name__)
 
@@ -20,11 +20,7 @@ stories = Blueprint('stories', __name__)
 def _stories():
     all_stories = db.session.query(Story).filter_by(is_draft=False).all()
 
-    context_vars = {"stories": all_stories,
-                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL,
-                    "story_url": READ_URL, "wall_url": USERS_URL}
-
+    context_vars = {"stories": all_stories, "home_url": HOME_URL}
     return render_template("stories.html", **context_vars)
 
 
@@ -88,9 +84,7 @@ def _latest():
         "AND s2.is_draft == 0) "
         "ORDER BY s1.author_id").fetchall()
 
-    context_vars = {"stories": listed_stories,
-                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
+    context_vars = {"stories": listed_stories, "home_url": HOME_URL}
     return render_template('stories.html', **context_vars)
 
 
@@ -127,9 +121,7 @@ def _range():
     listed_stories = db.session.query(Story).filter(Story.date >= begin_date).filter(Story.date <= end_date).filter(
         Story.is_draft == False)
 
-    context_vars = {"stories": listed_stories,
-                    "reaction_url": REACTION_URL, "latest_url": LATEST_URL,
-                    "range_url": RANGE_URL, "random_recent_url": RANDOM_URL}
+    context_vars = {"stories": listed_stories, "home_url": HOME_URL}
     return render_template('stories.html', **context_vars)
 
 
@@ -181,10 +173,10 @@ def _open_story(id_story):
                 reactions_counters.append((reaction.reaction_caption, 0))
 
         print(reactions_counters)
-        return render_template('story.html', exists=True, story=story, react_url=REACTION_URL,
+        return render_template('story.html', exists=True, story=story, home_url=HOME_URL, react_url=REACTION_URL,
                                user=user, rolled_dice=rolled_dice, reactions=reactions_counters)
     else:
-        return render_template('story.html', exists=False)
+        return render_template('story.html', exists=False, home_url=HOME_URL)
 
 
 # Get the form to write a new story or continue a draft
@@ -194,7 +186,6 @@ def _open_story(id_story):
 @login_required
 def _write_story(id_story=None, message='', status=200):
     form = StoryForm()
-    submit_url = WRITE_URL
 
     # Setting session to modify draft
     if 'GET' == request.method and id_story is not None:
@@ -272,7 +263,7 @@ def _write_story(id_story=None, message='', status=200):
                     flash('Your story is a valid one! It has been published')
                     return redirect(url_for('users._user_stories', id_user=current_user.id, _external=True))
     return make_response(
-        render_template("write_story.html", submit_url=submit_url, form=form,
+        render_template("write_story.html", home_url=HOME_URL, form=form,
                         words=session['figures'], message=message), status)
 
 

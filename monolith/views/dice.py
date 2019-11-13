@@ -6,7 +6,7 @@ from flask_login import login_required
 from werkzeug.exceptions import BadRequestKeyError
 
 from monolith.classes.DiceSet import DiceSet, Die
-from monolith.urls import WRITE_URL, ROLL_URL, SETTINGS_URL
+from monolith.urls import HOME_URL
 
 dice = Blueprint('dice', __name__)
 
@@ -14,8 +14,7 @@ dice = Blueprint('dice', __name__)
 @dice.route('/stories/new/settings', methods=['GET'])
 @login_required
 def _settings():
-    context_vars = {"roll_url": ROLL_URL}
-    return render_template('settings.html', **context_vars)
+    return render_template('settings.html', home_url=HOME_URL)
 
 
 @dice.route('/stories/new/roll', methods=['POST'])
@@ -74,5 +73,5 @@ def _roll_dice():
     session['figures'] = dice_set.pips
 
     context_vars = {'dice_number': dice_number, 'dice_img_set': dice_img_set, 'dice_indexes': dice_indexes,
-                    'words': dice_set.pips, 'write_url': WRITE_URL, 'settings_url': SETTINGS_URL}
+                    'words': dice_set.pips, 'home_url': HOME_URL}
     return render_template('roll_dice.html', **context_vars)

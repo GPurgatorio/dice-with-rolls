@@ -8,7 +8,7 @@ from flask_login import login_required, current_user
 from monolith.database import Follower
 from monolith.database import db, User, Story
 from monolith.forms import UserForm
-from monolith.urls import HOME_URL, WRITE_URL, USERS_URL, READ_URL
+from monolith.urls import HOME_URL
 
 users = Blueprint('users', __name__)
 
@@ -16,7 +16,7 @@ users = Blueprint('users', __name__)
 @users.route('/users')
 def _users():
     usrs = db.session.query(User)
-    return render_template("users.html", wall_url=USERS_URL, users=usrs, home_url=HOME_URL)
+    return render_template("users.html", users=usrs, home_url=HOME_URL)
 
 
 @users.route('/users/create', methods=['GET', 'POST'])
@@ -42,8 +42,7 @@ def _create_user():
                     flash("Wrong date of birth.", 'error')
             else:
                 flash("The email address is already being used.", 'error')
-
-    return render_template('create_user.html', form=form)
+    return render_template('create_user.html', form=form, home_url=HOME_URL)
 
 
 @users.route('/users/<int:userid>', methods=['GET'])
@@ -168,7 +167,7 @@ def _followers(id_user):
         flash("Storyteller doesn't exist")
         return redirect(url_for('users._wall', userid=current_user.id))
     usrs = User.query.join(Follower, User.id == Follower.follower_id).filter_by(followed_id=id_user)
-    return render_template("followers.html", wall_url=USERS_URL, users=usrs, home_url=HOME_URL)
+    return render_template("followers.html", users=usrs, home_url=HOME_URL)
 
 
 # Get all the stories of a specified user
@@ -178,7 +177,7 @@ def _user_stories(id_user):
         flash("Storyteller doesn't exist")
         return redirect(HOME_URL)
     stories = Story.query.filter_by(author_id=id_user, is_draft=False)
-    return render_template("user_stories.html", stories=stories, open_url=READ_URL, home_url=HOME_URL)
+    return render_template("user_stories.html", stories=stories, home_url=HOME_URL)
 
 
 # Get all the draft of specified user (only if it is the current user?)
@@ -189,7 +188,7 @@ def _user_drafts(id_user):
         flash("You can read only your draft")
         return redirect(HOME_URL)
     drafts = Story.query.filter_by(author_id=current_user.id, is_draft=True)
-    return make_response(render_template("drafts.html", drafts=drafts, write_url=WRITE_URL, home_url=HOME_URL), 200)
+    return make_response(render_template("drafts.html", drafts=drafts, home_url=HOME_URL), 200)
 
 
 def _check_user_existence(id_user):

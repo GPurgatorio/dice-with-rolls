@@ -10,7 +10,7 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <a class="navbar-brand" href="#">
+    <a class="navbar-brand" href="{{ home_wall }}">
         Story Tellers
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01"
@@ -21,44 +21,45 @@
         {% if current_user.is_authenticated %}
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="{{ home_url }}">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/stories">Read Stories</a>
+                    <a class="nav-link" href="{{ home_url }}stories">Read Stories</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/users">Show Users</a>
+                    <a class="nav-link" href="{{ home_url }}users">Show Users</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="http://127.0.0.1:5000/users/{{ current_user.id }}">My Wall</a>
+                    <a class="nav-link" href="{{ home_url }}users/{{ current_user.id }}">My Wall</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/stories/new/settings">New Story</a>
+                    <a class="nav-link" href="{{ home_url }}stories/new/settings">New Story</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/search">Search</a>
+                    <a class="nav-link" href="{{ home_url }}search">Search</a>
                 </li>
             </ul>
-            <form class="form-inline" action="/users/logout" method="POST">
+            <form class="form-inline" action="{{ home_url }}users/logout" method="POST">
                 <button class="btn btn-danger my-2 my-sm-0" type="submit">Logout</button>
             </form>
         {% else %}
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ home_url }}">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/stories">Read Stories</a>
+                    <a class="nav-link" href="{{ home_url }}stories">Read Stories</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/users">Show Users</a>
+                    <a class="nav-link" href="{{ home_url }}users">Show Users</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ home_url }}search">Search</a>
                 </li>
             </ul>
             <form class="form-inline">
-                <button class="btn btn-success mr-2" type="button" onclick="window.location='/users/login'">Sign in
-                </button>
-                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='/users/create'">Sign up
-                </button>
+                <button class="btn btn-success mr-2" type="button" onclick="window.location='{{ home_url }}users/login'">Sign in</button>
+                <button class="btn btn-secondary mr-2" type="button" onclick="window.location='{{ home_url }}users/create'">Sign up</button>
             </form>
         {% endif %}
     </div>
@@ -105,10 +106,10 @@
                     </div>
                     <div class="row mb-3" style="margin: 0 auto; text-align: center;">
                         <div class="col-xl-12 col-sm-12 justify-content-center" style="margin-top: 25px;">
-                            <a class="btn btn-primary" href="{{ user_info.id }}/stories"><span class="book-open">My stories</span></a>
-                            <a class="btn btn-secondary" href="{{ user_info.id }}/drafts"><span class="firstdraft">My drafts</span></a>
+                            <a class="btn btn-primary" href="{{ home_url }}users/{{ user_info.id }}/stories"><span class="book-open">My stories</span></a>
+                            <a class="btn btn-secondary" href="{{ home_url }}users/{{ user_info.id }}/drafts"><span class="firstdraft">My drafts</span></a>
                             <br/><br/>
-                            <form action="{{ user_info.id }}/followers" method="get">
+                            <form action="{{ home_url }}users/{{ user_info.id }}/followers" method="get">
                                 <input type="submit" class="btn btn-primary"
                                        value="Show {{ user_info.firstname }}'s followers"/>
                             </form>
@@ -173,11 +174,11 @@
                 </div>
                 <div class="row mb-3" style="margin: 0 auto; text-align: center;">
                     <div class="col-xl-12 col-sm-12 d-flex justify-content-center" style="margin-top: 25px;">
-                        <form action="{{ user_info.id }}/stories" method="get">
+                        <form action="{{ home_url }}users/{{ user_info.id }}/stories" method="get">
                             <input type="submit" class="btn btn-primary mr-3"
                                    value="Show {{ user_info.firstname }}'s stories"/>
                         </form>
-                        <form action="{{ user_info.id }}/followers" method="get">
+                        <form action="{{ home_url }}users/{{ user_info.id }}/followers" method="get">
                             <input type="submit" class="btn btn-primary"
                                    value="Show {{ user_info.firstname }}'s followers"/>
                         </form>
@@ -213,7 +214,7 @@
                 </div>
                 <div class="row mb-3" style="margin: 0 auto; text-align: center;">
                     <div class="col-xl-12 col-sm-12 justify-content-center" style="margin-top: 25px;">
-                        <form action="{{ user_info.id }}/stories" method="get">
+                        <form action="{{ home_url }}users/{{ user_info.id }}/stories" method="get">
                             <input type="submit" class="btn btn-primary"
                                    value="Show {{ user_info.firstname }}'s stories"/>
                         </form>
