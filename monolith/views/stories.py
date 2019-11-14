@@ -11,7 +11,7 @@ from sqlalchemy import and_
 
 from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, User
 from monolith.forms import StoryForm
-from monolith.urls import HOME_URL
+from monolith.urls import HOME_URL, REACTION_URL
 
 stories = Blueprint('stories', __name__)
 
