@@ -18,40 +18,7 @@
     </script>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <a class="navbar-brand" href="{{ home_url }}">
-        Story Tellers
-    </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01"
-            aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ home_url }}">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ home_url }}stories">Read Stories</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ home_url }}users">Show Users</a>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link" href="{{ home_url }}users/{{ current_user.id }}">My Wall</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ home_url }}stories/new/settings">New Story</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ home_url }}search">Search</a>
-            </li>
-        </ul>
-        <form class="form-inline" action="{{ home_url }}users/logout" method="POST">
-            <button class="btn btn-danger my-2 my-sm-0" type="submit">Logout</button>
-        </form>
-    </div>
-</nav>
+{% include 'navbar.html' %}
 <div class="container bg-light cont my-3 rounded" style="padding: 30px;">
     {% if current_user.is_authenticated %}
         <div class="row mb-3">
