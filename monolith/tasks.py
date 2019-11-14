@@ -13,7 +13,7 @@ celery = Celery(__name__, backend=BACKEND, broker=BROKER)
 celery.conf.beat_schedule = {
     'react_task': {
         'task': 'monolith.tasks.like_task',
-        'schedule': 5.0
+        'schedule': 3.0
     },
 }
 celery.conf.timezone = 'UTC'

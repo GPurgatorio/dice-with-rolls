@@ -11,7 +11,7 @@ from sqlalchemy import and_
 
 from monolith.database import db, Story, Reaction, ReactionCatalogue, Counter, User
 from monolith.forms import StoryForm
-from monolith.urls import HOME_URL
+from monolith.urls import HOME_URL, REACTION_URL
 
 stories = Blueprint('stories', __name__)
 
@@ -135,46 +135,40 @@ def _open_story(id_story):
         user = q[1]
         #  Splitting the names of figures
         rolled_dice = story.figures.split('#')
-
+        # Remove the first and last empty strings
         rolled_dice = rolled_dice[1:-1]
-
-        # Get author name of that story
-        author = list(db.engine.execute("SELECT firstname, lastname FROM user join story on user.id = author_id WHERE story.id = " + str(id_story)))
-        
         # Get all the reactions for that story
-        all_reactions = list(db.engine.execute("SELECT reaction_caption FROM reaction_catalogue ORDER BY reaction_caption"))
-        query = "SELECT reaction_caption, counter as num_story_reactions FROM counter c, reaction_catalogue r WHERE " \
+        all_reactions = db.engine.execute("SELECT reaction_caption FROM reaction_catalogue ORDER BY reaction_caption").fetchall()
+        query = "SELECT reaction_caption, counter FROM counter c, reaction_catalogue r WHERE " \
                 "reaction_type_id = reaction_id AND story_id = " + str(id_story) + " ORDER BY reaction_caption "
 
-        story_reactions = list(db.engine.execute(query))
+        story_reactions = db.engine.execute(query).fetchall()
         num_story_reactions = Counter.query.filter_by(story_id=id_story).join(ReactionCatalogue).count()
         num_reactions = ReactionCatalogue.query.count()
 
-        # Create tuples of counter per reaction
-        list_tuples = list()
-        reactions_counters = list()
+        # Reactions dictionary of tuples (Reaction, Counter)
+        reactions_list = {}
+        reactions = list()
 
         # Generate tuples (reaction, counter)
         if num_reactions != 0 and num_story_reactions != 0:
-            for combination in itertools.zip_longest(all_reactions, story_reactions):
-                list_tuples.append(combination)
+            # Set 0 all counters for all reactions
+            for r in all_reactions:
+                reactions_list.update({r.reaction_caption: 0})
 
-            for i in range(0, num_reactions):
-                reaction = str(list_tuples[i][0]).replace('(', '').replace(')', '').replace(',', '').replace('\'', '')
-                counter = re.sub(r'\D', '', str(list_tuples[i][1]))
-                if not counter:
-                    counter = 0
-                else:
-                    counter = int(counter)
-
-                reactions_counters.append((reaction, counter))
+            # Update all counter with correct value
+            for existing_r in story_reactions:
+                reactions_list.update({existing_r.reaction_caption : existing_r.counter})
         else:
-            for reaction in all_reactions:
-                reactions_counters.append((reaction.reaction_caption, 0))
+            for r in all_reactions:
+                reactions.append((r.reaction_caption, 0))
 
-        print(reactions_counters)
+        # Convert the dictionary in a list
+        for key in reactions_list:
+            reactions.append((key, reactions_list[key]))
+
         return render_template('story.html', exists=True, story=story, home_url=HOME_URL, react_url=REACTION_URL,
-                               user=user, rolled_dice=rolled_dice, reactions=reactions_counters)
+                               user=user, rolled_dice=rolled_dice, reactions=reactions)
     else:
         return render_template('story.html', exists=False, home_url=HOME_URL)
 
